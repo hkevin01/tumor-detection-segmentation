@@ -1,0 +1,10 @@
+monai
+torch
+torchvision
+numpy
+matplotlib
+pandas
+scikit-learn
+scipy
+tqdm
+jupyter

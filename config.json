@@ -1,0 +1,10 @@
+{
+  "data_path": "./data",
+  "model_save_path": "./models",
+  "batch_size": 16,
+  "epochs": 50,
+  "learning_rate": 0.001,
+  "image_size": [128, 128, 128],
+  "num_workers": 4,
+  "device": "cuda"
+}

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+.env/
+
+# Data and models
+data/
+models/
+
+# GitHub and Copilot
+.github/
+.copilot/
+.copilot.json
+.copilotignore
+
+# Git attributes
+.gitattributes
+
+# Editor and OS files
+*.swp
+*.swo
+*.bak
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+*.tmp
+*.cache
