@@ -1,0 +1,152 @@
+{
+  "project": "tumor-detection-segmentation",
+  "scope": "Deep learning pipeline for tumor detection and segmentation in MRI/CT images using MONAI and PyTorch. Includes data preparation, model training, evaluation, inference, reporting, sensor fusion, and patient analysis.",
+  "structure": {
+    "data/": "Stores raw and processed datasets.",
+    "models/": "Stores trained model checkpoints.",
+    "notebooks/": "Jupyter notebooks for experiments and prototyping.",
+    "docs/": "Documentation, guides, and references.",
+    "log/": "Logs generated during training, evaluation, and inference.",
+    "src/": {
+      "__init__.py": "Marks src as a Python package.",
+      "README.md": "Describes the purpose and structure of the src directory.",
+      "data/": {
+        "__init__.py": "Marks data as a subpackage.",
+        "README.md": "Describes data processing code.",
+        "data_preprocessing.py": "Data preprocessing utilities.",
+        "dataset.py": "Custom dataset class for loading and managing data."
+      },
+      "training/": {
+        "__init__.py": "Marks training as a subpackage.",
+        "README.md": "Describes training code.",
+        "train.py": "Main training script using MONAI's UNet and configuration from config.json."
+      },
+      "evaluation/": {
+        "__init__.py": "Marks evaluation as a subpackage.",
+        "README.md": "Describes evaluation code.",
+        "evaluate.py": "Script for evaluating trained models."
+      },
+      "inference/": {
+        "__init__.py": "Marks inference as a subpackage.",
+        "README.md": "Describes inference code.",
+        "inference.py": "Script for running inference on new data."
+      },
+      "reporting/": {
+        "__init__.py": "Marks reporting as a subpackage.",
+        "README.md": "Describes reporting code.",
+        "preop_report.py": "Placeholder for preoperative report generation.",
+        "postop_report.py": "Placeholder for postoperative report generation."
+      },
+      "fusion/": {
+        "__init__.py": "Marks fusion as a subpackage.",
+        "README.md": "Describes sensor fusion code.",
+        "sensor_fusion.py": "Placeholder for sensor fusion logic (multi-modal integration)."
+      },
+      "patient_analysis/": {
+        "__init__.py": "Marks patient_analysis as a subpackage.",
+        "README.md": "Describes patient analysis code.",
+        "compare_to_prior.py": "Placeholder for patient analysis and comparison to prior data."
+      },
+      "utils/": {
+        "__init__.py": "Marks utils as a subpackage.",
+        "README.md": "Describes utility code.",
+        "utils.py": "General utility functions (currently empty)."
+      }
+    },
+    "requirements.txt": "Lists Python dependencies for the project.",
+    "README.md": "Project overview, setup instructions, and documentation info.",
+    "STEPS.md": "Describes project steps, current and future scope.",
+    "config.json": "Configuration for training, data paths, hyperparameters, etc.",
+    "setup.py": "Project setup for pip installation, checks for setuptools.",
+    ".gitignore": "Specifies files and directories to ignore in git.",
+    ".copilotignore": "Specifies files and directories to ignore for Copilot.",
+    ".copilot.json": "Copilot configuration for ignored paths.",
+    "install_powershell.sh": "Script to install Microsoft PowerShell on Ubuntu."
+  },
+  "dependencies": [
+    "monai",
+    "torch",
+    "torchvision",
+    "numpy",
+    "matplotlib",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "tqdm",
+    "jupyter"
+  ],
+  "file_purpose": {
+    "src/data/data_preprocessing.py": "Data preprocessing utilities for preparing MRI/CT images.",
+    "src/data/dataset.py": "Custom dataset class for loading and managing medical images.",
+    "src/training/train.py": "Main training script for tumor segmentation using MONAI UNet.",
+    "src/evaluation/evaluate.py": "Script for evaluating trained models on validation/test data.",
+    "src/inference/inference.py": "Script for running inference on new/unseen data.",
+    "src/reporting/preop_report.py": "Placeholder for generating preoperative reports.",
+    "src/reporting/postop_report.py": "Placeholder for generating postoperative reports.",
+    "src/fusion/sensor_fusion.py": "Placeholder for sensor fusion logic (e.g., MRI+CT integration).",
+    "src/patient_analysis/compare_to_prior.py": "Placeholder for patient analysis and comparison to prior scans.",
+    "src/utils/utils.py": "General utility functions used across the project.",
+    "requirements.txt": "Defines all required Python packages.",
+    "config.json": "Holds configuration parameters for training and data handling.",
+    "setup.py": "Enables pip installation and dependency management.",
+    "install_powershell.sh": "Automates PowerShell installation on Ubuntu."
+  },
+  "relationships": [
+    {
+      "from": "src/training/train.py",
+      "to": [
+        "src/data/dataset.py",
+        "src/data/data_preprocessing.py",
+        "config.json",
+        "requirements.txt"
+      ],
+      "description": "train.py loads configuration, uses dataset and preprocessing modules, and depends on all listed dependencies."
+    },
+    {
+      "from": "src/evaluation/evaluate.py",
+      "to": [
+        "src/data/dataset.py",
+        "src/data/data_preprocessing.py",
+        "config.json"
+      ],
+      "description": "evaluate.py uses dataset and preprocessing for evaluation."
+    },
+    {
+      "from": "src/inference/inference.py",
+      "to": [
+        "src/data/dataset.py",
+        "src/data/data_preprocessing.py",
+        "config.json"
+      ],
+      "description": "inference.py uses dataset and preprocessing for inference."
+    },
+    {
+      "from": "src/reporting/preop_report.py",
+      "to": [
+        "src/inference/inference.py"
+      ],
+      "description": "preop_report.py will use inference results for report generation."
+    },
+    {
+      "from": "src/reporting/postop_report.py",
+      "to": [
+        "src/inference/inference.py"
+      ],
+      "description": "postop_report.py will use inference results for report generation."
+    },
+    {
+      "from": "src/fusion/sensor_fusion.py",
+      "to": [
+        "src/data/dataset.py"
+      ],
+      "description": "sensor_fusion.py will integrate multiple data sources for improved detection."
+    },
+    {
+      "from": "src/patient_analysis/compare_to_prior.py",
+      "to": [
+        "src/inference/inference.py"
+      ],
+      "description": "compare_to_prior.py will analyze new results against prior patient data."
+    }
+  ]
+}
