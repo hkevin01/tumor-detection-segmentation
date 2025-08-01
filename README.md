@@ -34,7 +34,7 @@ This project implements a deep learning pipeline for tumor detection and segment
 
 1. **Clone and Setup**:
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:hkevin01/tumor-detection-segmentation.git
    cd tumor-detection-segmentation
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -55,6 +55,11 @@ This project implements a deep learning pipeline for tumor detection and segment
    python src/inference/inference.py
    ```
 
+5. **Run GUI Application**:
+   ```bash
+   ./run_gui.sh
+   ```
+
 ## Configuration
 
 Edit `config.json` to customize:
@@ -70,10 +75,18 @@ This project uses MONAI for medical image processing and PyTorch for deep learni
 ## Documentation
 
 Detailed documentation is available in the `docs/` directory, including:
-- API reference
-- Training guides
+- **Project Progress Tracker** - Comprehensive progress tracking and status
+- **GUI Development Plan** - Complete frontend/backend development roadmap
+- **Git Setup Guide** - Git workflow and collaboration guidelines
+- API reference and training guides
 - Model architecture descriptions
 - Clinical workflow integration
+
+## Utilities
+
+- **Git Status**: `./git_status.sh` - Quick Git commands and repository status
+- **GUI Launcher**: `./run_gui.sh` - Start the complete GUI application
+- **Setup Scripts**: Various setup and installation helpers
 
 ## Contributing
 
