@@ -1,0 +1,209 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyTorch
+*.pth
+*.pt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific - Medical Data (NEVER commit patient data!)
+data/
+!data/README.md
+models/
+!models/README.md
+*.dcm
+*.dicom
+temp/
+logs/
+reports/*.pdf
+reports/*.docx
+!reports/README.md
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security - API keys and secrets
+.env
+.env.local
+.env.production
+secrets/
+*.key
+*.pem
+
+# Node modules (for frontend)
+gui/frontend/node_modules/
+gui/frontend/build/
+gui/frontend/.env
+gui/frontend/coverage/
+
+# Backend
+gui/backend/venv/
+gui/backend/__pycache__/
+gui/backend/.env
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Docker
+.docker/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Documentation builds
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Data and Models (typically large files)
+data/
+datasets/
+models/
+checkpoints/
+*.h5
+*.hdf5
+*.nii
+*.nii.gz
+*.dcm
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Documentation builds
+docs/_build/
+docs/build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+logs/
+*.log
+
+# Local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# GUI specific
+gui/uploads/
+gui/logs/
+gui/reports/
+
+# Exclude nested git repository
+notebooks/tumor-detection-segmentation/
+.tox/
+.nox/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Profiling
+.prof
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# MLflow
+mlruns/
+
+# Weights & Biases
+wandb/
+
+# Docker
+*.dockerignore
+
+# Copilot
+.copilot/
+.copilotignore
+
+# Project specific
+experiments/
+outputs/
+results/
+saved_models/

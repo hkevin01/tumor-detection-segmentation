@@ -1,0 +1,26 @@
+monai
+torch
+torchvision
+numpy
+matplotlib
+pandas
+scikit-learn
+scipy
+tqdm
+jupyter
+
+# GUI Backend Dependencies
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+
+# Additional utilities
+pydantic
+aiofiles
+Pillow
+opencv-python-headless
+pydicom

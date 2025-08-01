@@ -1,0 +1,49 @@
+{
+  "data_path": "./data",
+  "model_save_path": "./models",
+  "batch_size": 16,
+  "epochs": 50,
+  "learning_rate": 0.001,
+  "image_size": [128, 128, 128],
+  "num_workers": 4,
+  "device": "cuda",
+  
+  "gui": {
+    "enabled": true,
+    "host": "localhost",
+    "port": 8000,
+    "frontend_port": 3000,
+    "cors_origins": ["http://localhost:3000"],
+    "upload_max_size": "500MB",
+    "session_timeout": 3600,
+    "database_url": "sqlite:///./gui_app.db"
+  },
+  
+  "visualization": {
+    "default_colormap": "viridis",
+    "overlay_opacity": 0.5,
+    "confidence_threshold": 0.7,
+    "enable_3d_rendering": true
+  },
+  
+  "reporting": {
+    "template_dir": "./templates",
+    "output_dir": "./reports",
+    "formats": ["pdf", "docx", "json"],
+    "auto_generate": false
+  },
+  
+  "security": {
+    "secret_key": "your-secret-key-change-in-production",
+    "algorithm": "HS256",
+    "access_token_expire_minutes": 30,
+    "enable_audit_log": true
+  },
+  
+  "dicom": {
+    "supported_modalities": ["CT", "MR", "PT"],
+    "max_file_size": "2GB",
+    "temp_storage": "./temp/dicom",
+    "anonymize_on_upload": true
+  }
+}
