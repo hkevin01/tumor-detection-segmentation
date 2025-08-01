@@ -2,6 +2,8 @@
 
 This project implements a deep learning pipeline for tumor detection and segmentation in medical images (MRI/CT) using the MONAI framework and PyTorch.
 
+> **🎉 Recently Organized**: This project has been restructured with a clean, professional organization. All scripts, tests, and documentation are now properly organized into dedicated directories following Python project best practices.
+
 ## Features
 
 - **Deep Learning Pipeline**: Complete training, evaluation, and inference pipeline
@@ -12,7 +14,7 @@ This project implements a deep learning pipeline for tumor detection and segment
 
 ## Project Structure
 
-```
+```text
 ├── src/                    # Main source code
 │   ├── data/              # Data handling and preprocessing
 │   ├── training/          # Model training scripts
@@ -22,12 +24,25 @@ This project implements a deep learning pipeline for tumor detection and segment
 │   ├── fusion/            # Multi-modal data fusion
 │   ├── patient_analysis/  # Patient longitudinal analysis
 │   └── utils/             # Utility functions
+├── tests/                 # Organized test suites
+│   ├── gui/              # GUI and frontend tests
+│   └── integration/      # System integration tests
+├── scripts/               # Organized utility scripts
+│   ├── setup/            # Installation and setup scripts
+│   ├── utilities/        # Runtime utilities and GUI launchers
+│   └── demo/             # Demo and showcase scripts
+├── docs/                  # Structured documentation
+│   ├── user-guide/       # User-facing documentation
+│   ├── developer/        # Developer documentation
+│   └── api/              # API documentation
+├── config/                # Configuration management
+│   └── docker/           # Docker and containerization configs
+├── tools/                 # Development and maintenance tools
 ├── data/                  # Datasets (not tracked in git)
 ├── models/                # Trained model checkpoints
 ├── notebooks/             # Jupyter notebooks for experiments
-├── docs/                  # Documentation
-├── tests/                 # Unit tests
-└── config.json           # Configuration parameters
+├── frontend/, gui/        # Frontend components
+└── config.json           # Main configuration parameters
 ```
 
 ## Quick Start
@@ -74,19 +89,62 @@ This project uses MONAI for medical image processing and PyTorch for deep learni
 
 ## Documentation
 
-Detailed documentation is available in the `docs/` directory, including:
-- **Project Progress Tracker** - Comprehensive progress tracking and status
-- **GUI Development Plan** - Complete frontend/backend development roadmap
-- **Git Setup Guide** - Git workflow and collaboration guidelines
+Comprehensive documentation is now organized in the `docs/` directory:
+
+**User Documentation** (`docs/user-guide/`):
+- **Medical GUI Guide** - Complete interface documentation
+- **Setup Guide** - Installation and configuration instructions
+- **GitHub Integration** - Repository and collaboration guide
+
+**Developer Documentation** (`docs/developer/`):
+- **Implementation Guide** - Technical implementation details
+- **Git Workflow** - Development workflow and best practices
+- **GUI Development Status** - Frontend/backend development progress
+- **DICOM Viewer** - Medical imaging viewer documentation
+- **Development Steps** - Project development roadmap
+
+**Additional Resources**:
 - API reference and training guides
 - Model architecture descriptions
-- Clinical workflow integration
+- Clinical workflow integration guides
 
-## Utilities
+## Scripts and Utilities
 
-- **Git Status**: `./git_status.sh` - Quick Git commands and repository status
+The project includes organized scripts for various tasks:
+
+**Setup Scripts** (`scripts/setup/`):
+- **Quick Setup**: `./scripts/setup/quick_setup.sh` - Complete environment setup
+- **Enhanced GUI Setup**: `./scripts/setup/setup_enhanced_gui.sh` - GUI system setup
+- **Git Setup**: `./scripts/setup/setup_git.sh` - Git workflow configuration
+
+**Utility Scripts** (`scripts/utilities/`):
 - **GUI Launcher**: `./scripts/utilities/run_gui.sh` - Start the complete GUI application
-- **Setup Scripts**: Various setup and installation helpers
+- **System Status**: `./scripts/utilities/system_status.sh` - Check system health
+- **Git Status**: `./scripts/utilities/git_status.sh` - Quick Git commands and status
+
+**Demo Scripts** (`scripts/demo/`):
+- **System Demo**: `python scripts/demo/demo_system.py` - Comprehensive system demonstration
+
+**Development Tools** (`tools/`):
+- Project reorganization and maintenance scripts
+
+## Testing
+
+The project includes organized test suites:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run specific test categories
+pytest tests/gui/           # GUI and frontend tests
+pytest tests/integration/   # System integration tests
+```
+
+**Test Structure**:
+- `tests/gui/` - GUI backend and frontend integration tests
+- `tests/integration/` - Full system integration and workflow tests
+- `tests/unit/` - Unit tests (add your unit test files here)
 
 ## Contributing
 
