@@ -57,7 +57,7 @@ This project implements a deep learning pipeline for tumor detection and segment
 
 5. **Run GUI Application**:
    ```bash
-   ./scripts/utilities/run_gui.sh
+   ./run_gui.sh
    ```
 
 ## Configuration
@@ -85,7 +85,7 @@ Detailed documentation is available in the `docs/` directory, including:
 ## Utilities
 
 - **Git Status**: `./git_status.sh` - Quick Git commands and repository status
-- **GUI Launcher**: `./scripts/utilities/run_gui.sh` - Start the complete GUI application
+- **GUI Launcher**: `./run_gui.sh` - Start the complete GUI application
 - **Setup Scripts**: Various setup and installation helpers
 
 ## Contributing

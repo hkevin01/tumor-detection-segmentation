@@ -1,41 +1,21 @@
-# Test Framework
+# Tests
 
-This directory contains unit tests and integration tests for the tumor detection project.
+This directory contains all test files for the medical imaging system.
 
 ## Structure
 
-- `test_data/` - Sample data for testing
-- `test_training/` - Tests for training modules
-- `test_inference/` - Tests for inference modules
-- `test_evaluation/` - Tests for evaluation modules
-- `test_utils/` - Tests for utility functions
+- `gui/` - GUI and frontend tests
+- `integration/` - System integration tests  
+- `unit/` - Unit tests (place unit test files here)
+- `fixtures/` - Test data and fixtures
 
 ## Running Tests
 
-To run all tests:
-
 ```bash
+# Run all tests
 pytest tests/
+
+# Run specific test categories
+pytest tests/gui/
+pytest tests/integration/
 ```
-
-To run specific test modules:
-
-```bash
-pytest tests/test_training/
-pytest tests/test_inference/
-```
-
-To run with coverage:
-
-```bash
-pytest --cov=src tests/
-```
-
-## Test Data
-
-Sample test data should be placed in the `test_data/` directory. 
-This data is used for unit tests and should be small files suitable for automated testing.
-
-## Contributing
-
-When adding new functionality, please include corresponding tests in the appropriate test directory.
