@@ -1,0 +1,21 @@
+{
+    "test_data": {
+        "mri_sample": "tests/data/sample_mri.nii.gz",
+        "ct_sample": "tests/data/sample_ct.dcm",
+        "tumor_mask": "tests/data/sample_tumor_mask.nii.gz"
+    },
+    "model_paths": {
+        "tumor_detection": "tests/models/tumor_detection_test.pt",
+        "segmentation": "tests/models/segmentation_test.pt"
+    },
+    "performance_thresholds": {
+        "inference_time": 2.0,
+        "memory_usage": 4096,
+        "accuracy": 0.85,
+        "dice_score": 0.80
+    },
+    "api_endpoints": {
+        "base_url": "http://localhost:8000",
+        "timeout": 30
+    }
+}

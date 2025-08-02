@@ -33,7 +33,20 @@ except ImportError:
     SIMPLEITK_AVAILABLE = False
 
 # Import our medical AI backend
-from medical_ai_backend import MedicalImagingAI
+try:
+    from .medical_ai_backend import MedicalImagingAI
+except ImportError:
+    # Fallback for direct script execution
+    try:
+        from medical_ai_backend import MedicalImagingAI
+    except ImportError:
+        # Create a dummy class if the backend isn't available
+        class MedicalImagingAI:
+            def __init__(self):
+                pass
+            def process_image(self, *args, **kwargs):
+                return {"status": "Backend not available", "predictions": []}
+        logger.warning("MedicalImagingAI backend not available, using dummy implementation")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
