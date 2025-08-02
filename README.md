@@ -72,7 +72,7 @@ This project implements a deep learning pipeline for tumor detection and segment
 
 5. **Run GUI Application**:
    ```bash
-   ./scripts/utilities/run_gui.sh
+   ./scripts/utilitie./scripts/utilities/run_gui.sh
    ```
 
 ## Configuration
@@ -118,15 +118,15 @@ Comprehensive documentation is now organized in the `docs/` directory:
 The project includes organized scripts for various tasks:
 
 **Setup Scripts** (`scripts/setup/`):
-- **Quick Setup**: `./scripts/setup/quick_setup.sh` - Complete environment setup
+- **Quick Setup**: `./scripts/setu./scripts/setup/quick_setup.sh` - Complete environment setup
 - **Enhanced GUI Setup**: `./scripts/setup/setup_enhanced_gui.sh` - GUI system setup
 - **Git Setup**: `./scripts/setup/setup_git.sh` - Git workflow configuration
 - **ROCm Setup**: `./scripts/setup/setup_rocm.sh` - AMD GPU/ROCm configuration
 
 **Utility Scripts** (`scripts/utilities/`):
-- **GUI Launcher**: `./scripts/utilities/run_gui.sh` - Start the complete GUI application
+- **GUI Launcher**: `./scripts/utilitie./scripts/utilities/run_gui.sh` - Start the complete GUI application
 - **System Status**: `./scripts/utilities/system_status.sh` - Check system health
-- **Git Status**: `./scripts/utilities/git_status.sh` - Quick Git commands and status
+- **Git Status**: `./scripts/utilitie./scripts/utilities/git_status.sh` - Quick Git commands and status
 
 **Demo Scripts** (`scripts/demo/`):
 - **System Demo**: `python scripts/demo/demo_system.py` - Comprehensive system demonstration
