@@ -1,4 +1,6 @@
-# Python
+# ===== COMPREHENSIVE .GITIGNORE FOR MEDICAL IMAGING AI =====
+
+# ===== PYTHON =====
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,14 +25,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# PyTorch
-*.pth
-*.pt
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Virtual environments
+# ===== VIRTUAL ENVIRONMENTS =====
 .env
 .venv
 env/
@@ -38,172 +33,205 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+pyvenv.cfg
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# ===== PYTORCH & MACHINE LEARNING =====
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+checkpoints/
+saved_models/
+experiments/
+outputs/
+results/
+mlruns/
+wandb/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Project specific - Medical Data (NEVER commit patient data!)
+# ===== MEDICAL DATA (NEVER COMMIT PATIENT DATA!) =====
 data/
 !data/README.md
+datasets/
 models/
 !models/README.md
 *.dcm
 *.dicom
+*.nii
+*.nii.gz
+*.ima
+*.img
 temp/
+tmp/
 logs/
+!logs/README.md
 reports/*.pdf
 reports/*.docx
 !reports/README.md
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# ===== JUPYTER NOTEBOOK =====
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
 
-# Security - API keys and secrets
-.env
-.env.local
-.env.production
-secrets/
-*.key
-*.pem
+# ===== NODE.JS & FRONTEND =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+build/
+dist/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
 
-# Node modules (for frontend)
+# Frontend specific paths
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/coverage/
 gui/frontend/node_modules/
 gui/frontend/build/
 gui/frontend/.env
 gui/frontend/coverage/
 
-# Backend
-gui/backend/venv/
-gui/backend/__pycache__/
-gui/backend/.env
+# ===== ENVIRONMENT & SECRETS =====
+.env*
+!.env.example
+secrets/
+*.key
+*.pem
+*.crt
+*.cert
+config.json
+!config.json.example
 
-# Temporary files
-*.tmp
-*.temp
-*.log
+# ===== DATABASE =====
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
 
-# Docker
-.docker/
+# ===== IDES & EDITORS =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+.emacs.d/
 
-# Coverage reports
-htmlcov/
-.coverage
-.coverage.*
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Documentation builds
-docs/_build/
-docs/_static/
-docs/_templates/
-
-# MacOS
+# ===== OPERATING SYSTEMS =====
+# macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
+.Spotlight-V100
+.Trashes
 
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+*.stackdump
 
-# Data and Models (typically large files)
-data/
-datasets/
-models/
-checkpoints/
-*.h5
-*.hdf5
-*.nii
-*.nii.gz
-*.dcm
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
 
-# Logs
-logs/
-*.log
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.bak
-
-# Documentation builds
-docs/_build/
-docs/build/
-
-# Testing
+# ===== TESTING & COVERAGE =====
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
-
-# Logs
-logs/
+.tox/
+.nox/
+.hypothesis/
+coverage.xml
+*.cover
+*.py,cover
+.cache
+nosetests.xml
 *.log
 
-# Local development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ===== DOCUMENTATION =====
+docs/_build/
+docs/build/
+docs/_static/
+docs/_templates/
+site/
 
-# GUI specific
+# ===== DOCKER =====
+.docker/
+.dockerignore
+
+# ===== TEMPORARY FILES =====
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# ===== TYPE CHECKING =====
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ===== PROFILING =====
+.prof
+*.prof
+
+# ===== PROJECT SPECIFIC =====
+# Remove duplicate nested repository
+tumor-detection-segmentation/
+notebooks/tumor-detection-segmentation/
+
+# Application uploads and runtime data
+uploads/
 gui/uploads/
 gui/logs/
 gui/reports/
 
-# Exclude nested git repository
-notebooks/tumor-detection-segmentation/
-.tox/
-.nox/
+# Backup files
+*.backup
+*.bak
+PROJECT_ORGANIZATION_SUMMARY.md.backup
+README.md.backup
 
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# ROCm/CUDA cache
+.nv/
+.cache/
 
-# Profiling
-.prof
+# AI model cache
+.cache/
+.huggingface/
+.transformers_cache/
 
-# Environment variables
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ===== MEDICAL IMAGING SPECIFIC =====
+# DICOM and medical imaging formats
+*.dcm
+*.dicom
+*.ima
+*.img
+*.nii
+*.nii.gz
+*.mgz
+*.mgh
+*.mnc
+*.par
+*.rec
 
-# MLflow
-mlruns/
-
-# Weights & Biases
-wandb/
-
-# Docker
-*.dockerignore
-
-# Copilot
-.copilot/
-.copilotignore
-
-# Project specific
-experiments/
-outputs/
-results/
-saved_models/
+# Medical reports and PHI
+*patient*
+*PHI*
+*protected*
+*confidential*

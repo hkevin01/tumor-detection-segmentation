@@ -80,8 +80,13 @@ This project implements a deep learning pipeline for tumor detection and segment
 Edit `config.json` to customize:
 - Data paths and preprocessing parameters
 - Model architecture and training hyperparameters
-- Device settings (CPU/CUDA)
+- Device settings (CPU/CUDA/ROCm - auto-detected)
 - Logging and output configurations
+
+### GPU Support
+- **NVIDIA GPUs**: CUDA support (automatic detection)
+- **AMD GPUs**: ROCm support - run `./scripts/setup/setup_rocm.sh` for AMD GPU setup
+- **CPU Only**: Automatic fallback for systems without GPU acceleration
 
 ## Dependencies
 
@@ -116,6 +121,7 @@ The project includes organized scripts for various tasks:
 - **Quick Setup**: `./scripts/setup/quick_setup.sh` - Complete environment setup
 - **Enhanced GUI Setup**: `./scripts/setup/setup_enhanced_gui.sh` - GUI system setup
 - **Git Setup**: `./scripts/setup/setup_git.sh` - Git workflow configuration
+- **ROCm Setup**: `./scripts/setup/setup_rocm.sh` - AMD GPU/ROCm configuration
 
 **Utility Scripts** (`scripts/utilities/`):
 - **GUI Launcher**: `./scripts/utilities/run_gui.sh` - Start the complete GUI application

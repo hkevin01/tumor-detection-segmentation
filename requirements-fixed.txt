@@ -1,0 +1,91 @@
+# Medical Imaging AI - Complete Dependencies (Fixed)
+
+# Core ML/AI Framework
+monai>=1.3.0
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+pandas>=1.5.0
+scikit-learn>=1.2.0
+scipy>=1.9.0
+tqdm>=4.64.0
+
+# Medical Imaging Libraries
+nibabel>=4.0.0
+pydicom>=2.4.0
+SimpleITK>=2.2.0
+dicom2nifti>=2.4.0
+itk>=5.3.0
+
+# Deep Learning Utilities
+tensorboard>=2.13.0
+torchmetrics>=0.11.0
+albumentations>=1.3.0
+
+# Web Framework and API
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+sqlalchemy>=2.0.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-dotenv>=1.0.0
+
+# Data Processing and Validation
+pydantic>=2.0.0
+aiofiles>=23.0.0
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+
+# Database and Caching (optional - comment out if not using databases)
+# redis>=4.6.0
+# psycopg2-binary>=2.9.0
+# alembic>=1.11.0
+
+# Monitoring and Logging
+prometheus-client>=0.17.0
+structlog>=23.0.0
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.4.0
+
+# Jupyter and Notebooks
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+ipywidgets>=8.0.0
+
+# Additional Utilities
+requests>=2.31.0
+click>=8.1.0
+python-dateutil>=2.8.0
+pytz>=2023.3
+
+# Medical Imaging Visualization
+vtk>=9.2.0
+
+# Security and Authentication
+cryptography>=41.0.0
+bcrypt>=4.0.0
+
+# Performance and Optimization
+numba>=0.57.0
+psutil>=5.9.0
+
+# Cloud and Storage (optional - comment out if not using cloud storage)
+# boto3>=1.28.0
+# azure-storage-blob>=12.17.0
+# google-cloud-storage>=2.10.0
+
+# API Documentation (optional)
+# fastapi-users>=12.0.0
+# fastapi-pagination>=0.12.0
+
+# DICOM Handling and Viewing (Python-based alternatives to cornerstone3d-py)
+pynetdicom>=2.0.0
+highdicom>=0.21.0

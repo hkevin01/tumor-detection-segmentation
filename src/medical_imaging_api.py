@@ -15,7 +15,7 @@ import logging
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 import numpy as np
 
@@ -117,6 +117,32 @@ async def root():
         "pydicom_available": PYDICOM_AVAILABLE,
         "simpleitk_available": SIMPLEITK_AVAILABLE
     }
+
+
+@app.get("/health")
+async def health():
+    """Alias for root health check"""
+    return await root()
+
+
+@app.get("/api/health")
+async def api_health():
+    """Alias for root health check under /api prefix"""
+    return await root()
+
+
+# Optional: serve manifest.json if present
+@app.get("/manifest.json")
+async def manifest():
+    """Serve frontend manifest file if built"""
+    possible_paths = [
+        os.path.join(os.getcwd(), "frontend", "public", "manifest.json"),
+        os.path.join(os.getcwd(), "frontend", "manifest.json"),
+    ]
+    for manifest_path in possible_paths:
+        if os.path.isfile(manifest_path):
+            return FileResponse(manifest_path, media_type="application/json")
+    raise HTTPException(status_code=404, detail="Manifest not found")
 
 
 @app.get("/api/models")

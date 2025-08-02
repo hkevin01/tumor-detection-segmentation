@@ -68,11 +68,34 @@ pip install -r requirements.txt
 
 # Additional medical imaging dependencies
 print_status "Installing additional medical imaging dependencies..."
-pip install SimpleITK pydicom cornerstone3d-py
+pip install SimpleITK pydicom
 
-# Check if CUDA is available
-print_status "Checking CUDA availability..."
-python3 -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('Device count:', torch.cuda.device_count() if torch.cuda.is_available() else 0)"
+# Check GPU availability (CUDA/ROCm)
+print_status "Checking GPU availability..."
+python3 -c "
+import torch
+print('PyTorch version:', torch.__version__)
+print('CUDA available:', torch.cuda.is_available())
+if torch.cuda.is_available():
+    print('CUDA device count:', torch.cuda.device_count())
+    print('CUDA device name:', torch.cuda.get_device_name(0) if torch.cuda.device_count() > 0 else 'None')
+else:
+    print('CUDA device count: 0')
+
+# Check for ROCm support
+try:
+    if hasattr(torch.version, 'hip') and torch.version.hip is not None:
+        print('ROCm/HIP available: True')
+        print('HIP version:', torch.version.hip)
+    else:
+        print('ROCm/HIP available: False')
+except:
+    print('ROCm/HIP available: Unknown')
+
+# Check available device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('Default device:', device)
+"
 
 print_status "Setting up frontend dependencies..."
 
@@ -121,9 +144,14 @@ TEMP_DIR=./temp
 
 # AI Model settings
 DEFAULT_MODEL=unet
-INFERENCE_DEVICE=cuda
+INFERENCE_DEVICE=auto
+FORCE_CPU=false
 MAX_BATCH_SIZE=4
 INFERENCE_TIMEOUT=300
+
+# GPU settings (auto-detects CUDA/ROCm)
+GPU_MEMORY_FRACTION=0.8
+ENABLE_MIXED_PRECISION=true
 
 # Security settings (change in production)
 SECRET_KEY=your-secret-key-here
@@ -144,6 +172,15 @@ else
 fi
 
 print_success "Setup completed successfully!"
+
+# ROCm/AMD GPU specific information
+print_status "GPU Configuration Notes:"
+echo "   • Your system is configured for ROCm (AMD GPU support)"
+echo "   • If you have an AMD GPU, ensure ROCm is properly installed"
+echo "   • PyTorch ROCm installation: pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm5.6"
+echo "   • For CPU-only usage: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+echo "   • Device detection is automatic - system will use GPU if available, CPU otherwise"
+
 echo ""
 print_status "Starting Medical Imaging AI System..."
 echo ""
@@ -156,17 +193,18 @@ start_backend() {
     BACKEND_PID=$!
     cd ..
     
-    # Wait for backend to start
+    # Wait for backend to start with retries
     print_status "Waiting for backend to initialize..."
-    sleep 5
+    for i in {1..10}; do
+        if curl -s http://127.0.0.1:8000/ > /dev/null; then
+            print_success "Backend server started successfully (PID: $BACKEND_PID)"
+            return 0
+        fi
+        sleep 1
+    done
     
-    # Check if backend is running
-    if curl -s http://localhost:8000/ > /dev/null; then
-        print_success "Backend server started successfully (PID: $BACKEND_PID)"
-    else
-        print_error "Failed to start backend server"
-        return 1
-    fi
+    print_error "Failed to start backend server after waiting"
+    return 1
 }
 
 # Function to start the frontend
