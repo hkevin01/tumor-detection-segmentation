@@ -56,17 +56,9 @@ def main():
     res = predictor.predict_single(args.input)
 
     pred = res["prediction"]  # (D,H,W) or (H,W)
-
-    # For the background image, reuse the input after preprocessing is not
-    # trivially available here. A quick approach: if the predictor saved
-    # input shape, synthesize a normalized base using the mask outline for
-    # demo purposes. In real usage, load and preprocess the same input into
-    # a numpy array.
-    if pred.ndim == 2:
-        base = (pred > 0).astype(np.float32)
-    else:
-        # Create a base volume with faint structure from mask for
-        # visualization placeholder
+    base = res.get("input_image")
+    if base is None:
+        # Fallback: synthesize faint base from mask
         base = (pred > 0).astype(np.float32)
 
     out_path = save_overlay(
