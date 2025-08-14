@@ -8,19 +8,18 @@ selecting a representative slice for visualization.
 
 from __future__ import annotations
 
+import importlib.util as _importlib_util
 from pathlib import Path
 from typing import Optional, Tuple
 
 import numpy as np
 
-try:
-    import matplotlib
+# Detect optional matplotlib without broad try/except
+_mpl_spec = _importlib_util.find_spec("matplotlib")
+MPL_AVAILABLE = _mpl_spec is not None
+if MPL_AVAILABLE:  # pragma: no cover - runtime optional
+    import matplotlib  # type: ignore
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    MPL_AVAILABLE = True
-except Exception:  # pragma: no cover - optional dependency
-    MPL_AVAILABLE = False
 
 
 def _to_numpy(img: np.ndarray) -> np.ndarray:
@@ -98,12 +97,14 @@ def create_overlay(
     """
     if not MPL_AVAILABLE:  # pragma: no cover
         raise RuntimeError("matplotlib is required for overlay creation")
+    # Local import to avoid module-level optional dependency issues
+    from matplotlib import cm as _cm  # type: ignore
 
     base = normalize_image(image_slice)
     mask_bin = (mask_slice > 0).astype(np.float32)
 
     # Colorize mask
-    colormap = cm.get_cmap(cmap)
+    colormap = _cm.get_cmap(cmap)
     mask_rgb = colormap(mask_bin)[..., :3].astype(np.float32)
 
     # Stack grayscale to RGB
@@ -127,6 +128,8 @@ def save_overlay(
     """Select a slice, create overlay, and save to disk as PNG."""
     if not MPL_AVAILABLE:  # pragma: no cover
         raise RuntimeError("matplotlib is required for saving overlay")
+    # Local import to avoid module-level optional dependency issues
+    import matplotlib.pyplot as _plt  # type: ignore
 
     img_s, msk_s, z = select_slice(image, mask, strategy=strategy)
     overlay = create_overlay(img_s, msk_s, alpha=alpha, cmap=cmap)
@@ -134,12 +137,12 @@ def save_overlay(
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    plt.figure(figsize=(6, 6))
-    plt.imshow(overlay)
-    plt.axis('off')
+    _plt.figure(figsize=(6, 6))
+    _plt.imshow(overlay)
+    _plt.axis('off')
     if title:
-        plt.title(f"{title} | slice {z}")
-    plt.tight_layout(pad=0)
-    plt.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0)
-    plt.close()
+        _plt.title(f"{title} | slice {z}")
+    _plt.tight_layout(pad=0)
+    _plt.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0)
+    _plt.close()
     return out_path

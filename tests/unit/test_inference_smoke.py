@@ -8,21 +8,25 @@ an overlay PNG. It verifies that the pipeline executes end-to-end.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
 import pytest
-import torch
-
-from src.inference.inference import TumorPredictor
-from src.training.trainer import create_model
-from src.utils.visualization import save_overlay
 
 
 @pytest.mark.unit
 @pytest.mark.inference
-@torch.no_grad()
 def test_inference_smoke_tmpdir(tmp_path: Path):
+    # Skip if heavy deps are not available in this environment
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("monai")
+
+    # Import after ensuring deps exist
+    from src.inference.inference import TumorPredictor
+    from src.training.trainer import create_model
+    from src.utils.visualization import save_overlay
+
     # Minimal config for UNet 3D with small sizes
     config = {
         "model_type": "unet",
@@ -46,22 +50,20 @@ def test_inference_smoke_tmpdir(tmp_path: Path):
     model_path = tmp_path / "dummy_model.pth"
     torch.save(ckpt, model_path)
 
-    # Synthesize a small 3D volume and save as NIfTI via numpy
-    # (no nibabel dependency here). TumorPredictor uses MONAI LoadImage which
-    # can ingest numpy paths; however, to avoid I/O complexity, we directly
-    # feed a numpy array using the predictor's transforms.
+    # Synthesize a small 3D volume and save via numpy (.npy)
     vol = np.random.rand(16, 16, 16).astype(np.float32)
     vol_path = tmp_path / "vol.npy"
     np.save(vol_path, vol)
 
     # Run prediction
-    predictor = TumorPredictor(
-        model_path=str(model_path),
-        config_path=str(config_path),
-        device="cpu",
-    )
-    # Predict on the saved numpy file; MONAI LoadImage can load .npy
-    result = predictor.predict_single(str(vol_path))
+    with torch.no_grad():
+        predictor = TumorPredictor(
+            model_path=str(model_path),
+            config_path=str(config_path),
+            device="cpu",
+        )
+        # Predict on the saved numpy file; MONAI LoadImage can load .npy
+        result = predictor.predict_single(str(vol_path))
 
     assert "prediction" in result and "input_image" in result
     pred = result["prediction"]
@@ -70,5 +72,18 @@ def test_inference_smoke_tmpdir(tmp_path: Path):
     # Save overlay; should produce a file
     out_png = tmp_path / "overlay.png"
     saved_path = save_overlay(base, pred, out_png, strategy="middle")
+
+    # Also copy to repository artifacts dir for CI upload
+    artifact_dir = os.environ.get(
+        "OVERLAY_ARTIFACT_DIR",
+        str(Path.cwd() / "tests" / "artifacts"),
+    )
+    Path(artifact_dir).mkdir(parents=True, exist_ok=True)
+    artifact_path = Path(artifact_dir) / "overlay_smoke.png"
+    try:
+        artifact_path.write_bytes(saved_path.read_bytes())
+    except (OSError, IOError):
+        # Non-fatal in unit test context
+        pass
 
     assert saved_path.exists() and saved_path.stat().st_size > 0

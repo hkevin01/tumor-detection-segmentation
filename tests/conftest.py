@@ -9,15 +9,25 @@ Enhancements:
 
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Dict, Generator
 
 import numpy as np
-import pydicom
 import pytest
 import torch
 from fastapi.testclient import TestClient
-from nibabel.loadsave import load as nib_load
+
+# Optional imports for IO libs
+try:  # pragma: no cover - optional in some environments
+    import pydicom  # type: ignore
+except Exception:  # noqa: BLE001
+    pydicom = None  # type: ignore
+
+try:  # pragma: no cover - optional in some environments
+    from nibabel.loadsave import load as nib_load  # type: ignore
+except Exception:  # noqa: BLE001
+    nib_load = None  # type: ignore
 
 # Ensure logs directory exists and set up logging
 log_dir = Path('logs/test_logs')
@@ -47,6 +57,24 @@ def _test_config() -> Dict[str, Any]:
     return load_test_config()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def ensure_test_data() -> None:
+    """Generate tiny DICOM/NIfTI samples if missing."""
+    try:
+        from tests.data.generate_samples import (CT_PATH, MRI_PATH,
+                                                 ensure_dicom, ensure_nifti)
+    except ImportError:  # pragma: no cover - optional test data generator
+        return
+    try:
+        MRI_PATH.parent.mkdir(parents=True, exist_ok=True)
+        ensure_nifti(MRI_PATH)
+        ensure_dicom(CT_PATH)
+    except (
+        OSError, RuntimeError, ValueError
+    ) as e:  # pragma: no cover - best effort
+        logger.warning("Failed to auto-generate test data: %s", e)
+
+
 @pytest.fixture(scope="session")
 def test_device() -> torch.device:
     """Get the appropriate device for testing."""
@@ -60,6 +88,8 @@ def sample_mri(test_config: Dict[str, Any]) -> np.ndarray:  # noqa: F811
     try:
         mri_file = Path(mri_path)
         if mri_file.exists():
+            if nib_load is None:
+                raise RuntimeError("nibabel not available to load NIfTI")
             nifti_img = nib_load(str(mri_file))
             return nifti_img.get_fdata()  # type: ignore[attr-defined]
         # Fallback: generate a small synthetic 3D volume
@@ -80,6 +110,8 @@ def sample_ct(test_config: Dict[str, Any]) -> np.ndarray:  # noqa: F811
     try:
         ct_file = Path(ct_path)
         if ct_file.exists():
+            if pydicom is None:
+                raise RuntimeError("pydicom not available to load DICOM")
             dcm = pydicom.dcmread(str(ct_file))
             return dcm.pixel_array
         # Fallback: generate a small synthetic 2D slice
@@ -96,7 +128,19 @@ def sample_ct(test_config: Dict[str, Any]) -> np.ndarray:  # noqa: F811
 @pytest.fixture(scope="function")
 def api_client() -> Generator:
     """Create a test client for the FastAPI application."""
-    from src.medical_imaging_api import app
+    # Ensure 'src' and repository root are on sys.path for imports
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    try:
+        from src.medical_imaging_api import app  # type: ignore
+    except Exception:  # noqa: BLE001
+        # Fallback to top-level module if package import fails
+        from medical_imaging_api import app  # type: ignore
     with TestClient(app) as client:
         yield client
 
@@ -139,5 +183,4 @@ class TestMetrics:
 @pytest.fixture(scope="session")
 def test_metrics() -> TestMetrics:
     """Pytest fixture for test metrics tracking."""
-    return TestMetrics()
     return TestMetrics()

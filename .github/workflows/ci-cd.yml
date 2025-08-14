@@ -2,122 +2,130 @@ name: Medical Imaging CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Cache Python dependencies
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Cache Python dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-xdist pytest-asyncio
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-xdist pytest-asyncio
 
-    - name: Run unit tests
-      run: |
-        pytest tests/unit -v --cov=src --cov-report=xml
+      - name: Run unit tests
+        run: |
+          mkdir -p tests/artifacts
+          OVERLAY_ARTIFACT_DIR=$PWD/tests/artifacts pytest tests/unit -v --cov=src --cov-report=xml
 
-    - name: Run integration tests
-      run: |
-        pytest tests/integration -v
+      - name: Upload overlay artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: overlay-smoke
+          path: tests/artifacts/overlay_smoke.png
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        file: ./coverage.xml
-        flags: unittests
+      - name: Run integration tests
+        run: |
+          pytest tests/integration -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
 
   frontend-test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
 
-    - name: Cache Node modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: Install frontend dependencies
-      run: |
-        cd gui/frontend
-        npm install
+      - name: Install frontend dependencies
+        run: |
+          cd gui/frontend
+          npm install
 
-    - name: Run frontend tests
-      run: |
-        cd gui/frontend
-        npm test
+      - name: Run frontend tests
+        run: |
+          cd gui/frontend
+          npm test
 
   performance-test:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-benchmark
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-benchmark
 
-    - name: Run performance tests
-      run: |
-        pytest tests/performance -v --benchmark-only
+      - name: Run performance tests
+        run: |
+          pytest tests/performance -v --benchmark-only
 
-    - name: Check performance regression
-      run: |
-        python scripts/check_performance.py
+      - name: Check performance regression
+        run: |
+          python scripts/check_performance.py
 
   deploy:
     needs: [test, frontend-test, performance-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-    - uses: actions/checkout@v2
 
-    - name: Build and deploy
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        docker build -t medical-imaging .
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        docker tag medical-imaging $DOCKER_USERNAME/medical-imaging:latest
-        docker push $DOCKER_USERNAME/medical-imaging:latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and deploy
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker build -t medical-imaging .
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker tag medical-imaging $DOCKER_USERNAME/medical-imaging:latest
+          docker push $DOCKER_USERNAME/medical-imaging:latest
