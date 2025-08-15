@@ -1,0 +1,131 @@
+version: "3.8"
+
+services:
+  # Main Medical AI Application
+  web:
+    build:
+      context: ../..
+      dockerfile: config/docker/Dockerfile.cuda
+    container_name: medical-ai-web
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MONAI_LABEL_SERVER=http://monai-label:8001
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://mlflow:mlflow@postgres:5432/mlflow
+    volumes:
+      - ../../:/app
+      - model_data:/app/models
+      - logs_data:/app/logs
+    depends_on:
+      - mlflow
+      - redis
+      - postgres
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - medical_ai_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # MLflow Tracking Server
+  mlflow:
+    build:
+      context: ../..
+      dockerfile: config/docker/Dockerfile.cuda
+    container_name: mlflow-server
+    ports:
+      - "5001:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://mlflow:mlflow@postgres:5432/mlflow
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+      - MLFLOW_HOST=0.0.0.0
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+      - model_data:/models
+    depends_on:
+      - postgres
+    command: mlflow server --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflow --default-artifact-root /mlflow/artifacts --host 0.0.0.0 --port 5000
+    networks:
+      - medical_ai_network
+    restart: unless-stopped
+
+  # MONAI Label Server
+  monai-label:
+    build:
+      context: ../..
+      dockerfile: config/docker/Dockerfile.monai-label
+    container_name: monai-label-server
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../../:/app
+      - monai_data:/app/data/monai_label
+    environment:
+      - MONAI_LABEL_HOST=0.0.0.0
+      - MONAI_LABEL_PORT=8001
+    command: >
+      bash -c "cd /app &&
+               monai-label start_server
+               --app monai_label_app
+               --studies /app/data/monai_label
+               --conf models segmentation_unet,segmentation_unetr
+               --conf host 0.0.0.0
+               --conf port 8001"
+    networks:
+      - medical_ai_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - medical_ai_network
+    restart: unless-stopped
+
+  # PostgreSQL for MLflow backend
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      - POSTGRES_DB=mlflow
+      - POSTGRES_USER=mlflow
+      - POSTGRES_PASSWORD=mlflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - medical_ai_network
+    restart: unless-stopped
+
+volumes:
+  model_data:
+  logs_data:
+  mlflow_artifacts:
+  monai_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  medical_ai_network:
+    driver: bridge

@@ -1,0 +1,74 @@
+# Enhanced Medical Imaging AI - CUDA Docker Container
+FROM nvcr.io/nvidia/pytorch:23.08-py3
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV CUDA_VISIBLE_DEVICES=0
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    unzip \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libglib2.0-0 \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for frontend
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Copy requirements first for better caching
+COPY requirements.txt /app/
+COPY requirements-docker.txt /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-docker.txt
+
+# Install additional ML packages for enhanced features
+RUN pip install --no-cache-dir \
+    mlflow \
+    optuna \
+    plotly \
+    dash \
+    streamlit \
+    gradio \
+    monai-label \
+    tensorboard \
+    wandb
+
+# Copy application code
+COPY . /app/
+
+# Install frontend dependencies
+RUN if [ -d "/app/gui/frontend" ]; then \
+    cd /app/gui/frontend && \
+    npm install --legacy-peer-deps; \
+    fi
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/models /app/logs /app/mlruns /app/artifacts /app/cache
+
+# Set permissions
+RUN chmod +x /app/scripts/utilities/*.sh
+
+# Expose ports
+EXPOSE 8000 3000 5001 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command
+CMD ["/app/scripts/utilities/start_medical_gui.sh"]

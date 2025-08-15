@@ -1,0 +1,50 @@
+# MONAI Label Server Docker Container
+FROM projectmonai/monai-label:latest
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Set working directory
+WORKDIR /app
+
+# Install additional system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the entire project
+COPY . /app/
+
+# Install additional Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install MONAI and related packages
+RUN pip install --no-cache-dir \
+    monai[all] \
+    monai-label \
+    nibabel \
+    pydicom \
+    matplotlib \
+    plotly \
+    dash
+
+# Create necessary directories
+RUN mkdir -p /app/data/monai_label
+RUN mkdir -p /app/monai_label_app
+
+# Set permissions
+RUN chmod +x /app/scripts/setup/setup_monai_label.sh
+
+# Expose MONAI Label port
+EXPOSE 8001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8001/info/ || exit 1
+
+# Default command
+CMD ["monai-label", "start_server", "--app", "monai_label_app", "--studies", "/app/data/monai_label", "--conf", "host", "0.0.0.0", "--conf", "port", "8001"]

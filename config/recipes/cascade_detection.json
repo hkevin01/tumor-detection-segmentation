@@ -1,0 +1,105 @@
+{
+  "model": {
+    "detector": {
+      "architecture": "retina_unet",
+      "in_channels": 4,
+      "feature_channels": 64,
+      "num_classes": 3,
+      "anchor_scales": [0.5, 1.0, 2.0],
+      "backbone": "unet"
+    },
+    "segmenter": {
+      "architecture": "unetr",
+      "in_channels": 4,
+      "out_channels": 4,
+      "roi_size": [64, 64, 64],
+      "feature_size": 16,
+      "hidden_size": 768,
+      "num_heads": 12
+    },
+    "cascade_params": {
+      "detection_threshold": 0.5,
+      "max_detections": 10,
+      "crop_margin": 0.2,
+      "nms_threshold": 0.3
+    }
+  },
+
+  "data": {
+    "target_spacing": [1.0, 1.0, 1.0],
+    "spatial_size": [128, 128, 128],
+    "detection_patch_size": [128, 128, 128],
+    "segmentation_patch_size": [64, 64, 64],
+    "modalities": ["T1", "T1c", "T2", "FLAIR"],
+    "cache_mode": "persistent",
+    "positive_sample_ratio": 0.8,
+    "samples_per_image": 2
+  },
+
+  "training": {
+    "task": "cascade",
+    "max_epochs": 150,
+    "batch_size": 1,
+    "detection_batch_size": 2,
+    "segmentation_batch_size": 4,
+    "learning_rate": {
+      "detector": 1e-4,
+      "segmenter": 2e-4
+    },
+    "weight_decay": 1e-5,
+    "optimizer": "adamw",
+    "scheduler": "cosine_annealing",
+    "amp": true,
+    "gradient_accumulation": 4,
+    "two_stage_training": true
+  },
+
+  "loss": {
+    "detection": {
+      "classification": {
+        "type": "focal_loss",
+        "alpha": 0.25,
+        "gamma": 2.0,
+        "weight": 1.0
+      },
+      "regression": {
+        "type": "giou_loss",
+        "weight": 2.0
+      },
+      "centerness": {
+        "type": "bce_loss",
+        "weight": 1.0
+      }
+    },
+    "segmentation": {
+      "type": "combined",
+      "dice_weight": 0.5,
+      "focal_weight": 0.3,
+      "boundary_weight": 0.2
+    }
+  },
+
+  "validation": {
+    "interval": 5,
+    "detection_metrics": ["mAP", "mAP_50", "mAP_75", "recall"],
+    "segmentation_metrics": ["dice", "hausdorff_95"],
+    "metric_key": "mAP_50",
+    "save_best": true
+  },
+
+  "inference": {
+    "two_stage": true,
+    "detection_roi_size": [128, 128, 128],
+    "segmentation_roi_size": [64, 64, 64],
+    "overlap": 0.5,
+    "tta": false,
+    "confidence_threshold": 0.3
+  },
+
+  "logging": {
+    "backend": "mlflow",
+    "experiment_name": "cascade_detection_segmentation",
+    "log_detection_examples": true,
+    "log_segmentation_overlays": true
+  }
+}

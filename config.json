@@ -1,13 +1,53 @@
 {
   "data_path": "./data",
   "model_save_path": "./models",
-  "batch_size": 16,
-  "epochs": 50,
-  "learning_rate": 0.001,
-  "image_size": [128, 128, 128],
+  "batch_size": 2,
+  "epochs": 100,
+  "learning_rate": 2e-4,
+  "image_size": [96, 96, 96],
   "num_workers": 4,
   "device": "cuda",
-  
+
+  "enhanced_features": {
+    "multi_modal_fusion": true,
+    "cascade_detection": true,
+    "monai_label_integration": true,
+    "mlflow_tracking": true,
+    "uncertainty_estimation": true,
+    "test_time_augmentation": true,
+    "modality_specific_normalization": true,
+    "curriculum_augmentation": true
+  },
+
+  "model": {
+    "architecture": "unetr",
+    "fusion_mode": "late",
+    "modalities": ["T1", "T1c", "T2", "FLAIR"],
+    "in_channels": 4,
+    "out_channels": 4,
+    "hidden_size": 768,
+    "num_heads": 12,
+    "dropout_rate": 0.1
+  },
+
+  "data": {
+    "target_spacing": [1.0, 1.0, 1.0],
+    "spatial_size": [128, 128, 128],
+    "patch_size": [96, 96, 96],
+    "cache_mode": "persistent",
+    "modality_normalization": true,
+    "cross_site_harmonization": false
+  },
+
+  "training": {
+    "optimizer": "adamw",
+    "scheduler": "cosine_annealing",
+    "weight_decay": 1e-5,
+    "amp": true,
+    "distributed": false,
+    "gradient_checkpointing": false
+  },
+
   "gui": {
     "enabled": true,
     "host": "localhost",
@@ -16,34 +56,94 @@
     "cors_origins": ["http://localhost:3000"],
     "upload_max_size": "500MB",
     "session_timeout": 3600,
-    "database_url": "sqlite:///./gui_app.db"
+    "database_url": "sqlite:///./gui_app.db",
+    "enhanced_visualization": true,
+    "real_time_inference": true,
+    "uncertainty_display": true
   },
-  
+
   "visualization": {
     "default_colormap": "viridis",
     "overlay_opacity": 0.5,
     "confidence_threshold": 0.7,
-    "enable_3d_rendering": true
+    "enable_3d_rendering": true,
+    "multi_planar_reformat": true,
+    "uncertainty_heatmaps": true
   },
-  
+
   "reporting": {
     "template_dir": "./templates",
     "output_dir": "./reports",
     "formats": ["pdf", "docx", "json"],
-    "auto_generate": false
+    "auto_generate": false,
+    "clinical_metrics": true,
+    "comparison_reports": true,
+    "longitudinal_analysis": true
   },
-  
+
+  "monai_label": {
+    "enabled": true,
+    "server_port": 8001,
+    "app_dir": "./monai_label_app",
+    "data_dir": "./data/monai_label",
+    "models": ["segmentation_unet", "segmentation_unetr"],
+    "strategies": ["random", "epistemic", "custom"],
+    "auto_update_scoring": true
+  },
+
+  "mlflow": {
+    "enabled": true,
+    "tracking_uri": "file:./mlruns",
+    "experiment_name": "medical_imaging_experiments",
+    "log_models": true,
+    "log_artifacts": true,
+    "log_system_info": true,
+    "ui_port": 5001
+  },
+
+  "inference": {
+    "roi_size": [96, 96, 96],
+    "sw_batch_size": 4,
+    "overlap": 0.5,
+    "mode": "gaussian",
+    "tta": true,
+    "uncertainty_estimation": true,
+    "post_processing": {
+      "largest_component": true,
+      "min_component_size": 50,
+      "fill_holes": true
+    }
+  },
+
   "security": {
     "secret_key": "your-secret-key-change-in-production",
     "algorithm": "HS256",
     "access_token_expire_minutes": 30,
     "enable_audit_log": true
   },
-  
+
   "dicom": {
     "supported_modalities": ["CT", "MR", "PT"],
     "max_file_size": "2GB",
     "temp_storage": "./temp/dicom",
-    "anonymize_on_upload": true
+    "anonymize_on_upload": true,
+    "dicom_seg_export": true
+  },
+
+  "performance": {
+    "enable_caching": true,
+    "cache_size": 1000,
+    "worker_processes": 4,
+    "memory_optimization": true,
+    "gpu_memory_fraction": 0.8
+  },
+
+  "deployment": {
+    "docker_support": true,
+    "cuda_docker": "config/docker/Dockerfile.cuda",
+    "rocm_docker": "config/docker/Dockerfile.rocm",
+    "compose_file": "config/docker/docker-compose.yml",
+    "health_checks": true,
+    "monitoring": true
   }
 }

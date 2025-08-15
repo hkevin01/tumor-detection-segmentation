@@ -1,0 +1,80 @@
+{
+  "model": {
+    "architecture": "dints",
+    "in_channels": 4,
+    "out_channels": 4,
+    "img_size": [96, 96, 96],
+    "feature_size": 16,
+    "use_checkpoint": true,
+    "spatial_dims": 3,
+    "node_a": {
+      "space": [
+        "basic_block",
+        "bottleneck_block"
+      ],
+      "n_options": 6
+    },
+    "arch_ckpt_path": null,
+    "ctrl_ckpt_path": null
+  },
+
+  "data": {
+    "target_spacing": [1.0, 1.0, 1.0],
+    "spatial_size": [96, 96, 96],
+    "patch_size": [96, 96, 96],
+    "modalities": ["T1", "T1c", "T2", "FLAIR"],
+    "cache_mode": "memory",
+    "positive_sample_ratio": 0.6,
+    "samples_per_image": 1
+  },
+
+  "training": {
+    "task": "nas_segmentation",
+    "search_epochs": 50,
+    "retrain_epochs": 100,
+    "batch_size": 2,
+    "search_learning_rate": 3e-4,
+    "retrain_learning_rate": 2e-4,
+    "weight_decay": 1e-5,
+    "optimizer": "adamw",
+    "scheduler": "cosine_annealing",
+    "amp": true,
+    "nas_params": {
+      "arch_optim": "adam",
+      "arch_lr": 3e-4,
+      "unrolled": false,
+      "arch_weight_decay": 1e-3,
+      "alpha": 0.5,
+      "beta": 0.6
+    }
+  },
+
+  "loss": {
+    "segmentation": {
+      "type": "dice_focal",
+      "dice_weight": 0.7,
+      "focal_weight": 0.3
+    }
+  },
+
+  "validation": {
+    "interval": 5,
+    "metric_key": "dice_mean",
+    "save_best": true,
+    "architecture_ranking": true
+  },
+
+  "inference": {
+    "roi_size": [96, 96, 96],
+    "sw_batch_size": 4,
+    "overlap": 0.5,
+    "use_best_architecture": true
+  },
+
+  "logging": {
+    "backend": "mlflow",
+    "experiment_name": "dints_brain_tumor_nas",
+    "log_architecture_search": true,
+    "log_architecture_performance": true
+  }
+}

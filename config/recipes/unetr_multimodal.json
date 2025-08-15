@@ -1,0 +1,175 @@
+{
+  "model": {
+    "architecture": "unetr",
+    "fusion_mode": "late",
+    "modalities": ["T1", "T1c", "T2", "FLAIR"],
+    "img_size": [96, 96, 96],
+    "in_channels": 4,
+    "out_channels": 4,
+    "feature_size": 16,
+    "hidden_size": 768,
+    "mlp_dim": 3072,
+    "num_heads": 12,
+    "pos_embed": "perceptron",
+    "norm_name": "instance",
+    "res_block": true,
+    "dropout_rate": 0.1
+  },
+
+  "data": {
+    "target_spacing": [1.0, 1.0, 1.0],
+    "spatial_size": [128, 128, 128],
+    "patch_size": [96, 96, 96],
+    "pos_sample_ratio": 0.7,
+    "samples_per_image": 4,
+    "cache_mode": "persistent",
+    "cache_dir": "./cache/training",
+    "modality_specific_normalization": true,
+    "curriculum_augmentation": true,
+    "cross_site_harmonization": false
+  },
+
+  "training": {
+    "task": "segmentation",
+    "max_epochs": 100,
+    "batch_size": 2,
+    "learning_rate": 2e-4,
+    "weight_decay": 1e-5,
+    "optimizer": "adamw",
+    "scheduler": "cosine_annealing",
+    "scheduler_params": {
+      "T_max": 100,
+      "eta_min": 1e-6
+    },
+    "amp": true,
+    "gradient_checkpointing": false,
+    "distributed": false,
+    "num_workers": 4,
+    "pin_memory": true,
+    "persistent_workers": true
+  },
+
+  "loss": {
+    "segmentation": {
+      "type": "combined",
+      "components": {
+        "dice": {
+          "weight": 0.5,
+          "params": {
+            "sigmoid": true,
+            "squared_pred": true,
+            "reduction": "mean"
+          }
+        },
+        "focal": {
+          "weight": 0.3,
+          "params": {
+            "gamma": 2.0,
+            "reduction": "mean"
+          }
+        },
+        "hausdorff": {
+          "weight": 0.2,
+          "params": {
+            "include_background": false,
+            "reduction": "mean"
+          }
+        }
+      }
+    }
+  },
+
+  "validation": {
+    "interval": 1,
+    "metric_key": "dice_mean",
+    "save_best": true,
+    "patience": 20,
+    "min_delta": 0.001,
+    "tta": true,
+    "tta_transforms": ["flip", "rotate90"],
+    "sliding_window": {
+      "roi_size": [96, 96, 96],
+      "sw_batch_size": 4,
+      "overlap": 0.5,
+      "mode": "gaussian"
+    }
+  },
+
+  "inference": {
+    "roi_size": [96, 96, 96],
+    "sw_batch_size": 4,
+    "overlap": 0.5,
+    "mode": "gaussian",
+    "tta": true,
+    "post_processing": {
+      "largest_component": true,
+      "min_component_size": 50,
+      "fill_holes": true,
+      "smooth_boundaries": false
+    },
+    "uncertainty_estimation": {
+      "enabled": true,
+      "method": "mc_dropout",
+      "num_samples": 10
+    }
+  },
+
+  "evaluation": {
+    "metrics": [
+      "dice",
+      "hausdorff_95",
+      "average_surface_distance",
+      "sensitivity",
+      "specificity",
+      "volumetric_similarity"
+    ],
+    "class_names": ["background", "enhancing", "non_enhancing", "edema"],
+    "save_predictions": true,
+    "generate_reports": true,
+    "cross_validation": {
+      "enabled": false,
+      "folds": 5,
+      "stratified": true
+    }
+  },
+
+  "logging": {
+    "backend": "mlflow",
+    "experiment_name": "unetr_multimodal_brain_tumor",
+    "tracking_uri": "./mlruns",
+    "log_model": true,
+    "log_artifacts": true,
+    "log_system_info": true,
+    "visualization": {
+      "log_segmentation_overlays": true,
+      "overlay_frequency": 10,
+      "num_slices": 3
+    }
+  },
+
+  "callbacks": {
+    "model_checkpoint": {
+      "monitor": "val_dice_mean",
+      "mode": "max",
+      "save_top_k": 3,
+      "save_last": true
+    },
+    "early_stopping": {
+      "monitor": "val_dice_mean",
+      "patience": 20,
+      "mode": "max",
+      "min_delta": 0.001
+    },
+    "lr_monitor": {
+      "logging_interval": "epoch"
+    }
+  },
+
+  "environment": {
+    "seed": 42,
+    "deterministic": true,
+    "benchmark": false,
+    "device": "auto",
+    "precision": "16-mixed"
+  }
+}
