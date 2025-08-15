@@ -1,16 +1,18 @@
-# Tumor Detection and Segmentation using MONAI
+# Medical Imaging AI Platform
 
-This project implements a deep learning pipeline for tumor detection and segmentation in medical images (MRI/CT) using the MONAI framework and PyTorch.
+Advanced tumor detection and segmentation platform with interactive annotation, multi-modal fusion, and experiment tracking capabilities using MONAI, MLflow, and Docker.
 
-> **🎉 Recently Organized**: This project has been restructured with a clean, professional organization. All scripts, tests, and documentation are now properly organized into dedicated directories following Python project best practices.
+> **🐳 Docker Deployment Ready**: Complete containerized deployment with web GUI, MLflow tracking, and MONAI Label integration. Launch everything with `./run.sh start`
 
-## Features
+## ✨ Key Features
 
-- **Deep Learning Pipeline**: Complete training, evaluation, and inference pipeline
-- **Medical Image Processing**: Specialized preprocessing for MRI/CT images
-- **Multi-modal Support**: Framework for sensor fusion and multi-modal data integration
-- **Clinical Workflow Integration**: Preoperative and postoperative reporting capabilities
-- **Patient Analysis**: Longitudinal analysis and comparison with prior scans
+- **🧠 Advanced AI Models**: Multi-modal UNETR, cascade detection, neural architecture search (DiNTS)
+- **🎯 Interactive Annotation**: MONAI Label server with 3D Slicer integration and active learning
+- **📊 Experiment Tracking**: MLflow integration with medical imaging metrics and model management
+- **🔄 Multi-Modal Fusion**: Cross-attention mechanisms for T1/T1c/T2/FLAIR/CT/PET processing
+- **🐳 Production Ready**: Complete Docker deployment with GPU acceleration and web GUI
+- **🎨 Web Interface**: Beautiful dashboard at `http://localhost:8000/gui` for all services
+- **⚡ GPU Accelerated**: CUDA and ROCm support with automatic CPU fallback
 
 ## Project Structure
 
@@ -45,56 +47,160 @@ This project implements a deep learning pipeline for tumor detection and segment
 └── config.json           # Main configuration parameters
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
-1. **Clone and Setup**:
-   ```bash
-   git clone git@github.com:hkevin01/tumor-detection-segmentation.git
-   cd tumor-detection-segmentation
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+### Option 1: Docker Deployment (Recommended)
 
-2. **Configure**:
-   - Edit `config.json` to set data paths and hyperparameters
-   - Place your datasets in the `data/` directory
+Complete platform with all services in containers:
 
-3. **Train a Model**:
-   ```bash
-   python src/training/train.py
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/hkevin01/tumor-detection-segmentation.git
+cd tumor-detection-segmentation
 
-4. **Run Inference**:
-   ```bash
-   python src/inference/inference.py
-   ```
+# Test Docker setup
+./test_docker.sh
 
-5. **Run GUI Application**:
-   ```bash
-   ./scripts/utilitie./scripts/utilities/run_gui.sh
-   ```
+# Start all services with web GUI
+./run.sh start
 
-## Configuration
+# Access the platform:
+# - Web GUI: http://localhost:8000/gui
+# - MLflow UI: http://localhost:5001
+# - MONAI Label: http://localhost:8001
+```
 
-Edit `config.json` to customize:
-- Data paths and preprocessing parameters
-- Model architecture and training hyperparameters
-- Device settings (CPU/CUDA/ROCm - auto-detected)
-- Logging and output configurations
+### Option 2: Local Development
+
+For development and customization:
+
+```bash
+# Setup environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Configure
+# Edit config.json to set data paths and hyperparameters
+
+# Train a model
+python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json
+
+# Run inference
+python src/inference/inference.py
+```
+
+## 🐳 Docker Services
+
+The platform includes these containerized services:
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Web GUI** | http://localhost:8000/gui | Interactive dashboard and interface |
+| **Main API** | http://localhost:8000 | Core backend API and health checks |
+| **MLflow UI** | http://localhost:5001 | Experiment tracking and model management |
+| **MONAI Label** | http://localhost:8001 | Interactive annotation server |
+
+### Docker Management
+
+```bash
+./run.sh start     # Start all services + open GUI
+./run.sh stop      # Stop all services
+./run.sh status    # Show service status
+./run.sh logs      # View service logs
+./run.sh cleanup   # Clean up Docker resources
+./run.sh help      # Show all commands
+```
+
+## ⚙️ Configuration
+
+The platform includes comprehensive configuration management:
+
+### Main Configuration (`config.json`)
+
+Key settings include:
+
+- **Enhanced Features**: Multi-modal fusion, cascade detection, MONAI Label integration, MLflow tracking
+- **Model Architecture**: UNETR, SegResNet, DiNTS neural architecture search
+- **Training**: Batch size, learning rate, AMP, distributed training
+- **Data Processing**: Modality-specific normalization, curriculum augmentation
+- **Services**: MLflow tracking URI, MONAI Label server settings
+- **Deployment**: Docker configuration, GPU settings, monitoring
+
+### Configuration Recipes
+
+Pre-configured scenarios in `config/recipes/`:
+
+- `unetr_multimodal.json` - Multi-modal UNETR with cross-attention fusion
+- `cascade_detection.json` - Two-stage detection + segmentation pipeline
+- `dints_nas.json` - Neural architecture search configuration
 
 ### GPU Support
-- **NVIDIA GPUs**: CUDA support (automatic detection)
-- **AMD GPUs**: ROCm support - run `./scripts/setup/setup_rocm.sh` for AMD GPU setup
+
+- **NVIDIA GPUs**: CUDA support with automatic detection
+- **AMD GPUs**: ROCm support (use `Dockerfile.rocm`)
 - **CPU Only**: Automatic fallback for systems without GPU acceleration
 
-## Dependencies
+## 🏗️ Architecture & Implementation
 
-This project uses MONAI for medical image processing and PyTorch for deep learning. See `requirements.txt` for the complete dependency list.
+### AI Models & Algorithms
 
-## Documentation
+**Multi-Modal Fusion**:
+- Cross-attention mechanisms for T1/T1c/T2/FLAIR/CT/PET
+- Early and late fusion strategies
+- Adaptive fusion with modality attention gates
 
-Comprehensive documentation is now organized in the `docs/` directory:
+**Cascade Detection Pipeline**:
+- RetinaUNet3D for initial detection
+- High-resolution UNETR for refined segmentation
+- Two-stage workflow with post-processing
+
+**Neural Architecture Search**:
+- DiNTS (Differentiable Neural Architecture Search)
+- Automated model optimization
+- Performance-aware architecture selection
+
+### Interactive Annotation
+
+**MONAI Label Integration**:
+- 3D Slicer compatibility
+- Active learning strategies (random, epistemic, custom)
+- Real-time model updates
+- Interactive refinement workflows
+
+### Experiment Management
+
+**MLflow Tracking**:
+- Medical imaging specific metrics (Dice, IoU, HD95)
+- Segmentation overlay visualization
+- Model versioning and artifacts
+- Comprehensive experiment comparison
+
+### Data Processing
+
+**Enhanced Preprocessing**:
+- Modality-specific normalization
+- Curriculum augmentation strategies
+- Cross-site harmonization
+- Advanced data augmentation pipelines
+
+## 📚 Dependencies
+
+Core frameworks and libraries:
+
+- **MONAI**: Medical imaging AI framework with Label server
+- **PyTorch**: Deep learning backend with CUDA/ROCm support
+- **MLflow**: Experiment tracking and model management
+- **FastAPI**: Web API framework for backend services
+- **Docker**: Containerization and deployment
+- **PostgreSQL**: Database backend for MLflow
+- **Redis**: Caching and session management
+
+See `requirements.txt` and `requirements-docker.txt` for complete dependency lists.
+
+## 📖 Documentation
+
+Comprehensive documentation is organized in the `docs/` directory:
 
 **User Documentation** (`docs/user-guide/`):
 - **Medical GUI Guide** - Complete interface documentation
@@ -134,7 +240,22 @@ The project includes organized scripts for various tasks:
 **Development Tools** (`tools/`):
 - Project reorganization and maintenance scripts
 
-## Testing
+## 🧪 Testing & Validation
+
+### System Validation
+
+```bash
+# Test Docker setup
+./test_docker.sh
+
+# Validate all features
+python test_system.py
+
+# Comprehensive Docker validation
+python validate_docker.py
+```
+
+### Automated Testing
 
 The project includes organized test suites:
 
@@ -150,7 +271,90 @@ pytest tests/integration/   # System integration tests
 **Test Structure**:
 - `tests/gui/` - GUI backend and frontend integration tests
 - `tests/integration/` - Full system integration and workflow tests
-- `tests/unit/` - Unit tests (add your unit test files here)
+- `tests/unit/` - Unit tests for individual components
+
+### Health Monitoring
+
+All Docker services include health checks:
+- Web API: `http://localhost:8000/health`
+- MLflow: `http://localhost:5001`
+- MONAI Label: `http://localhost:8001/info/`
+
+## 🚀 Deployment & Production
+
+### Docker Deployment
+
+The platform is production-ready with:
+
+- **Multi-service Architecture**: Web, MLflow, MONAI Label, Redis, PostgreSQL
+- **GPU Acceleration**: CUDA/ROCm support with automatic CPU fallback
+- **Persistent Storage**: Docker volumes for models, experiments, and data
+- **Health Monitoring**: Automated health checks and service monitoring
+- **Scalability**: Ready for multi-node deployment and load balancing
+
+### Deployment Guides
+
+- `DOCKER_GUIDE.md` - Complete Docker deployment instructions
+- `DEPLOYMENT.md` - General deployment and configuration guide
+- `DOCKER_COMPLETE.md` - Implementation status and architecture overview
+
+### Production Features
+
+- **Web GUI**: Interactive dashboard at `http://localhost:8000/gui`
+- **API Endpoints**: RESTful API with OpenAPI documentation
+- **Experiment Tracking**: MLflow with PostgreSQL backend
+- **Interactive Annotation**: MONAI Label server for clinical workflows
+- **Monitoring**: Service health checks and resource monitoring
+
+## 📊 Current Status
+
+✅ **Complete Docker Deployment** - All services containerized and orchestrated
+✅ **Web GUI Interface** - Beautiful dashboard for all platform interactions
+✅ **MLflow Integration** - Full experiment tracking and model management
+✅ **MONAI Label Server** - Interactive annotation with 3D Slicer compatibility
+✅ **Multi-Modal AI Models** - Advanced fusion architectures implemented
+✅ **Cascade Detection** - Two-stage detection and segmentation pipeline
+✅ **GPU Acceleration** - CUDA and ROCm support with automatic detection
+✅ **Production Ready** - Health checks, monitoring, and persistent storage
+
+## 🛠️ Development
+
+For developers contributing to the platform:
+
+### Local Development Setup
+
+```bash
+# Clone and setup development environment
+git clone https://github.com/hkevin01/tumor-detection-segmentation.git
+cd tumor-detection-segmentation
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run in development mode
+python src/main.py
+```
+
+### Docker Development
+
+```bash
+# Build and test locally
+./run.sh build
+./run.sh start
+
+# View logs for debugging
+./run.sh logs
+
+# Clean up for fresh start
+./run.sh cleanup
+```
+
+## 📞 Support & Documentation
+
+- **Quick Start**: `./run.sh help` for all available commands
+- **Docker Setup**: `./test_docker.sh` to validate Docker configuration
+- **System Status**: `python test_system.py` for comprehensive validation
+- **Complete Guides**: See `DOCKER_GUIDE.md` and `DEPLOYMENT.md`
 
 ## Contributing
 
