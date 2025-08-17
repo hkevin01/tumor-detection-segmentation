@@ -1,61 +1,60 @@
-import React, { useEffect, useRef, useState } from 'react';
 import {
-  RenderingEngine,
-  Types,
-  Enums,
-  getRenderingEngine,
-  volumeLoader,
-  setVolumesForViewports,
-  cache,
+    cache,
+    Enums,
+    getRenderingEngine,
+    RenderingEngine,
+    setVolumesForViewports,
+    Types,
+    volumeLoader,
 } from '@cornerstonejs/core';
-import {
-  addTool,
-  ToolGroupManager,
-  WindowLevelTool,
-  PanTool,
-  ZoomTool,
-  StackScrollMouseWheelTool,
-  LengthTool,
-  RectangleROITool,
-  EllipticalROITool,
-  AngleTool,
-  ArrowAnnotateTool,
-  Enums as csToolsEnums,
-} from '@cornerstonejs/tools';
 import * as cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
 import * as cornerstoneStreamingImageVolumeLoader from '@cornerstonejs/streaming-image-volume-loader';
-import * as dicomParser from 'dicom-parser';
 import {
-  Box,
-  Paper,
-  Toolbar,
-  IconButton,
-  Tooltip,
-  Divider,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Typography,
-  CircularProgress,
-} from '@mui/material';
+    addTool,
+    AngleTool,
+    ArrowAnnotateTool,
+    Enums as csToolsEnums,
+    EllipticalROITool,
+    LengthTool,
+    PanTool,
+    RectangleROITool,
+    StackScrollMouseWheelTool,
+    ToolGroupManager,
+    WindowLevelTool,
+    ZoomTool,
+} from '@cornerstonejs/tools';
 import {
-  ZoomIn,
-  ZoomOut,
-  PanTool as PanIcon,
-  Straighten,
-  CropFree,
-  RadioButtonUnchecked,
-  ShowChart,
-  NearMe,
-  Brightness6,
-  ViewInAr,
-  Compare,
-  GetApp,
-  Settings,
+    Brightness6,
+    Compare,
+    CropFree,
+    GetApp,
+    NearMe,
+    PanTool as PanIcon,
+    RadioButtonUnchecked,
+    Settings,
+    ShowChart,
+    Straighten,
+    ViewInAr,
+    ZoomIn
 } from '@mui/icons-material';
+import {
+    Box,
+    CircularProgress,
+    Divider,
+    FormControl,
+    FormControlLabel,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    Switch,
+    Toolbar,
+    Tooltip,
+    Typography,
+} from '@mui/material';
+import * as dicomParser from 'dicom-parser';
+import React, { useEffect, useRef, useState } from 'react';
 
 const { ViewportType } = Enums;
 const { MouseBindings } = csToolsEnums;
@@ -67,6 +66,8 @@ interface DicomViewerProps {
   onImageLoad?: (imageData: any) => void;
   onMeasurement?: (measurement: any) => void;
   showTumorOverlay?: boolean;
+  overlayAlpha?: number;
+  overlayCmap?: string;
   tumorDetections?: Array<{
     x: number;
     y: number;
@@ -84,6 +85,8 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
   onImageLoad,
   onMeasurement,
   showTumorOverlay = false,
+  overlayAlpha = 0.4,
+  overlayCmap = 'jet',
   tumorDetections = [],
 }) => {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -92,6 +95,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
   const [viewportOrientation, setViewportOrientation] = useState<string>('axial');
   const [renderingEngine, setRenderingEngine] = useState<RenderingEngine | null>(null);
   const [toolGroup, setToolGroup] = useState<any>(null);
+  const [overlayUrl, setOverlayUrl] = useState<string>('');
 
   const renderingEngineId = 'myRenderingEngine';
   const viewportId = 'CT_AXIAL_STACK';
@@ -110,7 +114,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
         setVolumesForViewports,
         cache,
       };
-      
+
       cornerstoneDICOMImageLoader.external.dicomParser = dicomParser;
       cornerstoneDICOMImageLoader.configure({
         useWebWorkers: true,
@@ -143,7 +147,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
 
       // Create tool group
       const newToolGroup = ToolGroupManager.createToolGroup(toolGroupId);
-      
+
       // Add tools to tool group
       newToolGroup?.addTool(WindowLevelTool.toolName);
       newToolGroup?.addTool(PanTool.toolName);
@@ -208,7 +212,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
         const viewport = renderingEngine.getViewport(viewportId);
         await viewport.setStack(imageIds);
         viewport.render();
-        
+
         if (onImageLoad) {
           onImageLoad({ imageIds, viewport });
         }
@@ -221,6 +225,21 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
 
     loadImages();
   }, [renderingEngine, imageIds, onImageLoad]);
+
+  // Compute overlay URL when controls change
+  useEffect(() => {
+    if (!studyInstanceUID || !showTumorOverlay) {
+      setOverlayUrl('');
+      return;
+    }
+    const ts = Date.now(); // cache buster
+    const url = `/api/studies/${encodeURIComponent(
+      studyInstanceUID
+    )}/overlay?alpha=${encodeURIComponent(overlayAlpha)}&cmap=${encodeURIComponent(
+      overlayCmap
+    )}&_=${ts}`;
+    setOverlayUrl(url);
+  }, [studyInstanceUID, overlayAlpha, overlayCmap, showTumorOverlay]);
 
   // Handle tool activation
   const handleToolActivation = (toolName: string) => {
@@ -281,7 +300,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
             </IconButton>
           </Tooltip>
         ))}
-        
+
         <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
 
         {/* Viewport controls */}
@@ -317,7 +336,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
             <ViewInAr />
           </IconButton>
         </Tooltip>
-        
+
         <Tooltip title="Compare Studies">
           <IconButton size="small">
             <Compare />
@@ -359,7 +378,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
             </Typography>
           </Box>
         )}
-        
+
         <div
           ref={viewportRef}
           style={{
@@ -369,7 +388,7 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
           }}
         />
 
-        {/* Tumor overlay rendering would go here */}
+        {/* Simple detection boxes overlay */}
         {showTumorOverlay && tumorDetections.length > 0 && (
           <Box
             sx={{
@@ -411,6 +430,30 @@ const DicomViewer: React.FC<DicomViewerProps> = ({
                 </Typography>
               </Box>
             ))}
+          </Box>
+        )}
+
+        {/* Picture-in-picture overlay preview from backend PNG */}
+        {showTumorOverlay && overlayUrl && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              width: 256,
+              height: 256,
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: 1,
+              overflow: 'hidden',
+              zIndex: 120,
+              bgcolor: 'rgba(0,0,0,0.5)'
+            }}
+          >
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <img
+              src={overlayUrl}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </Box>
         )}
       </Box>

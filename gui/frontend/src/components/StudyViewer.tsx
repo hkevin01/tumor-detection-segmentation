@@ -1,40 +1,40 @@
-import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  LinearProgress,
-} from '@mui/material';
-import {
-  Visibility,
-  Download,
-  Compare,
-  Assessment,
-  Report,
-  Warning,
-  CheckCircle,
-  Schedule,
-  LocalHospital,
-  Psychology,
+    CheckCircle,
+    LocalHospital,
+    Psychology,
+    Report,
+    Schedule,
+    Warning
 } from '@mui/icons-material';
-import DicomViewer from './DicomViewer';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    FormControl,
+    FormControlLabel,
+    Grid,
+    InputLabel,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    MenuItem,
+    Paper,
+    Select,
+    Switch,
+    Typography
+} from '@mui/material';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import DicomViewer from './DicomViewer';
 
 interface StudyData {
   study_instance_uid: string;
@@ -67,6 +67,8 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
   const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
   const [tumorDetections, setTumorDetections] = useState<any[]>([]);
   const [showTumorOverlay, setShowTumorOverlay] = useState(true);
+  const [overlayAlpha, setOverlayAlpha] = useState<number>(0.4);
+  const [overlayCmap, setOverlayCmap] = useState<string>('jet');
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   // Load study data
@@ -76,7 +78,7 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
         setLoading(true);
         const response = await axios.get(`/api/studies/${studyInstanceUID}`);
         setStudyData(response.data);
-        
+
         // Load first series by default
         if (response.data.series && response.data.series.length > 0) {
           const firstSeries = response.data.series[0];
@@ -98,14 +100,14 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
     try {
       const response = await axios.get(`/api/series/${seriesInstanceUID}/images`);
       const images = response.data.images || [];
-      
+
       // Convert to Cornerstone image IDs format
-      const cornerstoneImageIds = images.map((image: any) => 
+      const cornerstoneImageIds = images.map((image: any) =>
         `wadouri:${image.image_url || `/api/images/${image.sop_instance_uid}`}`
       );
-      
+
       setImageIds(cornerstoneImageIds);
-      
+
       // Load AI predictions if available
       await loadAIPredictions(seriesInstanceUID);
     } catch (error) {
@@ -126,14 +128,14 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
   // Trigger AI analysis
   const runAIAnalysis = async () => {
     if (!selectedSeries) return;
-    
+
     try {
       setAiProcessing(true);
       const response = await axios.post('/api/ai/analyze', {
         series_instance_uid: selectedSeries,
         model_name: 'tumor_detection_v1'
       });
-      
+
       if (response.data.task_id) {
         // Poll for results
         pollAIResults(response.data.task_id);
@@ -149,12 +151,12 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
     const pollInterval = setInterval(async () => {
       try {
         const response = await axios.get(`/api/ai/results/${taskId}`);
-        
+
         if (response.data.status === 'completed') {
           setTumorDetections(response.data.detections || []);
           setAiProcessing(false);
           clearInterval(pollInterval);
-          
+
           // Update study data with AI results
           if (studyData) {
             setStudyData({
@@ -183,7 +185,7 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
         study_instance_uid: studyInstanceUID,
         include_ai_findings: true
       });
-      
+
       // Open report in new window or download
       window.open(`/api/reports/${response.data.report_id}/pdf`, '_blank');
     } catch (error) {
@@ -366,6 +368,39 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
                 </List>
               </Box>
             )}
+
+            {/* Overlay controls */}
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Overlay Controls
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <FormControlLabel
+                control={<Switch checked={showTumorOverlay} onChange={(e) => setShowTumorOverlay(e.target.checked)} size="small" />}
+                label="Show Tumor Overlay"
+              />
+              <Typography variant="caption">Opacity: {Math.round(overlayAlpha * 100)}%</Typography>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={overlayAlpha}
+                onChange={(e) => setOverlayAlpha(parseFloat(e.target.value))}
+              />
+              <FormControl size="small" fullWidth>
+                <InputLabel>Colormap</InputLabel>
+                <Select
+                  label="Colormap"
+                  value={overlayCmap}
+                  onChange={(e) => setOverlayCmap(e.target.value)}
+                >
+                  {['jet', 'viridis', 'plasma', 'magma', 'inferno', 'turbo'].map((cm) => (
+                    <MenuItem key={cm} value={cm}>{cm}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
           </Paper>
         </Grid>
 
@@ -376,6 +411,8 @@ const StudyViewer: React.FC<StudyViewerProps> = ({ studyInstanceUID, onClose }) 
             seriesInstanceUID={selectedSeries || undefined}
             imageIds={imageIds}
             showTumorOverlay={showTumorOverlay}
+            overlayAlpha={overlayAlpha}
+            overlayCmap={overlayCmap}
             tumorDetections={tumorDetections}
             onImageLoad={(data) => {
               console.log('Images loaded:', data);

@@ -63,3 +63,11 @@ def test_gui_study_overlay_png(tmp_path: Path):
     assert resp.status_code == 200
     assert resp.headers.get("content-type") == "image/png"
     assert resp.content and len(resp.content) > 100
+
+    # Also verify overlay with custom alpha/cmap query params
+    resp2 = client.get(
+        f"/api/studies/{study_id}/overlay?alpha=0.7&cmap=viridis"
+    )
+    assert resp2.status_code == 200
+    assert resp2.headers.get("content-type") == "image/png"
+    assert resp2.content and len(resp2.content) > 100
