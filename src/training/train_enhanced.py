@@ -16,6 +16,7 @@ from typing import Any, Dict
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.cuda.amp import GradScaler, autocast
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -45,6 +46,7 @@ try:
     from src.fusion.attention_fusion import create_multi_modal_model
     from src.models.cascade_detector import create_cascade_pipeline
     from src.utils.logging_mlflow import setup_mlflow_tracking
+    from src.utils.ema import EMA
 except ImportError as e:
     print(f"Could not import custom modules: {e}")
     print("Make sure you're running from the project root directory")
@@ -67,18 +69,20 @@ class EnhancedTrainer:
         self.config = config
         self.device = self._setup_device()
         self.mlflow_logger = None
+        self.scaler = GradScaler(enabled=self.config.get("training", {}).get("amp", False))
+        self.ema = None
 
         # Set deterministic behavior
-        if config.get("environment", {}).get("deterministic", True):
-            seed = config.get("environment", {}).get("seed", 42)
+        if self.config.get("environment", {}).get("deterministic", True):
+            seed = self.config.get("environment", {}).get("seed", 42)
             set_determinism(seed=seed)
             torch.manual_seed(seed)
 
         # Setup MLflow tracking
-        if config.get("logging", {}).get("backend") == "mlflow":
+        if self.config.get("logging", {}).get("backend") == "mlflow":
             self.mlflow_logger = setup_mlflow_tracking(
-                experiment_name=config["logging"]["experiment_name"],
-                tracking_uri=config["logging"].get("tracking_uri")
+                experiment_name=self.config["logging"]["experiment_name"],
+                tracking_uri=self.config["logging"].get("tracking_uri")
             )
 
     def _setup_device(self) -> torch.device:
@@ -308,6 +312,11 @@ class EnhancedTrainer:
             optimizer = self._create_optimizer(model)
             scheduler = self._create_scheduler(optimizer)
 
+            # Optional EMA
+            if self.config["training"].get("ema", {}).get("enabled", False):
+                decay = self.config["training"]["ema"].get("decay", 0.999)
+                self.ema = EMA(model, decay=decay)
+
             # Log model if MLflow is available
             if self.mlflow_logger:
                 # Create dummy input for model logging
@@ -350,6 +359,11 @@ class EnhancedTrainer:
             max_epochs = self.config["training"]["max_epochs"]
             best_metric = -1
 
+            patience = self.config["training"].get("early_stopping", {}).get("patience", 0)
+            es_counter = 0
+
+            grad_clip = float(self.config["training"].get("grad_clip", 0) or 0)
+
             for epoch in range(max_epochs):
                 logger.info(f"Epoch {epoch + 1}/{max_epochs}")
 
@@ -363,18 +377,31 @@ class EnhancedTrainer:
 
                     optimizer.zero_grad()
 
-                    # Forward pass
-                    if self.config["training"].get("amp", False):
-                        with torch.cuda.amp.autocast():
+                    # Forward pass with optional AMP
+                    use_amp = self.config["training"].get("amp", False)
+                    if use_amp:
+                        with autocast():
                             outputs = model(inputs)
                             loss = loss_function(outputs, targets)
+                        # Backward pass
+                        self.scaler.scale(loss).backward()
+                        # Gradient clipping if configured
+                        if grad_clip > 0:
+                            self.scaler.unscale_(optimizer)
+                            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+                        self.scaler.step(optimizer)
+                        self.scaler.update()
                     else:
                         outputs = model(inputs)
                         loss = loss_function(outputs, targets)
+                        loss.backward()
+                        if grad_clip > 0:
+                            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+                        optimizer.step()
 
-                    # Backward pass
-                    loss.backward()
-                    optimizer.step()
+                    # EMA update after optimizer step
+                    if self.ema is not None:
+                        self.ema.update(model)
 
                     train_loss += loss.item()
 
@@ -387,18 +414,28 @@ class EnhancedTrainer:
                 val_loss = 0.0
 
                 with torch.no_grad():
-                    for batch_data in val_loader:
-                        inputs = batch_data["image"].to(self.device)
-                        targets = batch_data["label"].to(self.device)
+                    def _run_validation(eval_model):
+                        v_loss = 0.0
+                        for batch_data in val_loader:
+                            inputs = batch_data["image"].to(self.device)
+                            targets = batch_data["label"].to(self.device)
 
-                        outputs = model(inputs)
-                        loss = loss_function(outputs, targets)
-                        val_loss += loss.item()
+                            outputs = eval_model(inputs)
+                            loss = loss_function(outputs, targets)
+                            v_loss += loss.item()
 
-                        # Calculate metrics
-                        outputs_discrete = torch.argmax(outputs, dim=1, keepdim=True)
-                        for metric_name, metric_fn in val_metrics.items():
-                            metric_fn(outputs_discrete, targets)
+                            # Calculate metrics
+                            outputs_discrete = torch.argmax(outputs, dim=1, keepdim=True)
+                            for metric_name, metric_fn in val_metrics.items():
+                                metric_fn(outputs_discrete, targets)
+                        return v_loss
+
+                    # Run validation under EMA weights if available
+                    if self.ema is not None:
+                        with self.ema.apply(model):
+                            val_loss = _run_validation(model)
+                    else:
+                        val_loss = _run_validation(model)
 
                 # Aggregate metrics
                 val_metrics_values = {}
@@ -431,11 +468,19 @@ class EnhancedTrainer:
                 current_metric = val_metrics_values.get("val_dice", 0)
                 if current_metric > best_metric:
                     best_metric = current_metric
-                    torch.save(
-                        model.state_dict(),
-                        os.path.join("./models", "best_model.pth")
-                    )
+                    best_path = os.path.join("./models", "best_model.pth")
+                    torch.save(model.state_dict(), best_path)
+                    if self.mlflow_logger:
+                        self.mlflow_logger.log_checkpoint(best_path)
                     logger.info(f"  New best model saved (Dice: {best_metric:.4f})")
+
+                    es_counter = 0
+                else:
+                    if patience > 0:
+                        es_counter += 1
+                        if es_counter >= patience:
+                            logger.info("Early stopping triggered.")
+                            break
 
             logger.info("Training completed successfully!")
 

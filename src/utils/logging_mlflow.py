@@ -228,6 +228,19 @@ class MedicalImagingMLflowLogger:
             input_example=input_example,
         )
 
+    def log_artifact(self, path: str, artifact_path: str = None):
+        """Log a single artifact file or directory."""
+        if not MLFLOW_AVAILABLE:
+            return
+        try:
+            mlflow.log_artifact(path, artifact_path)
+        except Exception as e:
+            logger.warning(f"Could not log artifact {path}: {e}")
+
+    def log_checkpoint(self, checkpoint_path: str, name: str = "checkpoints"):
+        """Log a checkpoint file under a named artifact path."""
+        self.log_artifact(checkpoint_path, artifact_path=name)
+
     def log_segmentation_overlay(
         self,
         image: np.ndarray,
