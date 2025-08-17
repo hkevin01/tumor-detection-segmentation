@@ -289,6 +289,22 @@ pytest tests/integration/   # System integration tests
 - `tests/integration/` - Full system integration and workflow tests
 - `tests/unit/` - Unit tests for individual components
 
+### Inference and Visualization
+
+- Enable test-time augmentation in the CLI by adding the `--tta` flag:
+
+```bash
+python src/inference/inference.py --config config/recipes/unetr_multimodal.json --model models/unetr/checkpoint.pt --tta
+```
+
+- The GUI backend exposes an overlay endpoint to preview labeled tumors for a study:
+
+```text
+GET /api/studies/{study_id}/overlay
+```
+
+This returns a PNG overlay combining the input image and the latest prediction mask.
+
 ### Health Monitoring
 
 All Docker services include health checks:

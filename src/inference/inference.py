@@ -35,6 +35,7 @@ class TumorPredictor:
         model_path: str,
         config_path: str,
         device: str = "auto",
+    tta: bool = False,
     ):
         """Initialize predictor.
 
@@ -57,6 +58,9 @@ class TumorPredictor:
             )
         else:
             self.device = torch.device(device)
+
+        # TTA flag
+        self.use_tta = bool(tta)
 
         # Load model
         self.model = self._load_model(model_path)
@@ -127,11 +131,12 @@ class TumorPredictor:
 
         # Run inference
         with torch.no_grad():
-            prediction = self.model(image)
-
-            # Post-process prediction
-            prediction = torch.softmax(prediction, dim=1)
-            prediction = torch.argmax(prediction, dim=1)
+            if self.use_tta:
+                prediction = self._predict_with_tta(image)
+            else:
+                logits = self.model(image)
+                probs = torch.softmax(logits, dim=1)
+                prediction = torch.argmax(probs, dim=1)
 
         # Convert to numpy for easier handling
         prediction_np = prediction.cpu().numpy().squeeze()
@@ -147,7 +152,59 @@ class TumorPredictor:
             "input_shape": image.shape,
             "output_shape": prediction.shape,
             "device": str(self.device),
+            "tta": self.use_tta,
         }
+
+    def _predict_with_tta(self, image: "torch.Tensor") -> "torch.Tensor":
+        """Simple flip-based TTA.
+
+        Applies test-time augmentations by flipping across spatial dims,
+        averages class probabilities, and returns argmax segmentation.
+
+        Args:
+            image: input tensor of shape (N=1, C, ...spatial)
+
+        Returns:
+            Tensor of predicted labels with shape (N=1, ...spatial)
+        """
+        import torch  # local import for type hints
+
+        n_dims = image.ndim  # expect 5 for NCDHW or 4 for NCHW
+        if n_dims not in (4, 5):
+            # Fallback to single-pass if unexpected shape
+            logits = self.model(image)
+            probs = torch.softmax(logits, dim=1)
+            return torch.argmax(probs, dim=1)
+
+        # Determine spatial dims positions
+        # For NCHW -> spatial dims = (2,3); for NCDHW -> (2,3,4)
+        spatial_dims = list(range(2, n_dims))
+
+        # Build flip combinations: empty (identity) + single + pair + all
+        flip_sets = [[]]
+        for d in spatial_dims:
+            flip_sets.append([d])
+        if len(spatial_dims) >= 2:
+            flip_sets.append(spatial_dims[:2])
+        if len(spatial_dims) == 3:
+            flip_sets.append([spatial_dims[0], spatial_dims[2]])
+            flip_sets.append(spatial_dims[1:])
+            flip_sets.append(spatial_dims)
+
+        agg_probs: Optional[torch.Tensor] = None
+        for axes in flip_sets:
+            if axes:
+                x = torch.flip(image, dims=axes)
+            else:
+                x = image
+            logits = self.model(x)
+            probs = torch.softmax(logits, dim=1)
+            if axes:
+                probs = torch.flip(probs, dims=axes)
+            agg_probs = probs if agg_probs is None else (agg_probs + probs)
+
+        agg_probs = agg_probs / float(len(flip_sets))
+        return torch.argmax(agg_probs, dim=1)
 
     def predict_batch(self, image_paths: List[str]) -> List[Dict[str, Any]]:
         """Run inference on multiple images."""
@@ -250,6 +307,11 @@ def main():
     parser.add_argument(
         "--device", type=str, default="auto", help="Device (auto, cpu, cuda)"
     )
+    parser.add_argument(
+        "--tta",
+        action="store_true",
+        help="Enable simple flip-based test-time augmentation",
+    )
 
     args = parser.parse_args()
 
@@ -270,6 +332,7 @@ def main():
             model_path=args.model,
             config_path=args.config,
             device=args.device,
+            tta=bool(args.tta),
         )
 
         print(f"Using device: {predictor.device}")

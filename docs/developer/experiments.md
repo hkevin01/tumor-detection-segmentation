@@ -45,7 +45,7 @@ python src/evaluation/evaluate.py --config config/recipes/unetr_multimodal.json 
 - Sliding window + TTA:
 
 ```bash
-python src/inference/inference.py --config config/recipes/unetr_multimodal.json --ckpt models/unetr/checkpoint.pt --tta 1
+python src/inference/inference.py --config config/recipes/unetr_multimodal.json --model models/unetr/checkpoint.pt --tta
 ```
 
 ## Issue/PR Prompts

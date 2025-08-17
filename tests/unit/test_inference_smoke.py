@@ -57,13 +57,22 @@ def test_inference_smoke_tmpdir(tmp_path: Path):
 
     # Run prediction
     with torch.no_grad():
+        # baseline
         predictor = TumorPredictor(
             model_path=str(model_path),
             config_path=str(config_path),
             device="cpu",
+            tta=False,
         )
-        # Predict on the saved numpy file; MONAI LoadImage can load .npy
         result = predictor.predict_single(str(vol_path))
+        # tta path
+        predictor_tta = TumorPredictor(
+            model_path=str(model_path),
+            config_path=str(config_path),
+            device="cpu",
+            tta=True,
+        )
+        result_tta = predictor_tta.predict_single(str(vol_path))
 
     assert "prediction" in result and "input_image" in result
     pred = result["prediction"]
