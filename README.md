@@ -96,10 +96,10 @@ The platform includes these containerized services:
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| **Web GUI** | http://localhost:8000/gui | Interactive dashboard and interface |
-| **Main API** | http://localhost:8000 | Core backend API and health checks |
-| **MLflow UI** | http://localhost:5001 | Experiment tracking and model management |
-| **MONAI Label** | http://localhost:8001 | Interactive annotation server |
+| **Web GUI** | <http://localhost:8000/gui> | Interactive dashboard and interface |
+| **Main API** | <http://localhost:8000> | Core backend API and health checks |
+| **MLflow UI** | <http://localhost:5001> | Experiment tracking and model management |
+| **MONAI Label** | <http://localhost:8001> | Interactive annotation server |
 
 ### Docker Management
 
@@ -146,16 +146,19 @@ Pre-configured scenarios in `config/recipes/`:
 ### AI Models & Algorithms
 
 **Multi-Modal Fusion**:
+
 - Cross-attention mechanisms for T1/T1c/T2/FLAIR/CT/PET
 - Early and late fusion strategies
 - Adaptive fusion with modality attention gates
 
 **Cascade Detection Pipeline**:
+
 - RetinaUNet3D for initial detection
 - High-resolution UNETR for refined segmentation
 - Two-stage workflow with post-processing
 
 **Neural Architecture Search**:
+
 - DiNTS (Differentiable Neural Architecture Search)
 - Automated model optimization
 - Performance-aware architecture selection
@@ -163,6 +166,7 @@ Pre-configured scenarios in `config/recipes/`:
 ### Interactive Annotation
 
 **MONAI Label Integration**:
+
 - 3D Slicer compatibility
 - Active learning strategies (random, epistemic, custom)
 - Real-time model updates
@@ -171,6 +175,7 @@ Pre-configured scenarios in `config/recipes/`:
 ### Experiment Management
 
 **MLflow Tracking**:
+
 - Medical imaging specific metrics (Dice, IoU, HD95)
 - Segmentation overlay visualization
 - Model versioning and artifacts
@@ -179,6 +184,7 @@ Pre-configured scenarios in `config/recipes/`:
 ### Data Processing
 
 **Enhanced Preprocessing**:
+
 - Modality-specific normalization
 - Curriculum augmentation strategies
 - Cross-site harmonization
@@ -203,18 +209,23 @@ See `requirements.txt` and `requirements-docker.txt` for complete dependency lis
 Comprehensive documentation is organized in the `docs/` directory:
 
 **User Documentation** (`docs/user-guide/`):
+
 - **Medical GUI Guide** - Complete interface documentation
 - **Setup Guide** - Installation and configuration instructions
 - **GitHub Integration** - Repository and collaboration guide
 
 **Developer Documentation** (`docs/developer/`):
+
 - **Implementation Guide** - Technical implementation details
 - **Git Workflow** - Development workflow and best practices
 - **GUI Development Status** - Frontend/backend development progress
 - **DICOM Viewer** - Medical imaging viewer documentation
 - **Development Steps** - Project development roadmap
+- **Roadmap (Planning)** - See `docs/developer/roadmap.md` for planned work
+- **Experiments & Baselines** - See `docs/developer/experiments.md` for reproducible runs
 
 **Additional Resources**:
+
 - API reference and training guides
 - Model architecture descriptions
 - Clinical workflow integration guides
@@ -224,20 +235,24 @@ Comprehensive documentation is organized in the `docs/` directory:
 The project includes organized scripts for various tasks:
 
 **Setup Scripts** (`scripts/setup/`):
-- **Quick Setup**: `./scripts/setu./scripts/setup/quick_setup.sh` - Complete environment setup
+
+- **Quick Setup**: `./scripts/setup/quick_setup.sh` - Complete environment setup
 - **Enhanced GUI Setup**: `./scripts/setup/setup_enhanced_gui.sh` - GUI system setup
 - **Git Setup**: `./scripts/setup/setup_git.sh` - Git workflow configuration
 - **ROCm Setup**: `./scripts/setup/setup_rocm.sh` - AMD GPU/ROCm configuration
 
 **Utility Scripts** (`scripts/utilities/`):
-- **GUI Launcher**: `./scripts/utilitie./scripts/utilities/run_gui.sh` - Start the complete GUI application
+
+- **GUI Launcher**: `./scripts/utilities/run_gui.sh` - Start the complete GUI application
 - **System Status**: `./scripts/utilities/system_status.sh` - Check system health
-- **Git Status**: `./scripts/utilitie./scripts/utilities/git_status.sh` - Quick Git commands and status
+- **Git Status**: `./scripts/utilities/git_status.sh` - Quick Git commands and status
 
 **Demo Scripts** (`scripts/demo/`):
+
 - **System Demo**: `python scripts/demo/demo_system.py` - Comprehensive system demonstration
 
 **Development Tools** (`tools/`):
+
 - Project reorganization and maintenance scripts
 
 ## 🧪 Testing & Validation
@@ -269,6 +284,7 @@ pytest tests/integration/   # System integration tests
 ```
 
 **Test Structure**:
+
 - `tests/gui/` - GUI backend and frontend integration tests
 - `tests/integration/` - Full system integration and workflow tests
 - `tests/unit/` - Unit tests for individual components
@@ -276,6 +292,7 @@ pytest tests/integration/   # System integration tests
 ### Health Monitoring
 
 All Docker services include health checks:
+
 - Web API: `http://localhost:8000/health`
 - MLflow: `http://localhost:5001`
 - MONAI Label: `http://localhost:8001/info/`

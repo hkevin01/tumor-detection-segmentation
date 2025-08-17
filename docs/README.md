@@ -8,6 +8,8 @@ This directory contains comprehensive documentation for the tumor detection and 
 - **User Guides**: Step-by-step tutorials and usage examples
 - **Architecture**: Technical documentation of the system design
 - **Configuration**: Guide to configuration options and parameters
+- **Developer Roadmap**: See `developer/roadmap.md` for planned work
+- **Experiments & Baselines**: See `developer/experiments.md` for reproducible runs
 
 ## Getting Started
 
