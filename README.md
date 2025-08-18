@@ -10,7 +10,8 @@ Advanced tumor detection and segmentation platform with interactive annotation, 
 - **🎯 Interactive Annotation**: MONAI Label server with 3D Slicer integration and active learning
 - **📊 Experiment Tracking**: MLflow integration with medical imaging metrics and model management
 - **🔄 Multi-Modal Fusion**: Cross-attention mechanisms for T1/T1c/T2/FLAIR/CT/PET processing
-- **🐳 Production Ready**: Complete Docker deployment with GPU acceleration and web GUI
+- **� MONAI Dataset Integration**: Built-in support for Medical Segmentation Decathlon (MSD) datasets with auto-download
+- **�🐳 Production Ready**: Complete Docker deployment with GPU acceleration and web GUI
 - **🎨 Web Interface**: Beautiful dashboard at `http://localhost:8000/gui` for all services
 - **⚡ GPU Accelerated**: CUDA and ROCm support with automatic CPU fallback
 
@@ -80,10 +81,14 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Configure
-# Edit config.json to set data paths and hyperparameters
+# Download a MONAI dataset (example: Brain Tumor MSD Task01)
+python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour --root data/msd
 
-# Train a model
+# Train with MONAI dataset
+python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json
+
+# Or configure manually and train
+# Edit config.json to set data paths and hyperparameters
 python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json
 
 # Run inference
@@ -112,9 +117,38 @@ The platform includes these containerized services:
 ./run.sh help      # Show all commands
 ```
 
-## ⚙️ Configuration
+## ⚙️ Configuration & Datasets
 
-The platform includes comprehensive configuration management:
+The platform includes comprehensive configuration management and built-in dataset support:
+
+### MONAI Datasets (Recommended)
+
+Download and use Medical Segmentation Decathlon (MSD) datasets with automatic MONAI integration:
+
+```bash
+# Download brain tumor dataset (Task01_BrainTumour)
+python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour --root data/msd
+
+# Download liver tumor dataset (Task03_Liver)
+python scripts/data/pull_monai_dataset.py --dataset-id Task03_Liver --root data/msd
+
+# Train with pre-configured dataset recipes
+python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json
+```
+
+**Available Dataset Configs**:
+
+- `config/datasets/msd_task01_brain.json` - Multi-modal MRI brain tumor (T1/T1c/T2/FLAIR)
+- `config/datasets/msd_task03_liver.json` - CT liver tumor segmentation
+
+**Key Benefits**:
+
+- **Auto-download**: MONAI handles dataset fetching, verification, and extraction
+- **Standardized splits**: Reproducible train/validation splits
+- **Smart caching**: CacheDataset/SmartCacheDataset for efficient loading
+- **Transform presets**: Modality-specific preprocessing pipelines
+
+### Training Configuration (`config.json`)
 
 ### Main Configuration (`config.json`)
 
@@ -134,6 +168,25 @@ Pre-configured scenarios in `config/recipes/`:
 - `unetr_multimodal.json` - Multi-modal UNETR with cross-attention fusion
 - `cascade_detection.json` - Two-stage detection + segmentation pipeline
 - `dints_nas.json` - Neural architecture search configuration
+
+### Dataset Integration Options
+
+**MONAI Datasets (Recommended)**:
+
+- Medical Segmentation Decathlon (MSD) with auto-download
+- Standardized transforms and caching strategies
+- Built-in train/validation splits
+
+**Hugging Face Datasets (Optional)**:
+
+- Community-hosted medical imaging datasets
+- BraTS variants, LiTS, LIDC-IDRI subsets
+- Requires HF account and license acceptance for some datasets
+
+**Custom Datasets**:
+
+- BIDS-compatible layouts supported
+- Flexible configuration for various modalities
 
 ### GPU Support
 
@@ -194,7 +247,7 @@ Pre-configured scenarios in `config/recipes/`:
 
 Core frameworks and libraries:
 
-- **MONAI**: Medical imaging AI framework with Label server
+- **MONAI**: Medical imaging AI framework with Label server and Decathlon dataset support
 - **PyTorch**: Deep learning backend with CUDA/ROCm support
 - **MLflow**: Experiment tracking and model management
 - **FastAPI**: Web API framework for backend services
@@ -255,6 +308,42 @@ The project includes organized scripts for various tasks:
 
 - Project reorganization and maintenance scripts
 
+## 🔬 Dataset Usage Examples
+
+### Quick Start with MONAI Datasets
+
+**Brain Tumor Segmentation (Multi-modal MRI)**:
+
+```bash
+# Download MSD Task01 (BraTS-like: T1, T1c, T2, FLAIR → tumor labels)
+python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour
+
+# Train UNETR with multi-modal fusion
+python src/training/train_enhanced.py \
+  --config config/recipes/unetr_multimodal.json \
+  --dataset-config config/datasets/msd_task01_brain.json \
+  --amp
+```
+
+**Liver Tumor Segmentation (CT)**:
+
+```bash
+# Download MSD Task03 (CT → liver + tumor labels)
+python scripts/data/pull_monai_dataset.py --dataset-id Task03_Liver
+
+# Train with CT-specific transforms
+python src/training/train_enhanced.py \
+  --config config/recipes/unetr_multimodal.json \
+  --dataset-config config/datasets/msd_task03_liver.json
+```
+
+**Dataset Features**:
+
+- **Automatic Download**: MONAI handles fetching and verification
+- **Smart Caching**: Efficient loading with CacheDataset/SmartCacheDataset
+- **Modality-Aware Transforms**: Brain (4-channel MRI) vs CT (1-channel) preprocessing
+- **Reproducible Splits**: Deterministic train/validation partitioning
+
 ## 🧪 Testing & Validation
 
 ### System Validation
@@ -270,9 +359,9 @@ python test_system.py
 python validate_docker.py
 ```
 
-### Automated Testing
+### Automated Testing & CI/CD
 
-The project includes organized test suites:
+The project includes comprehensive testing and a modern CI/CD pipeline:
 
 ```bash
 # Run all tests
@@ -281,6 +370,11 @@ pytest tests/
 # Run specific test categories
 pytest tests/gui/           # GUI and frontend tests
 pytest tests/integration/   # System integration tests
+
+# Code quality checks (run locally)
+ruff check .                # Fast linting
+black . --check --diff      # Format checking
+mypy src                    # Type checking
 ```
 
 **Test Structure**:
@@ -288,6 +382,14 @@ pytest tests/integration/   # System integration tests
 - `tests/gui/` - GUI backend and frontend integration tests
 - `tests/integration/` - Full system integration and workflow tests
 - `tests/unit/` - Unit tests for individual components
+
+**CI/CD Pipeline Features**:
+
+- **Code Quality**: Ruff, Black, and Mypy checks for modern Python development
+- **Security**: Trivy vulnerability scanning for filesystem and container images
+- **Supply Chain**: SBOM (Software Bill of Materials) generation with Syft
+- **Testing**: Comprehensive test suites with coverage reporting
+- **Artifacts**: Security reports and SBOMs uploaded to GitHub Security tab
 
 ### Inference and Visualization
 
@@ -345,9 +447,11 @@ The platform is production-ready with:
 ✅ **Web GUI Interface** - Beautiful dashboard for all platform interactions
 ✅ **MLflow Integration** - Full experiment tracking and model management
 ✅ **MONAI Label Server** - Interactive annotation with 3D Slicer compatibility
+✅ **MONAI Dataset Support** - Built-in MSD dataset integration with auto-download
 ✅ **Multi-Modal AI Models** - Advanced fusion architectures implemented
 ✅ **Cascade Detection** - Two-stage detection and segmentation pipeline
 ✅ **GPU Acceleration** - CUDA and ROCm support with automatic detection
+✅ **Modern CI/CD** - Ruff/Black/Mypy, SBOM generation, and security scanning
 ✅ **Production Ready** - Health checks, monitoring, and persistent storage
 
 ## 🛠️ Development
