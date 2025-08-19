@@ -1,0 +1,60 @@
+#!/bin/bash
+# Demo script showing the complete enhanced overlay workflow
+# ===========================================================
+
+echo "🎯 TUMOR DETECTION OVERLAY ENHANCEMENT DEMO"
+echo "============================================="
+echo ""
+
+echo "📋 Available enhanced features:"
+echo "• Multi-slice overlay visualization during training"
+echo "• Probability heatmap generation and saving"
+echo "• Enhanced inference with overlay export"
+echo "• Visualization callback system"
+echo "• Reports directory structure"
+echo "• Qualitative review notebook"
+echo "• GUI integration utilities"
+echo ""
+
+echo "🚀 Training with overlays:"
+echo "cd /path/to/project"
+echo "source venv/bin/activate"
+echo "PYTHONPATH=\$PWD python src/training/train_enhanced.py \\"
+echo "  --config config/recipes/test_overlay.json \\"
+echo "  --dataset-config config/datasets/msd_task01_brain.json \\"
+echo "  --epochs 5 \\"
+echo "  --save-overlays \\"
+echo "  --overlays-max 5 \\"
+echo "  --save-prob-maps \\"
+echo "  --val-max-batches 3"
+echo ""
+
+echo "📊 Enhanced inference with overlay export:"
+echo "python src/inference/inference.py \\"
+echo "  --input /path/to/nifti/files \\"
+echo "  --model /path/to/trained/model.pth \\"
+echo "  --output /path/to/results \\"
+echo "  --save-overlays \\"
+echo "  --roi-size 128 128 128 \\"
+echo "  --overlap 0.5"
+echo ""
+
+echo "📚 Qualitative review:"
+echo "jupyter lab notebooks/qualitative_review_task01.ipynb"
+echo ""
+
+echo "🗂️ Post-processing and organization:"
+echo "python scripts/utilities/organize_training_outputs.py \\"
+echo "  --exp-dir /path/to/experiment \\"
+echo "  --output reports/learned_behaviors/exp_001"
+echo ""
+
+echo "🌐 GUI integration:"
+echo "python scripts/utilities/push_overlay_to_gui.py \\"
+echo "  --study-id STUDY_001 \\"
+echo "  --overlay-dir /path/to/overlays \\"
+echo "  --gui-endpoint http://localhost:8080"
+echo ""
+
+echo "✅ All enhancements implemented and ready to use!"
+echo "Note: Real dataset download required for actual training."

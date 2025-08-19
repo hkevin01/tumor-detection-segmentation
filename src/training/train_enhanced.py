@@ -111,6 +111,19 @@ def parse_args() -> argparse.Namespace:
         default=2,
         help="Max number of validation overlays to save per eval",
     )
+    # D) Validation control
+    p.add_argument(
+        "--val-max-batches",
+        type=int,
+        default=0,
+        help="Max validation batches per eval (0=all)",
+    )
+    # E) Probability maps
+    p.add_argument(
+        "--save-prob-maps",
+        action="store_true",
+        help="Save probability heatmaps for tumor class",
+    )
     return p.parse_args()
 
 
@@ -188,36 +201,114 @@ def save_overlay_png(
     label_onehot: torch.Tensor,
     pred_onehot: torch.Tensor,
     out_path: Path,
+    slices: Optional[list] = None,
 ) -> None:
     """
-    C) Save a simple middle-slice overlay (axial).
+    C) Save overlay (single slice or multi-slice grid).
     Supports multi-modal input by using channel 0 for background image.
     image_chn_first: (C, H, W, D) tensor (float)
     label_onehot: (C_out, H, W, D) tensor (0/1)
     pred_onehot:  (C_out, H, W, D) tensor (0/1)
+    slices: Optional list of z indices. If None, uses middle slice.
+            If list, creates a 1xK grid of overlays.
     """
     # use first modality as background image
     img = image_chn_first[0].detach().cpu().float().numpy()
     _, _, D = img.shape
-    z = D // 2
-    base = img[..., z]
-    base = (base - base.min()) / (base.max() - base.min() + 1e-8)
+
+    # Default to middle slice if no slices specified
+    if slices is None:
+        slices = [D // 2]
+
+    # Ensure slices are valid
+    slices = [max(0, min(s, D-1)) for s in slices]
 
     # pick class 1 if exists, else max over classes
     if label_onehot.shape[0] > 1:
-        gt = label_onehot[1].detach().cpu().numpy()[..., z]
-        pr = pred_onehot[1].detach().cpu().numpy()[..., z]
+        gt = label_onehot[1].detach().cpu().numpy()
+        pr = pred_onehot[1].detach().cpu().numpy()
     else:
-        gt = label_onehot.max(0).values.detach().cpu().numpy()[..., z]
-        pr = pred_onehot.max(0).values.detach().cpu().numpy()[..., z]
+        gt = label_onehot.max(0).values.detach().cpu().numpy()
+        pr = pred_onehot.max(0).values.detach().cpu().numpy()
 
-    plt.figure(figsize=(6, 6))
-    plt.axis("off")
-    plt.imshow(base, cmap="gray")
-    # green = GT edges, red = Pred edges
-    # simple edges by overlaying masks with alpha
-    plt.imshow(np.ma.masked_where(gt == 0, gt), cmap="Greens", alpha=0.3)
-    plt.imshow(np.ma.masked_where(pr == 0, pr), cmap="Reds", alpha=0.3)
+    n_slices = len(slices)
+    fig, axes = plt.subplots(1, n_slices, figsize=(6 * n_slices, 6))
+
+    # Ensure axes is always a list for consistent indexing
+    if n_slices == 1:
+        axes = [axes]
+
+    for i, z in enumerate(slices):
+        base = img[..., z]
+        base = (base - base.min()) / (base.max() - base.min() + 1e-8)
+
+        gt_slice = gt[..., z]
+        pr_slice = pr[..., z]
+
+        axes[i].axis("off")
+        axes[i].imshow(base, cmap="gray")
+        # green = GT edges, red = Pred edges with alpha overlay
+        axes[i].imshow(
+            np.ma.masked_where(gt_slice == 0, gt_slice),
+            cmap="Greens", alpha=0.3
+        )
+        axes[i].imshow(
+            np.ma.masked_where(pr_slice == 0, pr_slice),
+            cmap="Reds", alpha=0.3
+        )
+        axes[i].set_title(f"Slice {z}/{D-1}", fontsize=10)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight", pad_inches=0)
+    plt.close()
+
+
+def save_prob_map_png(
+    image_chn_first: torch.Tensor,
+    prob_tumor: torch.Tensor,
+    out_path: Path,
+    slices: Optional[list] = None,
+) -> None:
+    """
+    Save probability heatmap for tumor class.
+    image_chn_first: (C, H, W, D) tensor (float)
+    prob_tumor: (H, W, D) tensor (0-1 probabilities)
+    slices: Optional list of z indices. If None, uses middle slice.
+    """
+    # use first modality as background image
+    img = image_chn_first[0].detach().cpu().float().numpy()
+    probs = prob_tumor.detach().cpu().numpy()
+    _, _, D = img.shape
+
+    # Default to middle slice if no slices specified
+    if slices is None:
+        slices = [D // 2]
+
+    # Ensure slices are valid
+    slices = [max(0, min(s, D-1)) for s in slices]
+
+    n_slices = len(slices)
+    fig, axes = plt.subplots(1, n_slices, figsize=(6 * n_slices, 6))
+
+    # Ensure axes is always a list for consistent indexing
+    if n_slices == 1:
+        axes = [axes]
+
+    for i, z in enumerate(slices):
+        base = img[..., z]
+        base = (base - base.min()) / (base.max() - base.min() + 1e-8)
+        prob_slice = probs[..., z]
+
+        axes[i].axis("off")
+        axes[i].imshow(base, cmap="gray")
+        # Overlay probability heatmap
+        axes[i].imshow(
+            np.ma.masked_where(prob_slice < 0.1, prob_slice),
+            cmap="hot", alpha=0.6, vmin=0, vmax=1
+        )
+        axes[i].set_title(f"Prob Map Slice {z}/{D-1}", fontsize=10)
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(out_path, dpi=150, bbox_inches="tight", pad_inches=0)
@@ -268,16 +359,23 @@ def validate(
     save_overlays: bool = False,
     overlay_dir: Optional[Path] = None,
     overlays_max: int = 2,
+    val_max_batches: int = 0,
+    save_prob_maps: bool = False,
 ):
     model.eval()
     dice_metric = DiceMetric(include_background=False, reduction="mean")
     saved = 0
+    prob_maps_saved = 0
 
     # A) Use config-provided roi_size if available,
     #    else fall back to full image shape
     inferers = {}  # cache per image shape if not using fixed roi_size
 
     for batch_idx, batch in enumerate(loader):
+        # D) Validation batch limit
+        if val_max_batches > 0 and batch_idx >= val_max_batches:
+            break
+
         images = batch["image"].to(device)
         labels = batch["label"].to(device)
 
@@ -297,6 +395,26 @@ def validate(
             inferer = inferers[key]
 
         logits = inferer(images, model)
+
+        # E) Save probability maps before converting to discrete predictions
+        if (save_prob_maps and overlay_dir is not None
+                and prob_maps_saved < overlays_max):
+            probs = torch.softmax(logits, dim=1)
+            if probs.shape[1] > 1:  # Multi-class
+                prob_tumor = probs[0, 1]  # Class 1 probabilities
+            else:
+                prob_tumor = probs[0, 0]  # Single class
+
+            img_chn_first = images[0]  # (C,H,W,D)
+            D = img_chn_first.shape[-1]
+            slice_indices = [D // 4, D // 2, 3 * D // 4]
+
+            prob_path = overlay_dir / f"val_probmap_{batch_idx:03d}.png"
+            save_prob_map_png(
+                img_chn_first, prob_tumor, prob_path, slice_indices
+            )
+            prob_maps_saved += 1
+
         preds_list = [post_pred(i) for i in decollate_batch(logits)]
         gts_list = [post_label(i) for i in decollate_batch(labels)]
         dice_metric(y_pred=preds_list, y=gts_list)
@@ -307,8 +425,15 @@ def validate(
             img_chn_first = images[0]  # (C,H,W,D)
             gt_onehot = gts_list[0]    # (C_out,H,W,D)
             pr_onehot = preds_list[0]  # (C_out,H,W,D)
+
+            # Create multi-slice overlays (25%, 50%, 75% depth)
+            D = img_chn_first.shape[-1]
+            slice_indices = [D // 4, D // 2, 3 * D // 4]
+
             out_path = overlay_dir / f"val_overlay_{batch_idx:03d}.png"
-            save_overlay_png(img_chn_first, gt_onehot, pr_onehot, out_path)
+            save_overlay_png(
+                img_chn_first, gt_onehot, pr_onehot, out_path, slice_indices
+            )
             saved += 1
 
     mean_dice = float(dice_metric.aggregate().item())
@@ -491,6 +616,8 @@ def main() -> int:
                 save_overlays=args.save_overlays,
                 overlay_dir=overlays_dir,
                 overlays_max=args.overlays_max,
+                val_max_batches=args.val_max_batches,
+                save_prob_maps=args.save_prob_maps,
             )
             dice = metrics["dice"]
             print(f"  [Val] mean_dice={dice:.4f}")
