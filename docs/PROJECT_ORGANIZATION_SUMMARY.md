@@ -1,23 +1,156 @@
-# Project Organization Summary
+# Root Folder Organization Summary
 
-## 🎉 Organization Complete!
+## ✅ Completed Reorganization
 
-Your tumor detection and segmentation project has been successfully organized! All AI-generated files have been moved from the root directory into proper project folders following Python project best practices.
+The root folder has been successfully cleaned up and organized for better maintainability. Files have been moved to logical subfolders while preserving all functionality and updating references.
 
-## 📊 What Was Organized
+## 📁 New Folder Structure
 
-### ❌ Removed
-- **Duplicate Directory**: Removed nested `tumor-detection-segmentation/` directory that was duplicating the entire project structure
+### Root Directory (Essential Files Only)
+```
+├── README.md              # Main project documentation
+├── run.sh                 # Docker deployment script
+├── config.json            # Main configuration
+├── requirements.txt       # Core dependencies
+├── setup.py               # Package setup
+├── pytest.ini             # Test configuration
+├── mypy.ini               # Type checking configuration
+└── LICENSE                # Project license
+```
 
-### 🧪 Tests → `tests/`
-- `test_gui.py` → `tests/gui/test_gui.py`
-- `test_system.py` → `tests/integration/test_system.py`
+### Documentation (docs/project/)
+```
+docs/project/
+├── README.md                        # Documentation index
+├── DEPLOYMENT.md                    # Deployment guide
+├── DOCKER_GUIDE.md                  # Docker setup guide
+├── ENHANCED_TRAINING_SUMMARY.md     # Enhanced training features
+├── IMPLEMENTATION_COMPLETE.md       # Implementation status
+├── INSTALLATION_FIX.md              # Installation troubleshooting
+├── MONAI_IMPLEMENTATION_STATUS.md   # MONAI integration status
+├── MONAI_TESTS_COMPLETE.md         # MONAI testing status
+├── VERIFICATION_STATUS.md           # Verification results
+└── VERIFICATION_SUCCESS.md         # Success records
+```
 
-### 🚀 Scripts → `scripts/`
-**Setup Scripts** (`scripts/setup/`):
-- `quick_setup.sh`
-- `setup_enhanced_gui.sh`
-- `setup_git.sh` 
+### Validation Scripts (scripts/validation/)
+```
+scripts/validation/
+├── README.md                      # Validation scripts index
+├── test_system.py                 # System validation
+├── verify_monai_checklist.py     # MONAI verification checklist
+├── test_imports_quick.py          # Quick import tests
+├── test_monai_imports.py          # MONAI import validation
+├── validate_docker.py            # Docker validation
+├── validate_monai_integration.py # MONAI integration tests
+├── test_docker.sh                # Docker deployment tests
+├── verify_monai_venv.sh          # Virtual environment validation
+└── debug_datalist.py             # Dataset debugging tools
+```
+
+### Configuration (config/)
+```
+config/
+├── docker/                       # Docker configurations
+├── datasets/                     # Dataset configurations
+├── recipes/                      # Training recipes
+├── requirements-docker.txt       # Docker-specific dependencies
+└── requirements-fixed.txt        # Fixed dependency versions
+```
+
+### Scripts (scripts/)
+```
+scripts/
+├── validation/                   # Validation and testing scripts
+├── setup/                       # Setup and installation scripts
+├── utilities/                   # Utility scripts
+├── demo/                        # Demo and example scripts
+└── setup_fixed.sh              # Fixed setup script
+```
+
+## 🔗 Updated References
+
+All internal references have been updated to reflect the new file locations:
+
+### README.md Updates
+- `python test_system.py` → `python scripts/validation/test_system.py`
+- `python verify_monai_checklist.py` → `python scripts/validation/verify_monai_checklist.py`
+- `./test_docker.sh` → `scripts/validation/test_docker.sh`
+- `python test_monai_imports.py` → `python scripts/validation/test_monai_imports.py`
+- Documentation links point to `docs/project/` folder
+
+### Documentation Updates
+- All documentation files reference the new script paths
+- Cross-references between documentation files updated
+- Enhanced training summary references updated validation script path
+
+### Script Path Updates
+- Validation scripts updated to work from their new locations
+- Relative path imports adjusted for proper module resolution
+- Working directory handling updated in verification scripts
+
+## ✅ Verification
+
+All functionality has been preserved:
+
+### Test Execution Paths
+```bash
+# System validation
+python scripts/validation/test_system.py
+
+# MONAI verification checklist
+python scripts/validation/verify_monai_checklist.py
+
+# Quick import validation
+python scripts/validation/test_imports_quick.py
+
+# Docker validation
+bash scripts/validation/test_docker.sh
+
+# MONAI integration testing
+python scripts/validation/validate_monai_integration.py
+```
+
+### Documentation Access
+- All documentation now in `docs/project/` with proper index
+- Enhanced training documentation includes updated paths
+- Docker guide reflects new script locations
+
+### Configuration Files
+- Requirements files moved to `config/` folder
+- Docker configurations already in proper location
+- All training and dataset configs maintained in existing structure
+
+## 🎯 Benefits
+
+### Improved Organization
+- ✅ Clean root directory with only essential files
+- ✅ Logical grouping of related files
+- ✅ Clear separation of documentation, validation, and configuration
+- ✅ Easier navigation and maintenance
+
+### Maintained Functionality
+- ✅ All validation scripts work from new locations
+- ✅ Docker deployment unchanged (run.sh still in root)
+- ✅ Training and inference scripts unaffected
+- ✅ Test suites continue to pass
+
+### Enhanced Discoverability
+- ✅ Documentation index in docs/project/README.md
+- ✅ Validation scripts index in scripts/validation/README.md
+- ✅ Clear file organization with descriptive folder names
+- ✅ Updated main README.md with new paths
+
+## 🚀 Next Steps
+
+The organized structure is now ready for:
+1. **Development**: Clear separation makes adding new features easier
+2. **Deployment**: Essential files remain in root for Docker compatibility
+3. **Documentation**: Centralized documentation with proper organization
+4. **Testing**: All validation tools in dedicated folder with clear index
+5. **Maintenance**: Logical file grouping reduces complexity
+
+The medical imaging AI platform maintains full functionality while providing a much cleaner and more maintainable project structure.
 - `install_powershell.sh`
 
 **Utilities** (`scripts/utilities/`):
@@ -145,7 +278,7 @@ pytest tests/                   # Run organized tests
    ```bash
    # Run the organized tests
    pytest tests/
-   
+
    # Test GUI with new script location
    ./scripts/utilities/run_gui.sh
    ```

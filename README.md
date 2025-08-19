@@ -369,6 +369,9 @@ python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour
 python src/training/train_enhanced.py \
   --config config/recipes/unetr_multimodal.json \
   --dataset-config config/datasets/msd_task01_brain.json \
+  --sw-overlap 0.25 \
+  --save-overlays \
+  --overlays-max 5 \
   --amp
 ```
 
@@ -381,10 +384,24 @@ python scripts/data/pull_monai_dataset.py --dataset-id Task03_Liver
 # Train with CT-specific transforms
 python src/training/train_enhanced.py \
   --config config/recipes/unetr_multimodal.json \
-  --dataset-config config/datasets/msd_task03_liver.json
+  --dataset-config config/datasets/msd_task03_liver.json \
+  --sw-overlap 0.25 \
+  --save-overlays
 ```
 
-**Dataset Features**:
+### Dataset Features with Enhanced Training
+
+**Enhanced Training Script** (`train_enhanced.py`):
+
+The main training script provides MONAI-focused training with advanced features:
+
+- **Sliding Window Configuration**: ROI size from config with CLI overlap control (`--sw-overlap`)
+- **Auto Channel Detection**: Automatically infers input channels from dataset samples
+- **Validation Overlays**: Optional visualization with `--save-overlays` and `--overlays-max`
+- **MLflow Integration**: Experiment tracking when MLflow is available
+- **Mixed Precision**: AMP support with `--amp` flag
+
+**Training Features**:
 
 - **Automatic Download**: MONAI handles fetching and verification
 - **Smart Caching**: Efficient loading with CacheDataset/SmartCacheDataset
@@ -402,10 +419,10 @@ python src/training/train_enhanced.py \
 ./test_docker.sh
 
 # Validate all features
-python test_system.py
+python scripts/validation/test_system.py
 
 # Comprehensive Docker validation
-python validate_docker.py
+python scripts/validation/validate_docker.py
 
 # Test MONAI dataset integration
 python scripts/demo/test_monai_integration.py
@@ -416,6 +433,9 @@ python scripts/demo/test_monai_integration.py
 The platform includes comprehensive tests for MONAI dataset integration:
 
 ```bash
+# Quick verification checklist (imports + targeted tests)
+python scripts/validation/verify_monai_checklist.py
+
 # Run MONAI-specific tests
 pytest -m cpu  # CPU-only tests (CI-compatible)
 
@@ -424,11 +444,12 @@ pytest tests/unit/test_transforms_presets.py      # Transform validation
 pytest tests/integration/test_monai_msd_loader.py # Dataset loading tests
 
 # Environment check
-python test_monai_imports.py  # Verify dependencies
+python scripts/validation/test_monai_imports.py  # Verify dependencies
 ```
 
 **MONAI Test Features**:
 
+- **Quick Verification**: `scripts/validation/verify_monai_checklist.py` runs imports + key tests in isolation
 - **Fast & Lightweight**: Creates synthetic datasets (32x32x32 voxels) for testing
 - **CI-Compatible**: CPU-only tests that run without GPU or large downloads
 - **Comprehensive**: Validates transforms, dataset loading, and model compatibility
@@ -567,9 +588,9 @@ python src/main.py
 ## 📞 Support & Documentation
 
 - **Quick Start**: `./run.sh help` for all available commands
-- **Docker Setup**: `./test_docker.sh` to validate Docker configuration
-- **System Status**: `python test_system.py` for comprehensive validation
-- **Complete Guides**: See `DOCKER_GUIDE.md` and `DEPLOYMENT.md`
+- **Docker Setup**: `scripts/validation/test_docker.sh` to validate Docker configuration
+- **System Status**: `python scripts/validation/test_system.py` for comprehensive validation
+- **Complete Guides**: See `docs/project/DOCKER_GUIDE.md` and `docs/project/DEPLOYMENT.md`
 
 ## Contributing
 

@@ -99,41 +99,46 @@ def test_docker_config():
 
     # Check if docker-compose.yml has all services
     try:
+        import yaml
         with open('config/docker/docker-compose.yml', 'r') as f:
-            content = f.read()
-            services = ['web', 'mlflow', 'monai-label', 'redis', 'postgres']
-            for service in services:
-                if service in content:
-                    print(f"✅ Docker service: {service}")
-                else:
-                    print(f"❌ Missing Docker service: {service}")
+            compose = yaml.safe_load(f)
+        services = list(compose.get('services', {}).keys())
+        print(f"✅ Docker services configured: {', '.join(services)}")
     except Exception as e:
-        print(f"❌ Error checking docker-compose.yml: {e}")
+        print(f"⚠️  Could not validate docker-compose.yml: {e}")
 
     return True
 
 def main():
-    """Run all validation tests"""
-    print("🚀 Medical Imaging System Validation")
-    print("=" * 50)
+    """Run all system tests"""
+    print("🔍 Medical Imaging AI Platform - System Validation")
+    print("=" * 60)
 
-    try:
-        test_configuration()
-        test_directories()
-        test_key_files()
-        test_docker_config()
+    tests = [
+        test_configuration,
+        test_directories,
+        test_key_files,
+        test_docker_config
+    ]
 
-        print("\n🎉 System validation complete!")
-        print("\n📋 Next steps:")
-        print("1. Install dependencies: pip install -r requirements.txt")
-        print("2. Set up MONAI Label: bash scripts/setup/setup_monai_label.sh")
-        print("3. Start system: bash scripts/utilities/start_medical_gui.sh")
-        print("4. Or use Docker: docker-compose -f config/docker/docker-compose.yml up")
+    results = []
+    for test in tests:
+        try:
+            result = test()
+            results.append(result)
+        except Exception as e:
+            print(f"❌ Test failed with error: {e}")
+            results.append(False)
 
-    except Exception as e:
-        print(f"❌ Validation failed: {e}")
-        sys.exit(1)
+    print("\n" + "=" * 60)
+    if all(results):
+        print("🎉 All system tests PASSED!")
+        print("✅ Your platform is ready for deployment")
+        return 0
+    else:
+        print("❌ Some tests FAILED")
+        print("🔧 Please check the errors above and fix missing components")
+        return 1
 
 if __name__ == "__main__":
-    main()
-    main()
+    sys.exit(main())

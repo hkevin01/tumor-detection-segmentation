@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-MONAI Integration Verification Checklist Script
+MONAI Integration Verification Checklist Script.
 
-This script runs through the verification checklist provided in the user request:
-1. Python import sanity checks
-2. Unit tests execution
-3. Integration tests execution
-4. Optional training dry-run
+This script runs a short checklist:
+1) Python import sanity checks
+2) Unit tests (targeted)
+3) Integration tests (targeted)
+4) Optional training dry-run (skipped by default)
 """
 
 import os
@@ -25,9 +25,13 @@ def run_command(cmd, description, check_output=True):
 
     try:
         if isinstance(cmd, str):
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True, check=False
+            )
         else:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, check=False
+            )
 
         if check_output:
             print(result.stdout)
@@ -42,7 +46,7 @@ def run_command(cmd, description, check_output=True):
             print(f"❌ {description} - FAILED (exit code: {result.returncode})")
             return False
 
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         print(f"❌ Error running {description}: {e}")
         return False
 
@@ -54,7 +58,7 @@ def main():
     print("Following the verification steps from user request")
 
     # Change to project root
-    os.chdir(Path(__file__).parent)
+    os.chdir(Path(__file__).parent.parent.parent)
     print(f"Working directory: {os.getcwd()}")
 
     results = []
@@ -65,12 +69,28 @@ def main():
     print("="*60)
 
     # Test 1a: MONAI loader import
-    cmd1 = ["bash", "-c", "source venv/bin/activate && python -c \"from src.data.loaders_monai import load_monai_decathlon; print('ok')\""]
+    cmd1 = [
+        "bash",
+        "-c",
+        (
+            "source venv/bin/activate && "
+            "python -c \"from src.data.loaders_monai "
+            "import load_monai_decathlon; print('ok')\""
+        ),
+    ]
     success1 = run_command(cmd1, "MONAI loader import")
     results.append(("MONAI loader import", success1))
 
     # Test 1b: Transform presets import
-    cmd2 = ["bash", "-c", "source venv/bin/activate && python -c \"from src.data.transforms_presets import get_transforms_brats_like; print('ok')\""]
+    cmd2 = [
+        "bash",
+        "-c",
+        (
+            "source venv/bin/activate && "
+            "python -c \"from src.data.transforms_presets "
+            "import get_transforms_brats_like; print('ok')\""
+        ),
+    ]
     success2 = run_command(cmd2, "Transform presets import")
     results.append(("Transform presets import", success2))
 
@@ -79,7 +99,20 @@ def main():
     print("🧪 UNIT TESTS")
     print("="*60)
 
-    cmd3 = ["bash", "-c", "source venv/bin/activate && python -m pytest -q tests/unit/test_transforms_presets.py"]
+    # Run unit tests in isolated mode:
+    # - disable auto-loading of external pytest plugins
+    # - ignore repository pytest.ini (avoids --cov addopts)
+    # This prevents coverage DB noise and plugin interference.
+    cmd3 = [
+        "bash",
+        "-c",
+        (
+            "source venv/bin/activate && "
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS='' "
+            "python -m pytest -q -c /dev/null "
+            "tests/unit/test_transforms_presets.py"
+        ),
+    ]
     success3 = run_command(cmd3, "Unit tests - Transform presets")
     results.append(("Unit tests", success3))
 
@@ -88,7 +121,16 @@ def main():
     print("🔗 INTEGRATION TESTS (SYNTHETIC, CPU)")
     print("="*60)
 
-    cmd4 = ["bash", "-c", "source venv/bin/activate && python -m pytest -q tests/integration/test_monai_msd_loader.py"]
+    cmd4 = [
+        "bash",
+        "-c",
+        (
+            "source venv/bin/activate && "
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS='' "
+            "python -m pytest -q -c /dev/null "
+            "tests/integration/test_monai_msd_loader.py"
+        ),
+    ]
     success4 = run_command(cmd4, "Integration tests - MONAI MSD loader")
     results.append(("Integration tests", success4))
 
@@ -97,7 +139,11 @@ def main():
     print("🏃 TRAINING DRY-RUN (OPTIONAL - COMMENTED OUT)")
     print("="*60)
     print("Skipping training dry-run as it's slow. To run manually:")
-    print("python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --no-deterministic")
+    print(
+        "python src/training/train_enhanced.py --config "
+        "config/recipes/unetr_multimodal.json --dataset-config "
+        "config/datasets/msd_task01_brain.json --epochs 1 --no-deterministic"
+    )
 
     # Summary
     print("\n" + "="*60)
@@ -117,11 +163,17 @@ def main():
         print("✨ MONAI integration is working correctly!")
         print("\n📋 What you can do next:")
         print("1. Download real datasets:")
-        print("   python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour")
+        print(
+            "   python scripts/data/pull_monai_dataset.py "
+            "--dataset-id Task01_BrainTumour"
+        )
         print("2. Run complete test suite:")
         print("   python scripts/demo/test_monai_integration.py")
         print("3. Train models with MONAI datasets:")
-        print("   python src/training/train_enhanced.py --dataset-config config/datasets/msd_task01_brain.json")
+        print(
+            "   python src/training/train_enhanced.py --dataset-config "
+            "config/datasets/msd_task01_brain.json"
+        )
         return 0
     else:
         print("💥 Some verification checks FAILED")

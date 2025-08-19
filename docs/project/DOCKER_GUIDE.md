@@ -8,7 +8,7 @@ This guide provides step-by-step instructions for running the Medical Imaging AI
 
 ```bash
 # Test Docker setup
-./test_docker.sh
+scripts/validation/test_docker.sh
 
 # Start all services with GUI
 ./run.sh start

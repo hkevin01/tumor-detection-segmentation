@@ -1,529 +1,537 @@
 #!/usr/bin/env python3
-"""
-Enhanced training script for medical imaging models
-Supports UNETR, UNet, cascade detection, MONAI Label integration, and MLflow tracking
-"""
+# -*- coding: utf-8 -*-
+
+from __future__ import annotations
 
 import argparse
+import importlib
+import importlib.util
 import json
-import logging
 import os
-import sys
-import warnings
+import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Dict, Optional, Tuple, cast
 
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torch.nn as nn
+from monai.data import decollate_batch
+from monai.inferers import SlidingWindowInferer
+from monai.losses import DiceCELoss
+from monai.metrics import DiceMetric
+from monai.networks.nets import UNETR, UNet
+from monai.transforms import AsDiscrete
 from torch.utils.data import DataLoader
-from torch.cuda.amp import GradScaler, autocast
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent
-sys.path.append(str(project_root))
-
-try:
-    # MONAI imports
-    from monai.engines import SupervisedEvaluator, SupervisedTrainer
-    from monai.handlers import (CheckpointSaver, LrScheduleHandler,
-                                StatsHandler, TensorBoardHandler,
-                                ValidationHandler, from_engine)
-    from monai.losses import DiceFocalLoss, DiceLoss, FocalLoss
-    from monai.metrics import DiceMetric, HausdorffDistanceMetric
-    from monai.networks.nets import UNETR, UNet
-    from monai.optimizers import Novograd
-    from monai.transforms import AsDiscrete, Compose
-    from monai.utils import set_determinism
-    MONAI_AVAILABLE = True
-except ImportError:
-    MONAI_AVAILABLE = False
-    warnings.warn("MONAI not available. Please install with: pip install monai")
-
-# Import our custom modules
-try:
-    from src.data.preprocess import (EnhancedDataPreprocessing,
-                                     create_sample_datasets)
-    from src.fusion.attention_fusion import create_multi_modal_model
-    from src.models.cascade_detector import create_cascade_pipeline
-    from src.utils.logging_mlflow import setup_mlflow_tracking
-    from src.utils.ema import EMA
-except ImportError as e:
-    print(f"Could not import custom modules: {e}")
-    print("Make sure you're running from the project root directory")
-    sys.exit(1)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-
-class EnhancedTrainer:
-    """
-    Enhanced trainer with support for multiple architectures and advanced features
-    """
-
-    def __init__(self, config: Dict[str, Any]):
-        self.config = config
-        self.device = self._setup_device()
-        self.mlflow_logger = None
-        self.scaler = GradScaler(enabled=self.config.get("training", {}).get("amp", False))
-        self.ema = None
-
-        # Set deterministic behavior
-        if self.config.get("environment", {}).get("deterministic", True):
-            seed = self.config.get("environment", {}).get("seed", 42)
-            set_determinism(seed=seed)
-            torch.manual_seed(seed)
-
-        # Setup MLflow tracking
-        if self.config.get("logging", {}).get("backend") == "mlflow":
-            self.mlflow_logger = setup_mlflow_tracking(
-                experiment_name=self.config["logging"]["experiment_name"],
-                tracking_uri=self.config["logging"].get("tracking_uri")
-            )
-
-    def _setup_device(self) -> torch.device:
-        """Setup training device"""
-        device_config = self.config.get("environment", {}).get("device", "auto")
-
-        if device_config == "auto":
-            if torch.cuda.is_available():
-                device = torch.device("cuda")
-                logger.info(f"Using CUDA device: {torch.cuda.get_device_name(0)}")
-            else:
-                device = torch.device("cpu")
-                logger.info("Using CPU device")
-        else:
-            device = torch.device(device_config)
-
-        return device
-
-    def _create_model(self) -> nn.Module:
-        """Create model based on configuration"""
-        model_config = self.config["model"]
-        task = self.config["training"]["task"]
-
-        if task == "segmentation":
-            if model_config["architecture"] == "unetr":
-                model = create_multi_modal_model(
-                    model_type="unetr",
-                    fusion_mode=model_config.get("fusion_mode", "early"),
-                    config=model_config
-                )
-            elif model_config["architecture"] == "unet":
-                model = UNet(
-                    spatial_dims=3,
-                    in_channels=model_config["in_channels"],
-                    out_channels=model_config["out_channels"],
-                    channels=(16, 32, 64, 128, 256),
-                    strides=(2, 2, 2, 2),
-                    num_res_units=2,
-                    dropout=model_config.get("dropout_rate", 0.1),
-                )
-            else:
-                raise ValueError(f"Unknown architecture: {model_config['architecture']}")
-
-        elif task == "cascade":
-            model = create_cascade_pipeline(model_config)
-
-        else:
-            raise ValueError(f"Unknown task: {task}")
-
-        return model.to(self.device)
-
-    def _create_loss_function(self) -> nn.Module:
-        """Create loss function based on configuration"""
-        loss_config = self.config["loss"]
-        task = self.config["training"]["task"]
-
-        if task == "segmentation":
-            seg_loss_config = loss_config["segmentation"]
-
-            if seg_loss_config["type"] == "combined":
-                components = seg_loss_config["components"]
-                losses = []
-                weights = []
-
-                for loss_name, loss_params in components.items():
-                    weight = loss_params["weight"]
-                    params = loss_params["params"]
-
-                    if loss_name == "dice":
-                        loss_fn = DiceLoss(**params)
-                    elif loss_name == "focal":
-                        loss_fn = FocalLoss(**params)
-                    else:
-                        continue
-
-                    losses.append(loss_fn)
-                    weights.append(weight)
-
-                # Create combined loss
-                def combined_loss(pred, target):
-                    total_loss = 0
-                    for loss_fn, weight in zip(losses, weights):
-                        total_loss += weight * loss_fn(pred, target)
-                    return total_loss
-
-                return combined_loss
-
-            elif seg_loss_config["type"] == "dice_focal":
-                return DiceFocalLoss(
-                    sigmoid=True,
-                    focal_weight=seg_loss_config.get("focal_weight", 1.0),
-                    ce_weight=seg_loss_config.get("ce_weight", 1.0)
-                )
-
-        return DiceLoss(sigmoid=True)
-
-    def _create_optimizer(self, model: nn.Module):
-        """Create optimizer based on configuration"""
-        training_config = self.config["training"]
-
-        optimizer_name = training_config.get("optimizer", "adamw").lower()
-        lr = training_config["learning_rate"]
-        weight_decay = training_config.get("weight_decay", 1e-5)
-
-        if optimizer_name == "adamw":
-            return torch.optim.AdamW(
-                model.parameters(),
-                lr=lr,
-                weight_decay=weight_decay
-            )
-        elif optimizer_name == "adam":
-            return torch.optim.Adam(
-                model.parameters(),
-                lr=lr,
-                weight_decay=weight_decay
-            )
-        elif optimizer_name == "sgd":
-            return torch.optim.SGD(
-                model.parameters(),
-                lr=lr,
-                weight_decay=weight_decay,
-                momentum=0.9
-            )
-        elif optimizer_name == "novograd":
-            return Novograd(
-                model.parameters(),
-                lr=lr,
-                weight_decay=weight_decay
-            )
-        else:
-            raise ValueError(f"Unknown optimizer: {optimizer_name}")
-
-    def _create_scheduler(self, optimizer):
-        """Create learning rate scheduler"""
-        training_config = self.config["training"]
-        scheduler_name = training_config.get("scheduler", "cosine_annealing")
-
-        if scheduler_name == "cosine_annealing":
-            params = training_config.get("scheduler_params", {})
-            return torch.optim.lr_scheduler.CosineAnnealingLR(
-                optimizer,
-                T_max=params.get("T_max", training_config["max_epochs"]),
-                eta_min=params.get("eta_min", 1e-6)
-            )
-        elif scheduler_name == "step":
-            params = training_config.get("scheduler_params", {})
-            return torch.optim.lr_scheduler.StepLR(
-                optimizer,
-                step_size=params.get("step_size", 30),
-                gamma=params.get("gamma", 0.1)
-            )
-        else:
-            return None
-
-    def _create_datasets(self):
-        """Create training and validation datasets"""
-        data_config = self.config["data"]
-
-        # Initialize preprocessing
-        preprocessor = EnhancedDataPreprocessing(data_config)
-
-        # Create sample datasets for demonstration
-        # In practice, you would load your actual dataset here
-        datasets = create_sample_datasets("./data/samples")
-
-        # Create transforms
-        train_transforms = preprocessor.get_training_transforms()
-        val_transforms = preprocessor.get_validation_transforms()
-
-        # Create datasets with caching
-        train_dataset = preprocessor.create_dataset(
-            datasets["train"],
-            train_transforms,
-            cache_mode=data_config.get("cache_mode", "persistent"),
-            num_workers=self.config["training"].get("num_workers", 4)
-        )
-
-        val_dataset = preprocessor.create_dataset(
-            datasets["val"],
-            val_transforms,
-            cache_mode="none",  # Don't cache validation data
-        )
-
-        return train_dataset, val_dataset
-
-    def _create_data_loaders(self, train_dataset, val_dataset):
-        """Create data loaders"""
-        training_config = self.config["training"]
-
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=training_config["batch_size"],
-            shuffle=True,
-            num_workers=training_config.get("num_workers", 4),
-            pin_memory=training_config.get("pin_memory", True),
-            persistent_workers=training_config.get("persistent_workers", True)
-        )
-
-        val_loader = DataLoader(
-            val_dataset,
-            batch_size=training_config["batch_size"],
-            shuffle=False,
-            num_workers=training_config.get("num_workers", 4),
-            pin_memory=training_config.get("pin_memory", True)
-        )
-
-        return train_loader, val_loader
-
-    def train(self):
-        """Main training loop"""
-        logger.info("Starting enhanced training...")
-
-        # Start MLflow run
-        if self.mlflow_logger:
-            self.mlflow_logger.start_run()
-            self.mlflow_logger.log_training_config(
-                self.config["model"],
-                self.config["training"],
-                {"optimizer": self.config["training"].get("optimizer", "adamw")}
-            )
-            self.mlflow_logger.log_system_info()
-
-        try:
-            # Create model, loss, optimizer
-            model = self._create_model()
-            loss_function = self._create_loss_function()
-            optimizer = self._create_optimizer(model)
-            scheduler = self._create_scheduler(optimizer)
-
-            # Optional EMA
-            if self.config["training"].get("ema", {}).get("enabled", False):
-                decay = self.config["training"]["ema"].get("decay", 0.999)
-                self.ema = EMA(model, decay=decay)
-
-            # Log model if MLflow is available
-            if self.mlflow_logger:
-                # Create dummy input for model logging
-                dummy_input = torch.randn(
-                    1,
-                    self.config["model"]["in_channels"],
-                    *self.config["data"]["patch_size"]
-                ).to(self.device)
-
-                self.mlflow_logger.log_model(
-                    model,
-                    input_example=dummy_input.cpu()
-                )
-
-            # Create datasets and loaders
-            train_dataset, val_dataset = self._create_datasets()
-            train_loader, val_loader = self._create_data_loaders(train_dataset, val_dataset)
-
-            if self.mlflow_logger:
-                self.mlflow_logger.log_dataset_info(
-                    self.config["data"],
-                    train_size=len(train_dataset),
-                    val_size=len(val_dataset)
-                )
-
-            # Setup metrics
-            train_metrics = {
-                "dice": DiceMetric(include_background=False, reduction="mean")
-            }
-            val_metrics = {
-                "dice": DiceMetric(include_background=False, reduction="mean"),
-                "hd95": HausdorffDistanceMetric(
-                    include_background=False,
-                    reduction="mean",
-                    percentile=95
-                )
-            }
-
-            # Training loop
-            max_epochs = self.config["training"]["max_epochs"]
-            best_metric = -1
-
-            patience = self.config["training"].get("early_stopping", {}).get("patience", 0)
-            es_counter = 0
-
-            grad_clip = float(self.config["training"].get("grad_clip", 0) or 0)
-
-            for epoch in range(max_epochs):
-                logger.info(f"Epoch {epoch + 1}/{max_epochs}")
-
-                # Training phase
-                model.train()
-                train_loss = 0.0
-
-                for batch_idx, batch_data in enumerate(train_loader):
-                    inputs = batch_data["image"].to(self.device)
-                    targets = batch_data["label"].to(self.device)
-
-                    optimizer.zero_grad()
-
-                    # Forward pass with optional AMP
-                    use_amp = self.config["training"].get("amp", False)
-                    if use_amp:
-                        with autocast():
-                            outputs = model(inputs)
-                            loss = loss_function(outputs, targets)
-                        # Backward pass
-                        self.scaler.scale(loss).backward()
-                        # Gradient clipping if configured
-                        if grad_clip > 0:
-                            self.scaler.unscale_(optimizer)
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-                        self.scaler.step(optimizer)
-                        self.scaler.update()
-                    else:
-                        outputs = model(inputs)
-                        loss = loss_function(outputs, targets)
-                        loss.backward()
-                        if grad_clip > 0:
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-                        optimizer.step()
-
-                    # EMA update after optimizer step
-                    if self.ema is not None:
-                        self.ema.update(model)
-
-                    train_loss += loss.item()
-
-                    # Log batch metrics
-                    if batch_idx % 10 == 0:
-                        logger.info(f"  Batch {batch_idx}, Loss: {loss.item():.4f}")
-
-                # Validation phase
-                model.eval()
-                val_loss = 0.0
-
-                with torch.no_grad():
-                    def _run_validation(eval_model):
-                        v_loss = 0.0
-                        for batch_data in val_loader:
-                            inputs = batch_data["image"].to(self.device)
-                            targets = batch_data["label"].to(self.device)
-
-                            outputs = eval_model(inputs)
-                            loss = loss_function(outputs, targets)
-                            v_loss += loss.item()
-
-                            # Calculate metrics
-                            outputs_discrete = torch.argmax(outputs, dim=1, keepdim=True)
-                            for metric_name, metric_fn in val_metrics.items():
-                                metric_fn(outputs_discrete, targets)
-                        return v_loss
-
-                    # Run validation under EMA weights if available
-                    if self.ema is not None:
-                        with self.ema.apply(model):
-                            val_loss = _run_validation(model)
-                    else:
-                        val_loss = _run_validation(model)
-
-                # Aggregate metrics
-                val_metrics_values = {}
-                for metric_name, metric_fn in val_metrics.items():
-                    val_metrics_values[f"val_{metric_name}"] = metric_fn.aggregate().item()
-                    metric_fn.reset()
-
-                # Log metrics
-                epoch_metrics = {
-                    "train_loss": train_loss / len(train_loader),
-                    "val_loss": val_loss / len(val_loader),
-                    **val_metrics_values
-                }
-
-                if self.mlflow_logger:
-                    self.mlflow_logger.log_metrics(epoch_metrics, epoch=epoch)
-
-                logger.info(f"  Metrics: {epoch_metrics}")
-
-                # Update learning rate
-                if scheduler:
-                    scheduler.step()
-                    if self.mlflow_logger:
-                        self.mlflow_logger.log_metrics(
-                            {"learning_rate": optimizer.param_groups[0]["lr"]},
-                            epoch=epoch
-                        )
-
-                # Save best model
-                current_metric = val_metrics_values.get("val_dice", 0)
-                if current_metric > best_metric:
-                    best_metric = current_metric
-                    best_path = os.path.join("./models", "best_model.pth")
-                    torch.save(model.state_dict(), best_path)
-                    if self.mlflow_logger:
-                        self.mlflow_logger.log_checkpoint(best_path)
-                    logger.info(f"  New best model saved (Dice: {best_metric:.4f})")
-
-                    es_counter = 0
-                else:
-                    if patience > 0:
-                        es_counter += 1
-                        if es_counter >= patience:
-                            logger.info("Early stopping triggered.")
-                            break
-
-            logger.info("Training completed successfully!")
-
-        except Exception as e:
-            logger.error(f"Training failed: {e}")
-            raise
-        finally:
-            if self.mlflow_logger:
-                self.mlflow_logger.end_run()
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Enhanced Medical Imaging Training")
-    parser.add_argument(
+# Project loaders and transforms
+from src.data.loaders_monai import load_monai_decathlon
+from src.data.transforms_presets import (get_transforms_brats_like,
+                                         get_transforms_ct_liver)
+
+# Optional dependency: MLflow
+MLFLOW_AVAILABLE = importlib.util.find_spec("mlflow") is not None
+
+
+def _mlflow():
+    """Return mlflow module if installed, else None."""
+    if not MLFLOW_AVAILABLE:
+        return None
+    return importlib.import_module("mlflow")
+
+
+def set_determinism(seed: int = 42, enforce: bool = True) -> None:
+    import random
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    if enforce:
+        torch.use_deterministic_algorithms(True)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Enhanced training with MONAI datasets"
+    )
+    p.add_argument(
         "--config",
-        type=str,
         required=True,
-        help="Path to configuration file"
+        help="Path to base training config (JSON)",
     )
-    parser.add_argument(
-        "--resume",
-        type=str,
-        help="Path to checkpoint to resume from"
+    p.add_argument(
+        "--dataset-config",
+        help=(
+            "Path to dataset config (JSON). If monai_decathlon, will "
+            "auto-download"
+        ),
+    )
+    p.add_argument(
+        "--output-dir",
+        default="models/unetr",
+        help="Directory to write checkpoints and logs",
+    )
+    p.add_argument("--epochs", type=int, default=None, help="Override epochs")
+    p.add_argument(
+        "--amp", action="store_true", help="Enable mixed precision (AMP)"
+    )
+    p.add_argument("--seed", type=int, default=42, help="Random seed")
+    p.add_argument(
+        "--no-deterministic",
+        action="store_true",
+        help="Allow non-deterministic ops",
+    )
+    p.add_argument(
+        "--device", default=None, help="cpu | cuda | cuda:0 | mps | auto"
+    )
+    p.add_argument(
+        "--resume", default=None, help="Path to checkpoint to resume from"
+    )
+    p.add_argument(
+        "--val-interval", type=int, default=1, help="Validate every N epochs"
+    )
+    # A) Sliding-window overlap CLI
+    p.add_argument(
+        "--sw-overlap",
+        type=float,
+        default=0.25,
+        help="Sliding window overlap for validation/inference",
+    )
+    # C) Overlays
+    p.add_argument(
+        "--save-overlays",
+        action="store_true",
+        help="Save simple validation overlays each eval",
+    )
+    p.add_argument(
+        "--overlays-max",
+        type=int,
+        default=2,
+        help="Max number of validation overlays to save per eval",
+    )
+    return p.parse_args()
+
+
+def build_transforms_from_dataset_cfg(ds_cfg: Dict):
+    spacing = tuple(ds_cfg.get("spacing", (1.0, 1.0, 1.0)))
+    name = ds_cfg.get("transforms", "brats_like")
+    if name == "brats_like":
+        return get_transforms_brats_like(spacing=spacing)
+    if name == "ct_liver":
+        return get_transforms_ct_liver(spacing=spacing)
+    return get_transforms_brats_like(spacing=spacing)
+
+
+def build_model_from_cfg(
+    cfg: Dict, in_channels: int = 4, out_channels: int = 2
+) -> nn.Module:
+    arch = cfg.get("model", {}).get("arch", "unetr").lower()
+    if arch == "unetr":
+        return UNETR(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            img_size=tuple(
+                cfg.get("model", {}).get("img_size", [128, 128, 128])
+            ),
+            feature_size=cfg.get("model", {}).get("feature_size", 16),
+            hidden_size=cfg.get("model", {}).get("hidden_size", 768),
+            mlp_dim=cfg.get("model", {}).get("mlp_dim", 3072),
+            num_heads=cfg.get("model", {}).get("num_heads", 12),
+            pos_embed="perceptron",
+            norm_name="instance",
+            res_block=True,
+            dropout_rate=cfg.get("model", {}).get("dropout", 0.0),
+        )
+    return UNet(
+        spatial_dims=3,
+        in_channels=in_channels,
+        out_channels=out_channels,
+        channels=cfg.get("model", {}).get("channels", [16, 32, 64, 128, 256]),
+        strides=cfg.get("model", {}).get("strides", [2, 2, 2, 2]),
+        num_res_units=cfg.get("model", {}).get("num_res_units", 2),
+        norm=cfg.get("model", {}).get("norm", "INSTANCE"),
+        dropout=cfg.get("model", {}).get("dropout", 0.0),
     )
 
-    args = parser.parse_args()
 
-    # Load configuration
-    with open(args.config, 'r') as f:
-        config = json.load(f)
+def get_device(arg_device: Optional[str]) -> torch.device:
+    if arg_device in (None, "auto"):
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if getattr(torch.backends, "mps", None) and \
+                torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+    return torch.device(arg_device)
 
-    # Create output directories
-    os.makedirs("./models", exist_ok=True)
-    os.makedirs("./logs", exist_ok=True)
 
-    # Initialize and run trainer
-    trainer = EnhancedTrainer(config)
-    trainer.train()
+def infer_in_channels_from_loader(loader: DataLoader, default: int = 4) -> int:
+    """
+    B) Inspect a single batch to determine input channels robustly.
+    Does not permanently consume the iterator for training.
+    """
+    it = iter(loader)
+    try:
+        sample = next(it)
+    except StopIteration:
+        return default
+    img = sample["image"]
+    if img.ndim >= 5:
+        return int(img.shape[1])
+    return default
+
+
+def save_overlay_png(
+    image_chn_first: torch.Tensor,
+    label_onehot: torch.Tensor,
+    pred_onehot: torch.Tensor,
+    out_path: Path,
+) -> None:
+    """
+    C) Save a simple middle-slice overlay (axial).
+    Supports multi-modal input by using channel 0 for background image.
+    image_chn_first: (C, H, W, D) tensor (float)
+    label_onehot: (C_out, H, W, D) tensor (0/1)
+    pred_onehot:  (C_out, H, W, D) tensor (0/1)
+    """
+    # use first modality as background image
+    img = image_chn_first[0].detach().cpu().float().numpy()
+    _, _, D = img.shape
+    z = D // 2
+    base = img[..., z]
+    base = (base - base.min()) / (base.max() - base.min() + 1e-8)
+
+    # pick class 1 if exists, else max over classes
+    if label_onehot.shape[0] > 1:
+        gt = label_onehot[1].detach().cpu().numpy()[..., z]
+        pr = pred_onehot[1].detach().cpu().numpy()[..., z]
+    else:
+        gt = label_onehot.max(0).values.detach().cpu().numpy()[..., z]
+        pr = pred_onehot.max(0).values.detach().cpu().numpy()[..., z]
+
+    plt.figure(figsize=(6, 6))
+    plt.axis("off")
+    plt.imshow(base, cmap="gray")
+    # green = GT edges, red = Pred edges
+    # simple edges by overlaying masks with alpha
+    plt.imshow(np.ma.masked_where(gt == 0, gt), cmap="Greens", alpha=0.3)
+    plt.imshow(np.ma.masked_where(pr == 0, pr), cmap="Reds", alpha=0.3)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight", pad_inches=0)
+    plt.close()
+
+
+def train_one_epoch(
+    model,
+    loader: DataLoader,
+    optimizer,
+    loss_fn,
+    device,
+    scaler: Optional[torch.cuda.amp.GradScaler] = None,
+):
+    model.train()
+    epoch_loss = 0.0
+    count = 0
+    for batch in loader:
+        images = batch["image"].to(device)
+        labels = batch["label"].to(device)
+        optimizer.zero_grad(set_to_none=True)
+        if scaler is not None and device.type == "cuda":
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                logits = model(images)
+                loss = loss_fn(logits, labels)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            logits = model(images)
+            loss = loss_fn(logits, labels)
+            loss.backward()
+            optimizer.step()
+        epoch_loss += float(loss.item())
+        count += 1
+    return epoch_loss / max(1, count)
+
+
+@torch.no_grad()
+def validate(
+    model,
+    loader: DataLoader,
+    device,
+    post_pred,
+    post_label,
+    roi_size: Optional[Tuple[int, int, int]] = None,
+    sw_overlap: float = 0.25,
+    save_overlays: bool = False,
+    overlay_dir: Optional[Path] = None,
+    overlays_max: int = 2,
+):
+    model.eval()
+    dice_metric = DiceMetric(include_background=False, reduction="mean")
+    saved = 0
+
+    # A) Use config-provided roi_size if available,
+    #    else fall back to full image shape
+    inferers = {}  # cache per image shape if not using fixed roi_size
+
+    for batch_idx, batch in enumerate(loader):
+        images = batch["image"].to(device)
+        labels = batch["label"].to(device)
+
+        if roi_size is not None:
+            inferer = SlidingWindowInferer(
+                roi_size=tuple(roi_size),
+                sw_batch_size=1,
+                overlap=sw_overlap,
+            )
+        else:
+            # cache inferer per final spatial dims to avoid re-alloc
+            key = tuple(images.shape[-3:])
+            if key not in inferers:
+                inferers[key] = SlidingWindowInferer(
+                    roi_size=key, sw_batch_size=1, overlap=sw_overlap
+                )
+            inferer = inferers[key]
+
+        logits = inferer(images, model)
+        preds_list = [post_pred(i) for i in decollate_batch(logits)]
+        gts_list = [post_label(i) for i in decollate_batch(labels)]
+        dice_metric(y_pred=preds_list, y=gts_list)
+
+        # C) Optional overlays
+        if save_overlays and overlay_dir is not None and saved < overlays_max:
+            # Use first item in batch
+            img_chn_first = images[0]  # (C,H,W,D)
+            gt_onehot = gts_list[0]    # (C_out,H,W,D)
+            pr_onehot = preds_list[0]  # (C_out,H,W,D)
+            out_path = overlay_dir / f"val_overlay_{batch_idx:03d}.png"
+            save_overlay_png(img_chn_first, gt_onehot, pr_onehot, out_path)
+            saved += 1
+
+    mean_dice = float(dice_metric.aggregate().item())
+    dice_metric.reset()
+    return {"dice": mean_dice, "n": len(loader)}
+
+
+def main() -> int:
+    args = parse_args()
+    set_determinism(args.seed, enforce=not args.no_deterministic)
+
+    # Device
+    device = get_device(args.device)
+
+    # Output dir
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    overlays_dir = out_dir / "overlays"
+
+    # Load base config
+    with open(args.config, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    # Dataset setup
+    ds_cfg = None
+    if args.dataset_config:
+        with open(args.dataset_config, "r", encoding="utf-8") as f:
+            ds_cfg = json.load(f)
+
+    # Build transforms
+    if ds_cfg:
+        t_train, t_val = build_transforms_from_dataset_cfg(ds_cfg)
+    else:
+        t_train, t_val = get_transforms_brats_like()
+
+    # Build DataLoaders using existing loader API
+    if not (ds_cfg and ds_cfg.get("source") == "monai_decathlon"):
+        raise RuntimeError("Requires --dataset-config (monai_decathlon).")
+
+    train_key = ds_cfg.get("splits", {}).get("train_key", "training")
+    val_key = ds_cfg.get("splits", {}).get("val_key", "validation")
+    data_root = ds_cfg.get("data_root", "data/msd")
+    dataset_id = ds_cfg.get("dataset_id", "Task01_BrainTumour")
+    loader_cfg = ds_cfg.get("loader", {})
+
+    train_res = load_monai_decathlon(
+        root_dir=data_root,
+        task=dataset_id,
+        section=train_key,
+        download=True,
+        cache_rate=0.0,
+        num_workers=int(loader_cfg.get("num_workers", 4)),
+        transform=t_train,
+        batch_size=int(loader_cfg.get("batch_size", 1)),
+        pin_memory=bool(loader_cfg.get("pin_memory", False)),
+    )
+    val_res = load_monai_decathlon(
+        root_dir=data_root,
+        task=dataset_id,
+        section=val_key,
+        download=True,
+        cache_rate=0.0,
+        num_workers=int(loader_cfg.get("num_workers", 4)),
+        transform=t_val,
+        batch_size=int(loader_cfg.get("batch_size", 1)),
+        pin_memory=bool(loader_cfg.get("pin_memory", False)),
+    )
+
+    train_loader = train_res["dataloader"]
+    val_loader = val_res["dataloader"]
+    # dataset meta (kept minimal to avoid unused warnings)
+
+    # B) Infer in_channels from a real batch before building the model
+    inferred_in_channels = infer_in_channels_from_loader(
+        train_loader, default=4
+    )
+    out_channels = cfg.get("model", {}).get("out_channels", 2)
+    model = build_model_from_cfg(
+        cfg,
+        in_channels=inferred_in_channels,
+        out_channels=out_channels,
+    ).to(device)
+
+    # Loss, optimizer, scheduler
+    loss_fn = DiceCELoss(
+        to_onehot_y=True,
+        softmax=True,
+        include_background=False,
+    )
+    lr = cfg.get("optim", {}).get("lr", 1e-4)
+    weight_decay = cfg.get("optim", {}).get("weight_decay", 0.0)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=lr, weight_decay=weight_decay
+    )
+    epochs = args.epochs or cfg.get("trainer", {}).get("epochs", 50)
+    val_interval = args.val_interval
+
+    # AMP scaler
+    scaler = (
+        torch.cuda.amp.GradScaler()
+        if (args.amp and device.type == "cuda")
+        else None
+    )
+
+    # Resume if provided
+    start_epoch = 0
+    if args.resume is not None and os.path.isfile(args.resume):
+        state = torch.load(args.resume, map_location="cpu")
+        model.load_state_dict(state.get("model", state))
+        if "optimizer" in state:
+            optimizer.load_state_dict(state["optimizer"])
+        start_epoch = state.get("epoch", 0)
+        print(f"[INFO] Resumed from {args.resume} at epoch {start_epoch}")
+
+    # Post transforms for validation metrics
+    post_pred = AsDiscrete(argmax=True, to_onehot=out_channels)
+    post_label = AsDiscrete(to_onehot=out_channels)
+
+    # A) Determine roi_size for validation inferer from config if available
+    roi_size_typed: Optional[Tuple[int, int, int]] = None
+    model_img_size = cfg.get("model", {}).get("img_size", None)
+    if isinstance(model_img_size, (list, tuple)) and len(model_img_size) == 3:
+        roi_size_typed = cast(
+            Tuple[int, int, int], tuple(int(x) for x in model_img_size)
+        )
+
+    # MLflow logging
+    mlflow = _mlflow()
+    if mlflow:
+        mlflow.set_experiment(
+            cfg.get("mlflow", {}).get("experiment", "medical-imaging")
+        )
+        run_name = cfg.get("mlflow", {}).get(
+            "run_name", f"run-{int(time.time())}"
+        )
+        mlflow.start_run(run_name=run_name)
+        mlflow.log_params({
+            "arch": cfg.get("model", {}).get("arch", "unetr"),
+            "in_channels": inferred_in_channels,
+            "out_channels": out_channels,
+            "lr": lr,
+            "epochs": epochs,
+            "amp": bool(scaler is not None),
+            "dataset_task": ds_cfg.get("dataset_id") if ds_cfg else None,
+            "seed": args.seed,
+            "roi_size": (
+                roi_size_typed if roi_size_typed is not None else "full"
+            ),
+            "sw_overlap": args.sw_overlap,
+        })
+
+    best_dice = -1.0
+    best_ckpt = out_dir / "best.pt"
+
+    for epoch in range(start_epoch, epochs):
+        t0 = time.time()
+        train_loss = train_one_epoch(
+            model, train_loader, optimizer, loss_fn, device, scaler
+        )
+        dt = time.time() - t0
+
+        print(
+            f"[Ep {epoch+1}/{epochs}] loss={train_loss:.4f} "
+            f"t={dt:.1f}s"
+        )
+        if mlflow:
+            mlflow.log_metrics(
+                {"train/loss": train_loss, "time/epoch_s": dt}, step=epoch
+            )
+
+        if (epoch + 1) % val_interval == 0:
+            metrics = validate(
+                model,
+                val_loader,
+                device,
+                post_pred,
+                post_label,
+                roi_size=roi_size_typed,
+                sw_overlap=args.sw_overlap,
+                save_overlays=args.save_overlays,
+                overlay_dir=overlays_dir,
+                overlays_max=args.overlays_max,
+            )
+            dice = metrics["dice"]
+            print(f"  [Val] mean_dice={dice:.4f}")
+            if mlflow:
+                mlflow.log_metric("val/dice", dice, step=epoch)
+            if dice > best_dice:
+                best_dice = dice
+                state = {
+                    "model": model.state_dict(),
+                    "optimizer": optimizer.state_dict(),
+                    "epoch": epoch,
+                }
+                torch.save(state, best_ckpt)
+                print(
+                    f"  [CKPT] Saved best to {best_ckpt} "
+                    f"(dice={best_dice:.4f})"
+                )
+
+    final_ckpt = out_dir / "last.pt"
+    final_state = {
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "epoch": epochs - 1,
+    }
+    torch.save(final_state, final_ckpt)
+    print(
+        f"[DONE] Saved final checkpoint to {final_ckpt}. "
+        f"Best dice={best_dice:.4f}"
+    )
+
+    if mlflow:
+        mlflow.log_artifact(str(best_ckpt))
+        mlflow.log_artifact(str(final_ckpt))
+        if args.save_overlays and overlays_dir.exists():
+            # log a couple of overlay images
+            for p in sorted(overlays_dir.glob("*.png"))[:3]:
+                mlflow.log_artifact(str(p))
+        mlflow.end_run()
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
-
-
-if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

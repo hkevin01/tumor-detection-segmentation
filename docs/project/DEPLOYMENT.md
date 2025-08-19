@@ -15,7 +15,7 @@ This platform provides state-of-the-art medical imaging capabilities with:
 All core components have been implemented and validated:
 
 ```bash
-python test_system.py
+python scripts/validation/test_system.py
 ```
 
 Expected output:
@@ -205,7 +205,7 @@ For issues and questions:
 Your medical imaging AI platform is fully configured and ready for production use. The system includes cutting-edge research capabilities while maintaining clinical workflow compatibility.
 
 **Next Steps:**
-1. Run `python test_system.py` to validate installation
+1. Run `python scripts/validation/test_system.py` to validate installation
 2. Start with Docker: `docker-compose up`
 3. Access the web interface: http://localhost:8000
 4. Begin with sample data and tutorials

@@ -3,17 +3,23 @@
 
 import numpy as np
 import torch
-from monai.transforms import Compose, EnsureChannelFirstd, RandSpatialCropd, ToTensord
+from monai.transforms import Compose, RandSpatialCropd, ToTensord
 
-from src.data.transforms_presets import get_transforms_brats_like, get_transforms_ct_liver
+from src.data.transforms_presets import (get_transforms_brats_like,
+                                         get_transforms_ct_liver)
 
 
 def _get_transforms_without_io(roi_size=(32, 32, 32)):
-    """Get basic transforms for testing without file I/O."""
+    """Get basic transforms for testing without file I/O.
+
+    Inputs are already channel-first; skip EnsureChannelFirstd to avoid
+    metadata/strict_check differences across environments.
+    """
     return Compose([
-        EnsureChannelFirstd(keys=["image", "label"]),
-        RandSpatialCropd(keys=["image", "label"], roi_size=roi_size, random_size=False),
-        ToTensord(keys=["image", "label"])
+        RandSpatialCropd(
+            keys=["image", "label"], roi_size=roi_size, random_size=False
+        ),
+        ToTensord(keys=["image", "label"]),
     ])
 
 
