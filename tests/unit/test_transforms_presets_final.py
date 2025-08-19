@@ -14,12 +14,8 @@ from src.data.transforms_presets import (get_transforms_brats_like,
 def _get_transforms_without_io(roi_size=(32, 32, 32)):
     """Get basic transforms for testing without file I/O."""
     return Compose([
-        EnsureChannelFirstd(keys=["image", "label"], strict_check=False),
-        RandSpatialCropd(
-            keys=["image", "label"], 
-            roi_size=roi_size, 
-            random_size=False
-        ),
+        EnsureChannelFirstd(keys=["image", "label"]),
+        RandSpatialCropd(keys=["image", "label"], roi_size=roi_size, random_size=False),
         ToTensord(keys=["image", "label"])
     ])
 

@@ -65,12 +65,12 @@ def main():
     print("="*60)
 
     # Test 1a: MONAI loader import
-    cmd1 = 'python -c "from src.data.loaders_monai import load_monai_decathlon; print(\'ok\')"'
+    cmd1 = ["bash", "-c", "source venv/bin/activate && python -c \"from src.data.loaders_monai import load_monai_decathlon; print('ok')\""]
     success1 = run_command(cmd1, "MONAI loader import")
     results.append(("MONAI loader import", success1))
 
     # Test 1b: Transform presets import
-    cmd2 = 'python -c "from src.data.transforms_presets import get_transforms_brats_like; print(\'ok\')"'
+    cmd2 = ["bash", "-c", "source venv/bin/activate && python -c \"from src.data.transforms_presets import get_transforms_brats_like; print('ok')\""]
     success2 = run_command(cmd2, "Transform presets import")
     results.append(("Transform presets import", success2))
 
@@ -79,7 +79,7 @@ def main():
     print("🧪 UNIT TESTS")
     print("="*60)
 
-    cmd3 = ["python", "-m", "pytest", "-q", "tests/unit/test_transforms_presets.py"]
+    cmd3 = ["bash", "-c", "source venv/bin/activate && python -m pytest -q tests/unit/test_transforms_presets.py"]
     success3 = run_command(cmd3, "Unit tests - Transform presets")
     results.append(("Unit tests", success3))
 
@@ -88,7 +88,7 @@ def main():
     print("🔗 INTEGRATION TESTS (SYNTHETIC, CPU)")
     print("="*60)
 
-    cmd4 = ["python", "-m", "pytest", "-q", "tests/integration/test_monai_msd_loader.py"]
+    cmd4 = ["bash", "-c", "source venv/bin/activate && python -m pytest -q tests/integration/test_monai_msd_loader.py"]
     success4 = run_command(cmd4, "Integration tests - MONAI MSD loader")
     results.append(("Integration tests", success4))
 

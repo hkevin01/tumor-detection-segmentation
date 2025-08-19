@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="9.427" timestamp="2025-08-18T20:37:41.770058-04:00" hostname="kevin-MS-7C91"><testcase classname="tests.unit.test_transforms_presets" name="test_brats_like_transforms_run" time="0.008" /></testsuite></testsuites>

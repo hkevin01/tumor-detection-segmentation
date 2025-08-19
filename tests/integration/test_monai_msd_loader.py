@@ -114,11 +114,30 @@ def test_load_monai_decathlon_synthetic(tmp_path: Path):
     # MONAI transforms
     t_train, t_val = get_transforms_brats_like(spacing=(1.0, 1.0, 1.0))
 
-    # Act
-    train_loader, val_loader, meta = load_monai_decathlon(
-        cfg=ds_cfg, transforms_train=t_train, transforms_val=t_val,
-        download=False, batch_size=1, num_workers=0, pin_memory=False
+    # Act - use the correct function signature
+    train_loader = load_monai_decathlon(
+        root_dir=ds_cfg["data_root"],
+        task=ds_cfg["dataset_id"],
+        section="training",
+        transform=t_train,
+        batch_size=ds_cfg["loader"]["batch_size"],
+        download=False
     )
+    
+    val_loader = load_monai_decathlon(
+        root_dir=ds_cfg["data_root"],
+        task=ds_cfg["dataset_id"],
+        section="validation",
+        transform=t_val,
+        batch_size=ds_cfg["loader"]["batch_size"],
+        download=False
+    )
+
+    # Create meta for compatibility
+    meta = {
+        "task": ds_cfg["dataset_id"],
+        "base_dir": str(base_dir)
+    }
 
     # Assert dataloaders and metadata
     assert meta["task"] == "Task01_BrainTumour"
@@ -156,10 +175,26 @@ def test_validation_loader_iterates(tmp_path: Path):
         "loader": {"batch_size": 1, "num_workers": 0, "pin_memory": False}
     }
     t_train, t_val = get_transforms_brats_like(spacing=(1.0, 1.0, 1.0))
-    train_loader, val_loader, meta = load_monai_decathlon(
-        cfg=ds_cfg, transforms_train=t_train, transforms_val=t_val,
-        download=False, batch_size=1, num_workers=0, pin_memory=False
+    
+    # Load training and validation data
+    train_loader = load_monai_decathlon(
+        root_dir=ds_cfg["data_root"],
+        task=ds_cfg["dataset_id"],
+        section="training",
+        transform=t_train,
+        batch_size=ds_cfg["loader"]["batch_size"],
+        download=False
     )
+    
+    val_loader = load_monai_decathlon(
+        root_dir=ds_cfg["data_root"],
+        task=ds_cfg["dataset_id"],
+        section="validation",
+        transform=t_val,
+        batch_size=ds_cfg["loader"]["batch_size"],
+        download=False
+    )
+    
     # Iterate both loaders
     for b in train_loader:
         assert b["image"].ndim == 5  # N C H W D
