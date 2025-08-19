@@ -1,15 +1,12 @@
 """
 Integration tests for MONAI MSD dataset loading.
 """
-import os
 import json
-import tempfile
 from pathlib import Path
-from typing import Tuple
 
-import pytest
 import nibabel as nib
 import numpy as np
+import pytest
 
 from src.data.loaders_monai import load_monai_decathlon
 from src.data.transforms_presets import get_transforms_brats_like
@@ -18,20 +15,20 @@ from src.data.transforms_presets import get_transforms_brats_like
 def _make_synthetic_brats_like(tmp_root: Path, n_train: int = 2, n_val: int = 1) -> Path:
     """Create synthetic BraTS-like dataset with proper structure."""
     task_dir = tmp_root / "Task01_BrainTumour"
-    
+
     # Create required directories
     (task_dir / "imagesTr").mkdir(parents=True, exist_ok=True)
     (task_dir / "imagesTs").mkdir(parents=True, exist_ok=True)
     (task_dir / "labelsTr").mkdir(parents=True, exist_ok=True)
-    
+
     # Synthetic 4D MRI volumes (multi-modal: FLAIR, T1, T1CE, T2)
     modalities = ["flair", "t1", "t1ce", "t2"]
     training_cases = []
-    
+
     # Generate training data
     for i in range(n_train):
         case_id = f"case_{i:03d}"
-        
+
         # Create multimodal images
         image_paths = []
         for mod in modalities:
@@ -40,40 +37,40 @@ def _make_synthetic_brats_like(tmp_root: Path, n_train: int = 2, n_val: int = 1)
             img_data = np.random.randint(0, 100, (64, 64, 32), dtype=np.int16)
             nib.save(nib.Nifti1Image(img_data, np.eye(4)), str(img_file))
             image_paths.append(str(img_file))
-        
+
         # Create segmentation mask
         label_file = task_dir / "labelsTr" / f"{case_id}.nii.gz"
         label_data = np.random.randint(0, 3, (64, 64, 32), dtype=np.uint8)
         nib.save(nib.Nifti1Image(label_data, np.eye(4)), str(label_file))
-        
+
         training_cases.append({
             "image": image_paths,
             "label": str(label_file)
         })
-    
+
     # Generate validation data
     validation_cases = []
     for i in range(n_val):
         case_id = f"case_{n_train + i:03d}"
-        
-        # Create multimodal images  
+
+        # Create multimodal images
         image_paths = []
         for mod in modalities:
             img_file = task_dir / "imagesTr" / f"{case_id}_{mod}.nii.gz"
             img_data = np.random.randint(0, 100, (64, 64, 32), dtype=np.int16)
             nib.save(nib.Nifti1Image(img_data, np.eye(4)), str(img_file))
             image_paths.append(str(img_file))
-        
+
         # Create segmentation mask
         label_file = task_dir / "labelsTr" / f"{case_id}.nii.gz"
         label_data = np.random.randint(0, 3, (64, 64, 32), dtype=np.uint8)
         nib.save(nib.Nifti1Image(label_data, np.eye(4)), str(label_file))
-        
+
         validation_cases.append({
             "image": image_paths,
             "label": str(label_file)
         })
-    
+
     # Create dataset.json
     dataset_json = {
         "name": "SyntheticBrainTumour",
@@ -81,7 +78,7 @@ def _make_synthetic_brats_like(tmp_root: Path, n_train: int = 2, n_val: int = 1)
         "tensorImageSize": "4D",
         "modality": {
             "0": "FLAIR",
-            "1": "T1w", 
+            "1": "T1w",
             "2": "T1Gd",
             "3": "T2w"
         },
@@ -96,14 +93,14 @@ def _make_synthetic_brats_like(tmp_root: Path, n_train: int = 2, n_val: int = 1)
         "training": training_cases,
         "validation": validation_cases
     }
-    
+
     with open(task_dir / "Task01_BrainTumour.json", 'w') as f:
         json.dump(dataset_json, f, indent=2)
-    
+
     return task_dir
 
 
-@pytest.mark.cpu 
+@pytest.mark.cpu
 def test_load_monai_decathlon_synthetic(tmp_path: Path):
     # Arrange synthetic dataset
     base_dir = _make_synthetic_brats_like(tmp_path)
@@ -154,7 +151,7 @@ def test_load_monai_decathlon_synthetic(tmp_path: Path):
         "task": ds_cfg["dataset_id"],
         "base_dir": str(base_dir)
     }
-    
+
     # Assert dataloaders and metadata
     assert meta["task"] == "Task01_BrainTumour"
     assert meta["base_dir"] == str(base_dir)
