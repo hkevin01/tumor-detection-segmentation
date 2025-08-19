@@ -4,7 +4,46 @@ Advanced tumor detection and segmentation platform with interactive annotation, 
 
 > **🐳 Docker Deployment Ready**: Complete containerized deployment with web GUI, MLflow tracking, and MONAI Label integration. Launch everything with `./run.sh start`
 
-## ✨ Key Features
+## Device and Inference Configuration
+
+The platform supports flexible device configuration for different computational environments:
+
+### Model Loading and Device Selection
+
+```python
+# Automatic device detection (CUDA/CPU)
+model = SegmentationModel(
+    model_name="unet",
+    in_channels=4,  # Auto-detected from dataset
+    out_channels=3,  # BraTS: whole tumor, tumor core, enhancing tumor
+    spatial_dims=3,
+    device="auto"  # or "cuda", "cpu", "mps" (Apple Silicon)
+)
+
+# Manual device specification for specific hardware
+model = SegmentationModel(device="cuda:1")  # Specific GPU
+model = SegmentationModel(device="cpu")     # Force CPU mode
+```
+
+### Inference Capabilities
+
+- **Multi-GPU Support**: Automatic detection and utilization of available GPUs
+- **Memory Optimization**: Sliding window inference for large volumes
+- **Test Time Augmentation (TTA)**: Improves segmentation accuracy through ensemble predictions
+- **Mixed Precision**: FP16 training and inference for memory efficiency
+- **Batch Processing**: Efficient processing of multiple patients
+- **Real-time Preview**: Live segmentation updates during interactive sessions
+
+### Performance Considerations
+
+- **GPU Memory**: 3D UNet requires ~8-12GB VRAM for full-resolution training
+- **CPU Fallback**: Full functionality available on CPU with longer processing times
+- **Sliding Window**: Configurable patch sizes for memory-constrained environments
+- **Progressive Loading**: Smart caching reduces I/O bottlenecks during training
+
+**Note**: The platform automatically adapts to available hardware - GPU acceleration when available, graceful CPU fallback otherwise.
+
+## MLflow Integration (Optional)
 
 - **🧠 Advanced AI Models**: Multi-modal UNETR, cascade detection, neural architecture search (DiNTS)
 - **🎯 Interactive Annotation**: MONAI Label server with 3D Slicer integration and active learning
@@ -147,6 +186,12 @@ python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.j
 - **Standardized splits**: Reproducible train/validation splits
 - **Smart caching**: CacheDataset/SmartCacheDataset for efficient loading
 - **Transform presets**: Modality-specific preprocessing pipelines
+
+**Cache Modes & Configuration**:
+
+- **Cache modes**: Set `"cache": "none"` (no caching), `"cache"` (full CacheDataset), or `"smart"` (SmartCacheDataset with memory window)
+- **Spacing & ROI**: Adjust `spacing` and ROI size in dataset configs or transform presets for your GPU memory
+- **Batch size**: Configure `loader.batch_size` in dataset configs based on available memory
 
 ### Training Configuration (`config.json`)
 
@@ -345,6 +390,8 @@ python src/training/train_enhanced.py \
 - **Smart Caching**: Efficient loading with CacheDataset/SmartCacheDataset
 - **Modality-Aware Transforms**: Brain (4-channel MRI) vs CT (1-channel) preprocessing
 - **Reproducible Splits**: Deterministic train/validation partitioning
+- **Auto-Channel Detection**: Training automatically infers 4 channels for Task01 (brain MRI), 1 channel for Task03 (CT liver)
+- **Flexible ROI Sizing**: Validation uses full image shape; configure ROI in model settings for memory optimization
 
 ## 🧪 Testing & Validation
 
