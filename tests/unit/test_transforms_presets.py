@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import nibabel as nib
 from pathlib import Path
 
+import nibabel as nib
+import numpy as np
 import torch
 
-from src.data.transforms_presets import (
-    get_transforms_brats_like,
-    get_transforms_ct_liver
-)
+from src.data.transforms_presets import (get_transforms_brats_like,
+                                         get_transforms_ct_liver)
 
 
 def _save(img: np.ndarray, path: Path):

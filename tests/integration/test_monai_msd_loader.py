@@ -4,10 +4,10 @@
 import json
 from pathlib import Path
 
+import nibabel as nib
 import numpy as np
 import pytest
 import torch
-import nibabel as nib
 
 from src.data.loaders_monai import load_monai_decathlon
 from src.data.transforms_presets import get_transforms_brats_like

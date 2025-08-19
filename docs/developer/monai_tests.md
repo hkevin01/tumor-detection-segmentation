@@ -30,7 +30,7 @@ End-to-end tests for the MONAI Decathlon dataset loader:
 # Unit tests for transform presets
 pytest -q tests/unit/test_transforms_presets.py
 
-# Integration tests for MONAI MSD loader  
+# Integration tests for MONAI MSD loader
 pytest -q tests/integration/test_monai_msd_loader.py
 
 # Run with specific markers
@@ -94,7 +94,7 @@ Integration tests include lightweight model validation:
 
 ```python
 # Smoke test with minimal UNet
-model = UNet(spatial_dims=3, in_channels=4, out_channels=2, 
+model = UNet(spatial_dims=3, in_channels=4, out_channels=2,
              channels=(8, 16, 32), strides=(2, 2))
 with torch.no_grad():
     y = model(batch["image"])  # Validates tensor flow

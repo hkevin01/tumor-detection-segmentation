@@ -274,6 +274,7 @@ Comprehensive documentation is organized in the `docs/` directory:
 - **GUI Development Status** - Frontend/backend development progress
 - **DICOM Viewer** - Medical imaging viewer documentation
 - **Development Steps** - Project development roadmap
+- **MONAI Tests** - MONAI dataset integration testing guide
 - **Roadmap (Planning)** - See `docs/developer/roadmap.md` for planned work
 - **Experiments & Baselines** - See `docs/developer/experiments.md` for reproducible runs
 
@@ -303,6 +304,7 @@ The project includes organized scripts for various tasks:
 **Demo Scripts** (`scripts/demo/`):
 
 - **System Demo**: `python scripts/demo/demo_system.py` - Comprehensive system demonstration
+- **MONAI Integration Tests**: `python scripts/demo/test_monai_integration.py` - MONAI dataset testing suite
 
 **Development Tools** (`tools/`):
 
@@ -357,7 +359,33 @@ python test_system.py
 
 # Comprehensive Docker validation
 python validate_docker.py
+
+# Test MONAI dataset integration
+python scripts/demo/test_monai_integration.py
 ```
+
+### MONAI Dataset Tests
+
+The platform includes comprehensive tests for MONAI dataset integration:
+
+```bash
+# Run MONAI-specific tests
+pytest -m cpu  # CPU-only tests (CI-compatible)
+
+# Individual test suites
+pytest tests/unit/test_transforms_presets.py      # Transform validation
+pytest tests/integration/test_monai_msd_loader.py # Dataset loading tests
+
+# Environment check
+python test_monai_imports.py  # Verify dependencies
+```
+
+**MONAI Test Features**:
+
+- **Fast & Lightweight**: Creates synthetic datasets (32x32x32 voxels) for testing
+- **CI-Compatible**: CPU-only tests that run without GPU or large downloads
+- **Comprehensive**: Validates transforms, dataset loading, and model compatibility
+- **Production-Ready**: Includes UNet forward pass validation
 
 ### Automated Testing & CI/CD
 
@@ -370,6 +398,7 @@ pytest tests/
 # Run specific test categories
 pytest tests/gui/           # GUI and frontend tests
 pytest tests/integration/   # System integration tests
+pytest tests/unit/          # Unit tests for individual components
 
 # Code quality checks (run locally)
 ruff check .                # Fast linting
@@ -389,6 +418,7 @@ mypy src                    # Type checking
 - **Security**: Trivy vulnerability scanning for filesystem and container images
 - **Supply Chain**: SBOM (Software Bill of Materials) generation with Syft
 - **Testing**: Comprehensive test suites with coverage reporting
+- **MONAI Integration**: Dedicated CPU-only MONAI dataset tests in CI
 - **Artifacts**: Security reports and SBOMs uploaded to GitHub Security tab
 
 ### Inference and Visualization
@@ -448,6 +478,7 @@ The platform is production-ready with:
 ✅ **MLflow Integration** - Full experiment tracking and model management
 ✅ **MONAI Label Server** - Interactive annotation with 3D Slicer compatibility
 ✅ **MONAI Dataset Support** - Built-in MSD dataset integration with auto-download
+✅ **MONAI Test Suite** - Comprehensive CPU-only tests for dataset integration
 ✅ **Multi-Modal AI Models** - Advanced fusion architectures implemented
 ✅ **Cascade Detection** - Two-stage detection and segmentation pipeline
 ✅ **GPU Acceleration** - CUDA and ROCm support with automatic detection

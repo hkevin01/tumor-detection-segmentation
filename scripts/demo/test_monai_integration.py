@@ -18,7 +18,7 @@ def run_test_command(test_path: str, description: str) -> bool:
     print(f"Running: {description}")
     print(f"Command: pytest -q {test_path}")
     print('='*60)
-    
+
     try:
         result = subprocess.run(
             ["python", "-m", "pytest", "-q", test_path],
@@ -26,19 +26,19 @@ def run_test_command(test_path: str, description: str) -> bool:
             text=True,
             check=False
         )
-        
+
         print(result.stdout)
         if result.stderr:
             print("STDERR:")
             print(result.stderr)
-            
+
         if result.returncode == 0:
             print(f"✅ {description} - PASSED")
             return True
         else:
             print(f"❌ {description} - FAILED")
             return False
-            
+
     except Exception as e:
         print(f"❌ Error running {description}: {e}")
         return False
@@ -49,11 +49,11 @@ def main():
     print("🧪 MONAI Dataset Integration Test Suite")
     print("=" * 60)
     print("Testing MONAI Decathlon loader, transforms, and training workflow")
-    
+
     # Change to project root
     project_root = Path(__file__).parent.parent
     print(f"Project root: {project_root}")
-    
+
     # Test cases to run
     test_cases = [
         ("tests/unit/test_transforms_presets.py",
