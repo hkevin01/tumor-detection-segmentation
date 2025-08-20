@@ -497,7 +497,7 @@ The platform provides comprehensive overlay visualization for both training and 
 
 **Inference on Validation Set with Overlays and Probability Maps:**
 ```bash
-python src/inference/inference_enhanced.py \
+python src/inference/inference.py \
   --config config/recipes/unetr_multimodal.json \
   --dataset-config config/datasets/msd_task01_brain.json \
   --model models/unetr/best.pt \
@@ -508,7 +508,7 @@ python src/inference/inference_enhanced.py \
 
 **Inference on New Images (Folder/File):**
 ```bash
-python src/inference/inference_enhanced.py \
+python src/inference/inference.py \
   --config config/recipes/unetr_multimodal.json \
   --model models/unetr/best.pt \
   --input data/new_cases/ \
@@ -553,6 +553,24 @@ reports/inference_exports/
 - **Slice Selection**: Use `--slices auto` for automatic selection or `--slices 30,60,90` for custom indices
 - **Affine Handling**: NIfTI outputs preserve spatial transformations from original DICOM/NIfTI headers for proper alignment in clinical viewers
 - **Device Selection**: Use `--device auto` for automatic GPU/CPU detection or specify manually (cuda, cpu, mps)
+
+#### Qualitative Review Notebook
+
+For interactive model evaluation and quality assessment:
+
+```bash
+jupyter notebook notebooks/qualitative_review_task01.ipynb
+```
+
+The notebook provides:
+
+- **Model Loading**: Loads trained UNETR/UNet models with configuration
+- **Validation Inference**: Runs inference on validation cases with TTA
+- **Interactive Visualization**: Multi-slice overlays and probability heatmaps
+- **Quality Assessment**: Side-by-side GT vs prediction comparison
+- **Export Functionality**: Saves figures and NIfTI masks for further analysis
+
+**Output**: Saved visualizations in `reports/qualitative/` directory.
 
 #### Legacy TTA Support
 
