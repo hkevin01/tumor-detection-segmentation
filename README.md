@@ -491,11 +491,78 @@ mypy src                    # Type checking
 
 ### Inference and Visualization
 
-- Enable test-time augmentation in the CLI by adding the `--tta` flag:
+#### Enhanced Overlay Export
+
+The platform provides comprehensive overlay visualization for both training and inference:
+
+**Inference on Validation Set with Overlays and Probability Maps:**
+```bash
+python src/inference/inference_enhanced.py \
+  --config config/recipes/unetr_multimodal.json \
+  --dataset-config config/datasets/msd_task01_brain.json \
+  --model models/unetr/best.pt \
+  --output-dir reports/inference_exports \
+  --save-overlays --save-prob-maps --class-index 1 \
+  --slices auto --tta --amp
+```
+
+**Inference on New Images (Folder/File):**
+```bash
+python src/inference/inference_enhanced.py \
+  --config config/recipes/unetr_multimodal.json \
+  --model models/unetr/best.pt \
+  --input data/new_cases/ \
+  --output-dir reports/new_inference \
+  --save-overlays --slices 40,60,80 --class-index 1
+```
+
+**Training with Overlays:**
+```bash
+python src/training/train_enhanced.py \
+  --config config/recipes/unetr_multimodal.json \
+  --dataset-config config/datasets/msd_task01_brain.json \
+  --epochs 2 --amp --save-overlays --overlays-max 5 \
+  --save-prob-maps --slices auto
+```
+
+#### Overlay Features
+
+- **Multi-slice Panels**: Automatic 25%/50%/75% axial slice selection or custom indices
+- **Class-specific Visualization**: Configurable tumor class display (--class-index)
+- **Probability Heatmaps**: Confidence visualization with magma colormap
+- **Affine Preservation**: NIfTI masks maintain spatial orientation from original images
+- **Test Time Augmentation**: TTA-averaged predictions for improved accuracy
+- **Organized Output**: Structured directories for overlays, probability maps, and masks
+
+#### Output Structure
+```
+reports/inference_exports/
+├── overlays/
+│   ├── case_0001_0_overlay.png      # GT vs Pred comparison
+│   ├── case_0001_0_pred_only.png    # Prediction-only view
+│   └── ...
+├── prob_maps/
+│   ├── case_0001_0_prob.png         # Probability heatmaps
+│   └── ...
+└── case_0001_0_mask.nii.gz          # NIfTI masks with correct affine
+```
+
+#### Notes
+
+- **Class Index**: For multi-class segmentation, use `--class-index` to specify which class to visualize (0=background, 1=tumor, etc.)
+- **Slice Selection**: Use `--slices auto` for automatic selection or `--slices 30,60,90` for custom indices
+- **Affine Handling**: NIfTI outputs preserve spatial transformations from original DICOM/NIfTI headers for proper alignment in clinical viewers
+- **Device Selection**: Use `--device auto` for automatic GPU/CPU detection or specify manually (cuda, cpu, mps)
+
+#### Legacy TTA Support
+
+For backward compatibility, the original inference script also supports TTA:
 
 ```bash
 python src/inference/inference.py --config config/recipes/unetr_multimodal.json --model models/unetr/checkpoint.pt --tta
 ```
+
+#### GUI Integration
 
 - The GUI backend exposes an overlay endpoint to preview labeled tumors for a study:
 
