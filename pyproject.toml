@@ -1,8 +1,23 @@
 [tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 markers = [
     "cpu: marks tests to run on CPU only (for CI/CD environments without GPU)",
     "gpu: marks tests that require GPU acceleration",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "slow: marks tests as slow running",
+    "preprocessing: marks tests for data preprocessing",
+    "inference: marks tests for model inference",
+    "api: marks tests for REST API endpoints",
+    "frontend: marks tests for frontend components",
+    "performance: marks tests for performance testing",
+    "timeout: marks tests with timeout limits",
+]
+addopts = ["--verbose", "--tb=short", "--strict-markers"]
+filterwarnings = [
+    "ignore::DeprecationWarning:.*SwigPy.*",
+    "ignore::UserWarning:.*torch.*",
 ]
