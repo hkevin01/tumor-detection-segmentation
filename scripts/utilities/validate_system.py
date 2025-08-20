@@ -95,7 +95,7 @@ if available_packages.get("mlflow", False):
 
     try:
         import mlflow
-        mlflow.set_tracking_uri("file:./test_mlruns")
+        mlflow.set_tracking_uri("file:scripts/validation/test_mlruns")
         print("  ✅ MLflow Tracking")
 
         # Test logging

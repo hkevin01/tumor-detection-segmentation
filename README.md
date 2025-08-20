@@ -300,7 +300,7 @@ Core frameworks and libraries:
 - **PostgreSQL**: Database backend for MLflow
 - **Redis**: Caching and session management
 
-See `requirements.txt` and `requirements-docker.txt` for complete dependency lists.
+See `requirements.txt` and `config/development/requirements-docker.txt` for complete dependency lists.
 
 ## 📖 Documentation
 
