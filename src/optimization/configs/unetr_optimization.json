@@ -1,0 +1,43 @@
+{
+  "optimizer": {
+    "study_name": "unetr_optimization_v1",
+    "storage_url": null,
+    "direction": "maximize",
+    "load_if_exists": true,
+    "enable_mlflow": false,
+    "mlflow_tracking_uri": null
+  },
+  "objective": {
+    "base_config_path": "config/recipes/unetr_multimodal.json",
+    "dataset_config_path": "config/datasets/msd_task01_brain.json",
+    "data_dir": "data/Task01_BrainTumour",
+    "output_dir": "reports/optimization/unetr_study",
+    "max_epochs": 50,
+    "early_stopping_patience": 10,
+    "validation_split": 0.2,
+    "target_metrics": {
+      "dice_score": 0.85,
+      "hausdorff_distance": 10.0,
+      "training_time": 3600
+    },
+    "weights": {
+      "performance": 0.7,
+      "efficiency": 0.2,
+      "complexity": 0.1
+    },
+    "pruning_enabled": true,
+    "device": "auto"
+  },
+  "search_space": {
+    "model_architecture": "unetr",
+    "include_loss_params": true,
+    "include_aug_params": true
+  },
+  "optimization": {
+    "n_trials": 100,
+    "timeout": null,
+    "n_jobs": 1,
+    "gc_after_trial": true,
+    "show_progress_bar": true
+  }
+}

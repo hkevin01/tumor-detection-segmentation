@@ -1,0 +1,43 @@
+{
+  "optimizer": {
+    "study_name": "fast_exploration_v1",
+    "storage_url": null,
+    "direction": "maximize",
+    "load_if_exists": true,
+    "enable_mlflow": false,
+    "mlflow_tracking_uri": null
+  },
+  "objective": {
+    "base_config_path": "config/recipes/unetr_multimodal.json",
+    "dataset_config_path": "config/datasets/msd_task01_brain.json",
+    "data_dir": "data/Task01_BrainTumour",
+    "output_dir": "reports/optimization/fast_exploration",
+    "max_epochs": 10,
+    "early_stopping_patience": 3,
+    "validation_split": 0.2,
+    "target_metrics": {
+      "dice_score": 0.75,
+      "hausdorff_distance": 15.0,
+      "training_time": 600
+    },
+    "weights": {
+      "performance": 0.6,
+      "efficiency": 0.3,
+      "complexity": 0.1
+    },
+    "pruning_enabled": true,
+    "device": "auto"
+  },
+  "search_space": {
+    "model_architecture": "auto",
+    "include_loss_params": true,
+    "include_aug_params": false
+  },
+  "optimization": {
+    "n_trials": 50,
+    "timeout": 3600,
+    "n_jobs": 1,
+    "gc_after_trial": true,
+    "show_progress_bar": true
+  }
+}

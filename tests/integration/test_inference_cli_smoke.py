@@ -86,7 +86,7 @@ class TestInferenceCLISmoke:
 
             # Run inference CLI
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(input_nifti),
@@ -140,7 +140,7 @@ class TestInferenceCLISmoke:
 
             # Run inference CLI on directory
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(input_dir),
@@ -185,7 +185,7 @@ class TestInferenceCLISmoke:
 
             # Run inference CLI with probability maps
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(input_nifti),
@@ -229,7 +229,7 @@ class TestInferenceCLISmoke:
 
             # Run inference CLI with custom slices
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(input_nifti),
@@ -254,7 +254,7 @@ class TestInferenceCLISmoke:
 
     def test_cli_help(self):
         """Test that CLI help works without errors."""
-        cmd = ["python", "src/inference/inference_enhanced.py", "--help"]
+        cmd = ["python", "src/inference/inference.py", "--help"]
 
         result = subprocess.run(
             cmd,
@@ -283,7 +283,7 @@ class TestInferenceCLISmoke:
 
             # Run CLI with non-existent input
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(tmp_path / "nonexistent.nii.gz"),
@@ -319,7 +319,7 @@ class TestInferenceCLISmoke:
 
             # Run inference CLI with CUDA
             cmd = [
-                "python", "src/inference/inference_enhanced.py",
+                "python", "src/inference/inference.py",
                 "--config", str(config_path),
                 "--model", str(model_path),
                 "--input", str(input_nifti),

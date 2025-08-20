@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+markers = [
+    "cpu: marks tests to run on CPU only (for CI/CD environments without GPU)",
+    "gpu: marks tests that require GPU acceleration",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "slow: marks tests as slow running",
+]

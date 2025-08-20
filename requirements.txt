@@ -46,6 +46,12 @@ alembic>=1.11.0
 prometheus-client>=0.17.0
 structlog>=23.0.0
 
+# Hyperparameter Optimization
+optuna>=3.3.0
+optuna-dashboard>=0.15.0
+plotly>=5.15.0
+mlflow>=2.5.0
+
 # Development and Testing
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
