@@ -365,7 +365,11 @@ def validate(
 
             out_path = overlay_dir / f"val_overlay_{batch_idx:03d}.png"
             save_overlay_panel(
-                img_chn_first, gt_onehot, pr_onehot, out_path, slice_indices
+                image_ch_first=img_chn_first,
+                label_onehot=gt_onehot,
+                pred_onehot=pr_onehot,
+                out_path=out_path,
+                slices=slice_indices
             )
             saved += 1
 
