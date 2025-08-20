@@ -28,6 +28,7 @@ from torch.utils.data import DataLoader
 from src.data.loaders_monai import load_monai_decathlon
 from src.data.transforms_presets import (get_transforms_brats_like,
                                          get_transforms_ct_liver)
+from src.training.callbacks.visualization import save_overlay_panel
 
 # Optional dependency: MLflow
 MLFLOW_AVAILABLE = importlib.util.find_spec("mlflow") is not None
@@ -194,74 +195,6 @@ def infer_in_channels_from_loader(loader: DataLoader, default: int = 4) -> int:
     if img.ndim >= 5:
         return int(img.shape[1])
     return default
-
-
-def save_overlay_png(
-    image_chn_first: torch.Tensor,
-    label_onehot: torch.Tensor,
-    pred_onehot: torch.Tensor,
-    out_path: Path,
-    slices: Optional[list] = None,
-) -> None:
-    """
-    C) Save overlay (single slice or multi-slice grid).
-    Supports multi-modal input by using channel 0 for background image.
-    image_chn_first: (C, H, W, D) tensor (float)
-    label_onehot: (C_out, H, W, D) tensor (0/1)
-    pred_onehot:  (C_out, H, W, D) tensor (0/1)
-    slices: Optional list of z indices. If None, uses middle slice.
-            If list, creates a 1xK grid of overlays.
-    """
-    # use first modality as background image
-    img = image_chn_first[0].detach().cpu().float().numpy()
-    _, _, D = img.shape
-
-    # Default to middle slice if no slices specified
-    if slices is None:
-        slices = [D // 2]
-
-    # Ensure slices are valid
-    slices = [max(0, min(s, D-1)) for s in slices]
-
-    # pick class 1 if exists, else max over classes
-    if label_onehot.shape[0] > 1:
-        gt = label_onehot[1].detach().cpu().numpy()
-        pr = pred_onehot[1].detach().cpu().numpy()
-    else:
-        gt = label_onehot.max(0).values.detach().cpu().numpy()
-        pr = pred_onehot.max(0).values.detach().cpu().numpy()
-
-    n_slices = len(slices)
-    fig, axes = plt.subplots(1, n_slices, figsize=(6 * n_slices, 6))
-
-    # Ensure axes is always a list for consistent indexing
-    if n_slices == 1:
-        axes = [axes]
-
-    for i, z in enumerate(slices):
-        base = img[..., z]
-        base = (base - base.min()) / (base.max() - base.min() + 1e-8)
-
-        gt_slice = gt[..., z]
-        pr_slice = pr[..., z]
-
-        axes[i].axis("off")
-        axes[i].imshow(base, cmap="gray")
-        # green = GT edges, red = Pred edges with alpha overlay
-        axes[i].imshow(
-            np.ma.masked_where(gt_slice == 0, gt_slice),
-            cmap="Greens", alpha=0.3
-        )
-        axes[i].imshow(
-            np.ma.masked_where(pr_slice == 0, pr_slice),
-            cmap="Reds", alpha=0.3
-        )
-        axes[i].set_title(f"Slice {z}/{D-1}", fontsize=10)
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=150, bbox_inches="tight", pad_inches=0)
-    plt.close()
 
 
 def save_prob_map_png(
@@ -431,7 +364,7 @@ def validate(
             slice_indices = [D // 4, D // 2, 3 * D // 4]
 
             out_path = overlay_dir / f"val_overlay_{batch_idx:03d}.png"
-            save_overlay_png(
+            save_overlay_panel(
                 img_chn_first, gt_onehot, pr_onehot, out_path, slice_indices
             )
             saved += 1

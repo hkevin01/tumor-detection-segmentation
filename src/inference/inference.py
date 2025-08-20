@@ -32,6 +32,13 @@ except ImportError:
 # Add repo src to path for training imports when running as a script
 sys.path.append(str(Path(__file__).parent.parent))
 
+try:
+    # Import visualization utilities
+    from src.training.callbacks.visualization import save_overlay_panel
+    VISUALIZATION_AVAILABLE = True
+except ImportError:
+    VISUALIZATION_AVAILABLE = False
+
 
 class TumorPredictor:
     """Class for running inference on medical images."""
@@ -81,18 +88,63 @@ class TumorPredictor:
         prediction: torch.Tensor,
         out_path: Path,
         slices: Optional[List[int]] = None,
+        ground_truth: Optional[torch.Tensor] = None,
     ) -> None:
         """
         Save overlay visualization for inference results.
         image: (C, H, W, D) tensor
-        prediction: (H, W, D) tensor (class labels)
+        prediction: (H, W, D) tensor (class labels) or (C, H, W, D) one-hot
+        ground_truth: Optional (H, W, D) or (C, H, W, D) ground truth labels
         """
         if not DEPENDENCIES_AVAILABLE:
             return
 
+        # Convert prediction to one-hot if needed
+        if prediction.ndim == 3:
+            # Convert class labels to one-hot
+            num_classes = int(prediction.max().item()) + 1
+            pred_oh = torch.nn.functional.one_hot(
+                prediction.long(), num_classes=num_classes
+            ).permute(3, 0, 1, 2).float()
+        else:
+            pred_oh = prediction
+
+        # Convert ground truth to one-hot if provided
+        if ground_truth is not None:
+            if ground_truth.ndim == 3:
+                num_classes = int(ground_truth.max().item()) + 1
+                gt_oh = torch.nn.functional.one_hot(
+                    ground_truth.long(), num_classes=num_classes
+                ).permute(3, 0, 1, 2).float()
+            else:
+                gt_oh = ground_truth
+        else:
+            # Create dummy ground truth (all zeros) for overlay function
+            gt_oh = torch.zeros_like(pred_oh)
+
+        # Use improved overlay panel if available, otherwise fallback
+        if VISUALIZATION_AVAILABLE:
+            save_overlay_panel(image, gt_oh, pred_oh, out_path, slices)
+        else:
+            self._fallback_overlay(image, pred_oh, out_path, slices)
+
+    def _fallback_overlay(
+        self,
+        image: torch.Tensor,
+        prediction: torch.Tensor,
+        out_path: Path,
+        slices: Optional[List[int]] = None,
+    ) -> None:
+        """Fallback overlay method if visualization callback unavailable."""
         # Use first channel as background
         img = image[0].detach().cpu().float().numpy()
-        pred = prediction.detach().cpu().numpy()
+
+        # Get class 1 if available, else max over classes
+        if prediction.shape[0] > 1:
+            pred = prediction[1].detach().cpu().numpy()
+        else:
+            pred = prediction.max(0).values.detach().cpu().numpy()
+
         _, _, D = img.shape
 
         # Default to 3 slices if not specified
@@ -440,7 +492,9 @@ class EnhancedTumorPredictor(TumorPredictor):
 
         # Save overlay if requested
         if save_overlays:
-            overlay_path = output_path / f"{case_id}_overlay.png"
+            overlay_dir = output_path / "inference_overlays"
+            overlay_dir.mkdir(parents=True, exist_ok=True)
+            overlay_path = overlay_dir / f"{case_id}_overlay.png"
             self.save_inference_overlay(
                 img_tensor, prediction.squeeze(), overlay_path
             )
