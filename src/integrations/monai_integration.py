@@ -392,12 +392,3 @@ class MonaiIntegration:
             "few_shot": True
         }
         return config
-            "model_type": "foundation",
-            "architecture": "transformer",
-            "input_modalities": ["CT", "MRI"],
-            "interaction_modes": ["point", "bounding_box", "scribble"],
-            "supported_anatomy": ["all"],
-            "zero_shot": True,
-            "few_shot": True
-        }
-        return config
