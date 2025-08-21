@@ -10,6 +10,7 @@ Enhancements:
 import json
 import logging
 import sys
+import warnings
 from pathlib import Path
 from typing import Any, Dict, Generator
 
@@ -17,6 +18,13 @@ import numpy as np
 import pytest
 import torch
 from fastapi.testclient import TestClient
+
+# Suppress SWIG-related deprecation warnings
+warnings.filterwarnings("ignore", message=".*has no __module__ attribute.*")
+warnings.filterwarnings("ignore", message=".*builtin type SwigPyPacked.*")
+warnings.filterwarnings("ignore", message=".*builtin type SwigPyObject.*")
+warnings.filterwarnings("ignore", message=".*builtin type swigvarlink.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=".*importlib.*")
 
 # Optional imports for IO libs
 try:  # pragma: no cover - optional in some environments

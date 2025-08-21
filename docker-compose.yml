@@ -1,0 +1,188 @@
+version: "3.8"
+
+services:
+  # Developm  # Production environment
+  tumor-detection-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: production
+    container_name: tumor-detection-prodironment
+  tumor-detection-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: development
+    container_name: tumor-detection-dev
+    volumes:
+      - .:/app
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_logs:/app/logs
+      - tumor_reports:/app/reports
+      # Mount Docker socket for Docker-in-Docker if needed
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000" # FastAPI
+      - "8888:8888" # Jupyter Lab
+      - "6006:6006" # TensorBoard
+    environment:
+      - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0
+      - JUPYTER_ENABLE_LAB=yes
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    networks:
+      - tumor-network
+
+  # Production environment
+  tumor-detection-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: production
+    container_name: tumor-detection-prod
+    volumes:
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_logs:/app/logs
+      - tumor_reports:/app/reports
+    ports:
+      - "8080:8000" # FastAPI production
+    environment:
+      - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0
+      - ENVIRONMENT=production
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - tumor-network
+    profiles: ["production"]
+
+  # Testing environment
+  tumor-detection-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: testing
+    container_name: tumor-detection-test
+    volumes:
+      - .:/app
+      - tumor_test_reports:/app/reports
+    environment:
+      - PYTHONPATH=/app
+      - TESTING=true
+    networks:
+      - tumor-network
+    profiles: ["testing"]
+
+  # Database for storing results
+  postgres:
+    image: postgres:15
+    container_name: tumor-detection-db
+    environment:
+      POSTGRES_DB: tumor_detection
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - tumor_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - tumor-network
+    profiles: ["database"]
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: tumor-detection-redis
+    volumes:
+      - tumor_redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - tumor-network
+    profiles: ["cache"]
+
+  # MLFlow for experiment tracking
+  mlflow:
+    image: python:3.11-slim
+    container_name: tumor-detection-mlflow
+    volumes:
+      - tumor_mlflow_data:/mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      bash -c "pip install mlflow[extras] &&
+               mlflow server
+               --backend-store-uri sqlite:////mlflow/mlflow.db
+               --default-artifact-root /mlflow/artifacts
+               --host 0.0.0.0
+               --port 5000"
+    networks:
+      - tumor-network
+    profiles: ["mlops"]
+
+  # Jupyter Lab for development
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: tumor-detection-jupyter
+    volumes:
+      - .:/app
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_notebooks:/app/notebooks
+    ports:
+      - "8889:8888"
+    environment:
+      - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0
+    command: >
+      bash -c "jupyter lab
+               --ip=0.0.0.0
+               --port=8888
+               --no-browser
+               --allow-root
+               --NotebookApp.token=''
+               --NotebookApp.password=''"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - tumor-network
+    profiles: ["jupyter"]
+
+volumes:
+  tumor_data:
+  tumor_models:
+  tumor_logs:
+  tumor_reports:
+  tumor_test_reports:
+  tumor_db_data:
+  tumor_redis_data:
+  tumor_mlflow_data:
+  tumor_notebooks:
+
+networks:
+  tumor-network:
+    driver: bridge

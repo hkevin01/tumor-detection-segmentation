@@ -16,8 +16,14 @@ markers = [
     "performance: marks tests for performance testing",
     "timeout: marks tests with timeout limits",
 ]
-addopts = ["--verbose", "--tb=short", "--strict-markers"]
+addopts = ["--verbose", "--tb=short", "--strict-markers", "--disable-warnings"]
 filterwarnings = [
     "ignore::DeprecationWarning:.*SwigPy.*",
+    "ignore::DeprecationWarning:.*has no __module__ attribute*",
+    "ignore::DeprecationWarning:.*builtin type SwigPyPacked*",
+    "ignore::DeprecationWarning:.*builtin type SwigPyObject*",
+    "ignore::DeprecationWarning:.*builtin type swigvarlink*",
     "ignore::UserWarning:.*torch.*",
+    "ignore::PendingDeprecationWarning",
+    "ignore::RuntimeWarning:.*numpy.*",
 ]

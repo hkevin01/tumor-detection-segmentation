@@ -1,0 +1,102 @@
+# Medical Imaging AI - Tumor Detection and Segmentation
+# Simple Docker build that works reliably
+
+FROM python:3.11-slim as base
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install basic system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    wget \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements first for better Docker layer caching
+COPY requirements.txt .
+
+# Install Python dependencies (simplified to avoid conflicts)
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# Development stage
+FROM base as development
+
+# Install core packages first
+RUN python -m pip install \
+    torch>=2.0.0 \
+    torchvision>=0.15.0 \
+    numpy>=1.21.0 \
+    matplotlib>=3.5.0 \
+    pandas>=1.5.0 \
+    scikit-learn>=1.2.0 \
+    scipy>=1.9.0 \
+    tqdm>=4.64.0
+
+# Install development tools
+RUN python -m pip install \
+    jupyter \
+    jupyterlab \
+    ipython \
+    pytest>=7.4.0 \
+    pytest-asyncio>=0.21.0 \
+    pytest-cov>=4.1.0 \
+    pytest-timeout>=2.1.0 \
+    black>=23.0.0 \
+    flake8>=6.0.0
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/models /app/logs /app/reports
+
+# Expose ports for development
+EXPOSE 8000 8888 6006
+
+# Default command for development
+CMD ["bash"]
+
+# Testing stage
+FROM development as testing
+
+# Copy test files
+COPY tests/ ./tests/
+
+# Run tests by default
+CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--disable-warnings"]
+
+# Production stage
+FROM base as production
+
+# Install minimal production dependencies
+RUN python -m pip install \
+    torch>=2.0.0 \
+    numpy>=1.21.0 \
+    fastapi>=0.100.0 \
+    uvicorn[standard]>=0.22.0
+
+# Copy only necessary files
+COPY src/ ./src/
+COPY pyproject.toml ./
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/models /app/logs /app/reports
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Expose port for API
+EXPOSE 8000
+
+# Default command for production
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
