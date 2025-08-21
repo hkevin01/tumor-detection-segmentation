@@ -1,0 +1,175 @@
+# Phase 4 Enhanced Docker Compose Configuration
+# ============================================
+# Includes services for nnU-Net, MONAI, and Detectron2 integrations
+
+version: "3.8"
+
+services:
+  # Development service with all integrations
+  tumor-detection-dev-phase4:
+    build:
+      context: .
+      dockerfile: Dockerfile.phase4
+      target: development
+    container_name: tumor-detection-dev-phase4
+    volumes:
+      - ./src:/app/src
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - nnunet_cache:/tmp/nnunet_cache
+      - monai_cache:/root/.cache/monai
+      - detectron2_cache:/root/.cache/detectron2
+    environment:
+      - PYTHONPATH=/app/src
+      - nnUNet_raw=/app/data/nnUNet_raw
+      - nnUNet_preprocessed=/app/data/nnUNet_preprocessed
+      - nnUNet_results=/app/models/nnUNet_results
+      - MONAI_DATA_DIRECTORY=/app/data/monai
+      - DETECTRON2_DATASETS=/app/data/detectron2
+      - CUDA_VISIBLE_DEVICES=0
+      - DOWNLOAD_MODELS=false
+    ports:
+      - "8888:8888" # Jupyter
+      - "6006:6006" # TensorBoard
+      - "4040:4040" # MLflow
+      - "8265:8265" # Weights & Biases
+    command: >
+      bash -c "
+        echo 'Starting Phase 4 Development Environment...' &&
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
+        tensorboard --logdir=/app/logs --host=0.0.0.0 --port=6006 &
+        echo 'Services started. Container ready for development.' &&
+        tail -f /dev/null
+      "
+    restart: unless-stopped
+
+  # Production service optimized for inference
+  tumor-detection-prod-phase4:
+    build:
+      context: .
+      dockerfile: Dockerfile.phase4
+      target: production
+    container_name: tumor-detection-prod-phase4
+    volumes:
+      - ./models:/app/models:ro
+      - ./data:/app/data:ro
+      - ./outputs:/app/outputs
+    environment:
+      - PYTHONPATH=/app/src
+      - nnUNet_raw=/app/data/nnUNet_raw
+      - nnUNet_preprocessed=/app/data/nnUNet_preprocessed
+      - nnUNet_results=/app/models/nnUNet_results
+      - MODEL_ENSEMBLE=true
+      - INFERENCE_MODE=production
+    ports:
+      - "8080:8080" # API endpoint
+    command: python -m src.api.main
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # Training service for model development
+  tumor-detection-train-phase4:
+    build:
+      context: .
+      dockerfile: Dockerfile.phase4
+    container_name: tumor-detection-train-phase4
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - training_cache:/tmp/training_cache
+    environment:
+      - PYTHONPATH=/app/src
+      - nnUNet_raw=/app/data/nnUNet_raw
+      - nnUNet_preprocessed=/app/data/nnUNet_preprocessed
+      - nnUNet_results=/app/models/nnUNet_results
+      - TRAINING_MODE=ensemble
+      - CUDA_VISIBLE_DEVICES=0
+      - WANDB_PROJECT=tumor-detection-phase4
+    command: python -m src.training.ensemble_trainer
+    profiles:
+      - training
+    restart: "no"
+
+  # Evaluation service for model benchmarking
+  tumor-detection-eval-phase4:
+    build:
+      context: .
+      dockerfile: Dockerfile.phase4
+    container_name: tumor-detection-eval-phase4
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data:ro
+      - ./models:/app/models:ro
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app/src
+      - nnUNet_raw=/app/data/nnUNet_raw
+      - nnUNet_results=/app/models/nnUNet_results
+      - EVALUATION_MODE=comprehensive
+    command: python -m src.evaluation.ensemble_evaluator
+    profiles:
+      - evaluation
+    restart: "no"
+
+  # MLflow tracking server
+  mlflow-server:
+    image: python:3.9-slim
+    container_name: tumor-detection-mlflow
+    volumes:
+      - ./logs/mlflow:/app/mlflow
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///app/mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/mlflow/artifacts
+    ports:
+      - "5000:5000"
+    command: >
+      bash -c "
+        pip install mlflow &&
+        mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///app/mlflow/mlflow.db --default-artifact-root /app/mlflow/artifacts
+      "
+    profiles:
+      - mlops
+    restart: unless-stopped
+
+  # MongoDB for experiment tracking
+  mongodb:
+    image: mongo:5.0
+    container_name: tumor-detection-mongo
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+    ports:
+      - "27017:27017"
+    profiles:
+      - mlops
+    restart: unless-stopped
+
+volumes:
+  nnunet_cache:
+    driver: local
+  monai_cache:
+    driver: local
+  detectron2_cache:
+    driver: local
+  training_cache:
+    driver: local
+  mongo_data:
+    driver: local
+
+networks:
+  default:
+    name: tumor-detection-phase4
+    driver: bridge
