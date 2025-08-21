@@ -54,15 +54,13 @@ check_dependencies() {
 build() {
     print_header "Building Docker Images"
 
-    # Build all stages
-    docker-compose build tumor-detection-dev
-    docker-compose build tumor-detection-prod
-    docker-compose build tumor-detection-test
+    # Build all stages using CPU compose file
+    docker-compose -f docker-compose.cpu.yml build tumor-detection-dev
+    docker-compose -f docker-compose.cpu.yml build tumor-detection-prod
+    docker-compose -f docker-compose.cpu.yml build tumor-detection-test
 
     print_status "All images built successfully"
-}
-
-# Function to start development environment
+}# Function to start development environment
 dev() {
     print_header "Starting Development Environment"
 
@@ -72,16 +70,15 @@ dev() {
         rm -rf venv
     fi
 
-    docker-compose up -d tumor-detection-dev
+    # Use CPU-only compose file by default
+    docker-compose -f docker-compose.cpu.yml up -d tumor-detection-dev
 
     print_status "Development environment started"
-    print_status "Access the container: docker-compose exec tumor-detection-dev bash"
+    print_status "Access the container: docker-compose -f docker-compose.cpu.yml exec tumor-detection-dev bash"
     print_status "FastAPI will be available at: http://localhost:8000"
     print_status "Jupyter Lab will be available at: http://localhost:8888"
     print_status "TensorBoard will be available at: http://localhost:6006"
-}
-
-# Function to start development with Jupyter
+}# Function to start development with Jupyter
 jupyter() {
     print_header "Starting Jupyter Lab Environment"
 
@@ -96,15 +93,13 @@ test() {
     print_header "Running Tests in Docker Container"
 
     # Build test image if it doesn't exist
-    docker-compose build tumor-detection-test
+    docker-compose -f docker-compose.cpu.yml build tumor-detection-test
 
     # Run tests
-    docker-compose --profile testing run --rm tumor-detection-test
+    docker-compose -f docker-compose.cpu.yml --profile testing run --rm tumor-detection-test
 
     print_status "Tests completed"
-}
-
-# Function to start production environment
+}# Function to start production environment
 prod() {
     print_header "Starting Production Environment"
 
@@ -130,12 +125,10 @@ stack() {
 stop() {
     print_header "Stopping All Services"
 
-    docker-compose down
+    docker-compose -f docker-compose.cpu.yml down
 
     print_status "All services stopped"
-}
-
-# Function to clean up
+}# Function to clean up
 clean() {
     print_header "Cleaning Up Docker Resources"
 

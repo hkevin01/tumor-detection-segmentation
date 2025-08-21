@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  # Development environment (CPU-only)
+  tumor-detection-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: development
+    container_name: tumor-detection-dev
+    volumes:
+      - .:/app
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_logs:/app/logs
+      - tumor_reports:/app/reports
+    ports:
+      - "8000:8000" # FastAPI
+      - "8888:8888" # Jupyter Lab
+      - "6006:6006" # TensorBoard
+    environment:
+      - PYTHONPATH=/app
+      - JUPYTER_ENABLE_LAB=yes
+    stdin_open: true
+    tty: true
+    networks:
+      - tumor-network
+
+  # Production environment (CPU-only)
+  tumor-detection-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: production
+    container_name: tumor-detection-prod
+    volumes:
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_logs:/app/logs
+      - tumor_reports:/app/reports
+    ports:
+      - "8080:8000" # FastAPI production
+    environment:
+      - PYTHONPATH=/app
+      - ENVIRONMENT=production
+    restart: unless-stopped
+    networks:
+      - tumor-network
+    profiles: ["production"]
+
+  # Testing environment
+  tumor-detection-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: testing
+    container_name: tumor-detection-test
+    volumes:
+      - .:/app
+      - tumor_test_reports:/app/reports
+    environment:
+      - PYTHONPATH=/app
+      - TESTING=true
+    networks:
+      - tumor-network
+    profiles: ["testing"]
+
+  # Jupyter Lab for development
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+      target: development
+    container_name: tumor-detection-jupyter
+    volumes:
+      - .:/app
+      - tumor_data:/app/data
+      - tumor_models:/app/models
+      - tumor_notebooks:/app/notebooks
+    ports:
+      - "8889:8888"
+    environment:
+      - PYTHONPATH=/app
+    command: >
+      bash -c "jupyter lab
+               --ip=0.0.0.0
+               --port=8888
+               --no-browser
+               --allow-root
+               --NotebookApp.token=''
+               --NotebookApp.password=''"
+    networks:
+      - tumor-network
+    profiles: ["jupyter"]
+
+volumes:
+  tumor_data:
+  tumor_models:
+  tumor_logs:
+  tumor_reports:
+  tumor_test_reports:
+  tumor_notebooks:
+
+networks:
+  tumor-network:
+    driver: bridge

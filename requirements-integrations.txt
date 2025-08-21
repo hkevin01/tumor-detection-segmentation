@@ -1,0 +1,136 @@
+# Phase 4 External Integrations Requirements
+# ==========================================
+# Additional dependencies for nnU-Net, MONAI, and Detectron2 integrations
+
+# Core deep learning framework (already in main requirements)
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.21.0
+
+# nnU-Net Framework
+# -----------------
+# Self-configuring medical image segmentation
+nnunetv2>=2.2.1
+dynamic-network-architectures>=0.2.0
+batchgenerators>=0.25.0
+medpy>=0.4.0
+SimpleITK>=2.0.0
+nibabel>=3.2.0
+
+# MONAI Framework
+# ---------------
+# Medical Open Network for AI
+monai[all]>=1.3.0
+# Individual MONAI components (if not using [all])
+# monai>=1.3.0
+# scikit-image>=0.19.0
+# pillow>=8.3.0
+# tensorboard>=2.8.0
+# gdown>=4.4.0
+# psutil>=5.8.0
+# tqdm>=4.62.0
+# cucim>=23.02.00  # For GPU-accelerated image processing
+# openslide-python>=1.1.2  # For whole slide images
+
+# Detectron2 Framework
+# -------------------
+# Facebook's advanced computer vision library
+# Note: Detectron2 installation can be complex, see below for alternatives
+detectron2 @ git+https://github.com/facebookresearch/detectron2.git
+# Alternative installations:
+# pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu118/torch2.0/index.html
+# conda install detectron2 -c conda-forge
+
+# Detectron2 dependencies
+fvcore>=0.1.5
+iopath>=0.1.7
+hydra-core>=1.1.0
+omegaconf>=2.1.0
+
+# Medical Image Processing
+# -----------------------
+itk>=5.3.0
+vtk>=9.2.0
+pydicom>=2.3.0
+nibabel>=3.2.0
+h5py>=3.7.0
+
+# Image Processing and Visualization
+# ----------------------------------
+opencv-python>=4.5.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0
+ipywidgets>=7.6.0
+
+# Scientific Computing
+# --------------------
+scipy>=1.8.0
+scikit-learn>=1.0.0
+pandas>=1.3.0
+
+# Medical Imaging Specific
+# ------------------------
+pyradiomics>=3.0.1  # Radiomics feature extraction
+pynrrd>=0.4.3       # NRRD format support
+imageio>=2.20.0     # Multi-format image I/O
+tifffile>=2022.0.0  # TIFF format support
+
+# Model Deployment and Optimization
+# ---------------------------------
+onnx>=1.12.0
+onnxruntime>=1.12.0
+tensorrt>=8.5.0  # NVIDIA TensorRT (if available)
+torch2trt>=0.4.0  # PyTorch to TensorRT conversion
+
+# Experiment Tracking and MLOps
+# -----------------------------
+wandb>=0.13.0       # Weights & Biases
+mlflow>=1.28.0      # MLflow
+tensorboard>=2.10.0 # TensorBoard
+
+# Development and Testing
+# ----------------------
+pytest>=7.0.0
+pytest-cov>=3.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=0.980
+
+# Optional GPU Acceleration
+# -------------------------
+# cupy-cuda118>=11.0.0    # GPU-accelerated NumPy (CUDA 11.8)
+# cudf>=22.0.0            # GPU DataFrames
+# cuml>=22.0.0            # GPU Machine Learning
+
+# Docker and Containerization
+# ---------------------------
+docker>=6.0.0
+
+# Note: Installation Instructions
+# ==============================
+
+# 1. nnU-Net Installation:
+#    pip install nnunetv2
+#    Set environment variables:
+#    export nnUNet_raw="/path/to/nnUNet_raw"
+#    export nnUNet_preprocessed="/path/to/nnUNet_preprocessed"
+#    export nnUNet_results="/path/to/nnUNet_results"
+
+# 2. MONAI Installation:
+#    pip install "monai[all]"
+#    For CUDA support: pip install "monai[all,cucim]"
+
+# 3. Detectron2 Installation:
+#    # For CUDA 11.8 and PyTorch 2.0:
+#    pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu118/torch2.0/index.html
+#
+#    # Or from source:
+#    git clone https://github.com/facebookresearch/detectron2.git
+#    cd detectron2
+#    pip install -e .
+
+# 4. Verify Installations:
+#    python -c "import nnunetv2; print('nnU-Net OK')"
+#    python -c "import monai; print('MONAI OK')"
+#    python -c "import detectron2; print('Detectron2 OK')"
