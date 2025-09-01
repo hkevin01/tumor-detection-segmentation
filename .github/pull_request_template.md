@@ -16,7 +16,7 @@ Steps to validate locally:
 
 ```bash
 pytest -q
-python test_system.py
+python scripts/validation/test_system.py
 ```
 
 ## Checklist
