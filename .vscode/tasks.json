@@ -1,0 +1,338 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run System Validation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python test_system.py"
+		},
+		{
+			"label": "Final System Validation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python test_system.py"
+		},
+		{
+			"label": "Make run.sh executable",
+			"type": "shell",
+			"command": "chmod +x /home/kevin/Projects/tumor-detection-segmentation/run.sh"
+		},
+		{
+			"label": "Make test_docker.sh executable",
+			"type": "shell",
+			"command": "chmod +x /home/kevin/Projects/tumor-detection-segmentation/test_docker.sh"
+		},
+		{
+			"label": "Test Docker Configuration",
+			"type": "shell",
+			"command": "./test_docker.sh"
+		},
+		{
+			"label": "Final Docker Validation",
+			"type": "shell",
+			"command": "python validate_docker.py"
+		},
+		{
+			"label": "Final validation to confirm README accuracy",
+			"type": "shell",
+			"command": "python validate_docker.py"
+		},
+		{
+			"label": "MONAI Verification Checklist",
+			"type": "shell",
+			"command": "python verify_monai_checklist.py",
+			"group": "test"
+		},
+		{
+			"label": "Install Package Dependencies",
+			"type": "shell",
+			"command": "pip install -e .",
+			"group": "build"
+		},
+		{
+			"label": "Create Virtual Environment",
+			"type": "shell",
+			"command": "python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip",
+			"group": "setup"
+		},
+		{
+			"label": "Install Requirements",
+			"type": "shell",
+			"command": "source venv/bin/activate && pip install -r requirements.txt",
+			"group": "setup"
+		},
+		{
+			"label": "MONAI Verification (VEnv)",
+			"type": "shell",
+			"command": "chmod +x verify_monai_venv.sh && ./verify_monai_venv.sh",
+			"group": "test"
+		},
+		{
+			"label": "Detect Graphics Hardware",
+			"type": "shell",
+			"command": "lspci | grep -i vga && echo '=== AMD/ATI cards ===' && lspci | grep -i amd && echo '=== ROCm info ===' && rocm-smi || echo 'ROCm not available' && echo '=== HIP runtime ===' && hipconfig || echo 'HIP not available'",
+			"group": "detect"
+		},
+		{
+			"label": "Install Project Editable",
+			"type": "shell",
+			"command": "source venv/bin/activate && pip install -e .",
+			"group": "build"
+		},
+		{
+			"label": "Run MONAI Verification Checklist",
+			"type": "shell",
+			"command": "source venv/bin/activate && python verify_monai_checklist.py",
+			"group": "test"
+		},
+		{
+			"label": "MONAI Verification Checklist",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py",
+			"group": "test"
+		},
+		{
+			"label": "Replace transform tests file",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm tests/unit/test_transforms_presets.py && mv tests/unit/test_transforms_presets_fixed.py tests/unit/test_transforms_presets.py",
+			"group": "build"
+		},
+		{
+			"label": "Replace MONAI loader file and run verification",
+			"type": "shell",
+			"command": "mv src/data/loaders_monai_fixed.py src/data/loaders_monai.py && source venv/bin/activate && python verify_monai_checklist.py"
+		},
+		{
+			"label": "Test MONAI import",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -c \"from monai.data import load_decathlon_datalist; print('Import successful')\""
+		},
+		{
+			"label": "Replace test file",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && mv tests/unit/test_transforms_presets_new.py tests/unit/test_transforms_presets.py"
+		},
+		{
+			"label": "Run verification with venv",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py"
+		},
+		{
+			"label": "Replace test file",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm tests/unit/test_transforms_presets.py && mv tests/unit/test_transforms_presets_final.py tests/unit/test_transforms_presets.py"
+		},
+		{
+			"label": "Test transforms",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/unit/test_transforms_presets.py::test_brats_like_transforms_run -v"
+		},
+		{
+			"label": "Test transforms again",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/unit/test_transforms_presets.py::test_brats_like_transforms_run -v"
+		},
+		{
+			"label": "Test integration tests",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py -v"
+		},
+		{
+			"label": "Test single integration test",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py::test_load_monai_decathlon_synthetic -v"
+		},
+		{
+			"label": "Debug load_decathlon_datalist",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python debug_datalist.py"
+		},
+		{
+			"label": "Test integration test fix",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py::test_load_monai_decathlon_synthetic -v"
+		},
+		{
+			"label": "Replace test file",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && mv tests/integration/test_monai_msd_loader_fixed.py tests/integration/test_monai_msd_loader.py"
+		},
+		{
+			"label": "Replace test file properly",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm tests/integration/test_monai_msd_loader.py && cp tests/integration/test_monai_msd_loader_fixed.py tests/integration/test_monai_msd_loader.py"
+		},
+		{
+			"label": "Check function alias",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -c \"from src.data.loaders_monai import load_monai_decathlon; print(type(load_monai_decathlon)); print(load_monai_decathlon.__name__)\""
+		},
+		{
+			"label": "Test dict access",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -c \"result = {\\\"dataloader\\\": \\\"fake\\\"}; print(result[\\\"dataloader\\\"])\""
+		},
+		{
+			"label": "Run corrected integration test",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py::test_load_monai_decathlon_synthetic -v"
+		},
+		{
+			"label": "Check files",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && ls -la tests/integration/test_monai_msd_loader*"
+		},
+		{
+			"label": "Test fixed parameter separation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py::test_load_monai_decathlon_synthetic -v"
+		},
+		{
+			"label": "Check function alias resolution in fresh shell",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python3 -c \"import sys; sys.path.insert(0, '.'); from src.data.loaders_monai import load_monai_decathlon; print(f'Function: {load_monai_decathlon.__name__}'); print(f'Module: {load_monai_decathlon.__module__}'); import inspect; print(f'File: {inspect.getfile(load_monai_decathlon)}')\""
+		},
+		{
+			"label": "Run all integration tests",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/integration/test_monai_msd_loader.py -v"
+		},
+		{
+			"label": "Clean Python cache files",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && find . -name \"__pycache__\" -type d -exec rm -rf {} + 2>/dev/null || true && find . -name \"*.pyc\" -delete 2>/dev/null || true"
+		},
+		{
+			"label": "Run complete verification with corrected alias",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py"
+		},
+		{
+			"label": "Final verification with all tests passing",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py"
+		},
+		{
+			"label": "Test transform presets are still working",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/unit/test_transforms_presets.py -v"
+		},
+		{
+			"label": "Run unit tests for transform presets",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python -m pytest tests/unit/test_transforms_presets.py -v"
+		},
+		{
+			"label": "Run full MONAI verification checklist",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py"
+		},
+		{
+			"label": "Run MONAI verification checklist (isolated pytest)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python verify_monai_checklist.py",
+			"isBackground": false,
+			"problemMatcher": [
+				"$pytest"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Test relocated verification script",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python scripts/validation/verify_monai_checklist.py"
+		},
+		{
+			"label": "Test Training with Overlays",
+			"type": "shell",
+			"command": "python src/training/train_enhanced.py --config config/recipes/test_overlay.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 3 --save-prob-maps --val-max-batches 2",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test Training with Overlays (Activated)",
+			"type": "shell",
+			"command": "source venv/bin/activate && python src/training/train_enhanced.py --config config/recipes/test_overlay.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 3 --save-prob-maps --val-max-batches 2",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test Training with Overlays (Fixed)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/test_overlay.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 3 --save-prob-maps --val-max-batches 2",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test Training with Overlays Final",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/test_overlay.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 3 --save-prob-maps --val-max-batches 2",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test Overlay Quality",
+			"type": "shell",
+			"command": "python test_overlay_quality.py"
+		},
+		{
+			"label": "Test Overlay Quality with venv",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_overlay_quality.py"
+		},
+		{
+			"label": "Test Overlay Quality Fixed",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_overlay_quality.py"
+		},
+		{
+			"label": "Test Overlay Quality Final",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_overlay_quality.py"
+		},
+		{
+			"label": "Clean up test file",
+			"type": "shell",
+			"command": "rm -f test_overlay_quality.py"
+		},
+		{
+			"label": "Clean up test outputs",
+			"type": "shell",
+			"command": "rm -rf test_outputs/"
+		},
+		{
+			"label": "Replace visualization file",
+			"type": "shell",
+			"command": "mv src/training/callbacks/visualization_new.py src/training/callbacks/visualization.py"
+		},
+		{
+			"label": "Backup old inference",
+			"type": "shell",
+			"command": "cp src/inference/inference.py src/inference/inference_backup.py"
+		},
+		{
+			"label": "Test Enhanced Inference",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_enhanced_inference.py"
+		},
+		{
+			"label": "Test Enhanced Inference Fixed",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_enhanced_inference.py"
+		},
+		{
+			"label": "Clean up test files",
+			"type": "shell",
+			"command": "rm -f test_enhanced_inference.py"
+		},
+		{
+			"label": "Test Complete Visualization System",
+			"type": "shell",
+			"command": "source venv/bin/activate && python test_viz_system.py"
+		},
+		{
+			"label": "Clean up final test files",
+			"type": "shell",
+			"command": "rm -f test_viz_system.py && rm -rf test_viz/"
+		}
+	]
+}

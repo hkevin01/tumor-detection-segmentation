@@ -1,0 +1,30 @@
+{
+  "chat.tools.autoApprove": true,
+  "chat.agent.maxRequests": 100,
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.chat.enabled": true,
+  "github.copilot.chat.alternateGptPrompt.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": false
+  },
+  "github.copilot.advanced": {
+    "temperature": 0.3,
+    "top_p": 1,
+    "listCount": 10
+  },
+  "git.commitMessageConvention": "conventional",
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "workbench.editor.enablePreview": false,
+  "chat.todoListTool.enabled": true
+}

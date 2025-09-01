@@ -128,7 +128,7 @@ Branch name pattern: main
 
 #### Repository Topics (GitHub Repository > Settings > General)
 ```
-Topics: machine-learning, medical-imaging, tumor-detection, 
+Topics: machine-learning, medical-imaging, tumor-detection,
         monai, pytorch, deep-learning, healthcare, radiology
 ```
 
@@ -212,7 +212,7 @@ Brief description of changes
 patient_data/
 phi_data/
 *.dcm  # DICOM files (if containing PHI)
-.env   # Environment variables
+.env   # Environment variables now live inside docker/
 secrets.json
 api_keys.txt
 ```

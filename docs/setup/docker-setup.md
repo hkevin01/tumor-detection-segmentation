@@ -155,9 +155,10 @@ The project uses multi-stage Docker builds:
 
 Copy and customize the environment file:
 
+# Create environment file inside docker/
 ```bash
-cp .env.example .env
-# Edit .env with your specific configuration
+cp docker/.env.example docker/.env
+# Edit docker/.env with your specific configuration or use docker-compose env_file
 ```
 
 ### 🐛 Troubleshooting

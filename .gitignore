@@ -35,6 +35,10 @@ env.bak/
 venv.bak/
 pyvenv.cfg
 
+# Keep an example in git, but ignore actual env files in docker/
+/docker/.env
+/docker/.env.example
+
 # ===== PYTORCH & MACHINE LEARNING =====
 *.pth
 *.pt
@@ -100,73 +104,18 @@ gui/frontend/.env
 gui/frontend/coverage/
 
 # ===== ENVIRONMENT & SECRETS =====
-.env*
-!.env.example
-secrets/
-*.key
-*.pem
-*.crt
-*.cert
-config.json
-!config.json.example
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pyvenv.cfg
 
-# ===== DATABASE =====
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-
-# ===== IDES & EDITORS =====
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.vim/
-.emacs.d/
-
-# ===== OPERATING SYSTEMS =====
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.Spotlight-V100
-.Trashes
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-*.stackdump
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-
-# ===== TESTING & COVERAGE =====
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-.tox/
-.nox/
-.hypothesis/
-coverage.xml
-*.cover
-*.py,cover
-.cache
-nosetests.xml
-*.log
-
-# ===== DOCUMENTATION =====
-docs/_build/
-docs/build/
-docs/_static/
-docs/_templates/
-site/
+# Keep an example in git, but ignore actual env files in docker/
+/docker/.env
+/docker/.env.example
 
 # ===== DOCKER =====
 .docker/

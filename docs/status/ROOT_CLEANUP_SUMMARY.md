@@ -56,8 +56,7 @@ This document summarizes the organization of files from the root directory into 
 - `requirements.txt` (main requirements)
 - `setup.py` (package setup)
 - `config.json` (main configuration)
-- `.env` (environment variables)
-- `.gitignore` (git ignore rules)
+- `.env` files moved to `docker/` and are no longer kept in the repo root
 
 ## Updated References
 - All scripts and configuration files updated to reference new file locations

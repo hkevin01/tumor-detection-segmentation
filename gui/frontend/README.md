@@ -3,7 +3,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ 
+- Node.js 16+
 - npm or yarn package manager
 - Backend server running (see backend setup)
 
@@ -81,7 +81,7 @@ npm run format     # Format code
 ## 🔧 Configuration
 
 ### Environment Variables
-Create `.env` file in frontend directory:
+Create `.env` file in frontend directory (or rely on docker env):
 ```bash
 REACT_APP_API_URL=http://localhost:8000
 REACT_APP_VERSION=1.0.0
@@ -119,7 +119,7 @@ The `package.json` includes proxy setup for development:
 apiService.getPatients()
 apiService.createPatient(data)
 
-// Study management  
+// Study management
 apiService.getStudies()
 apiService.uploadFile(file, patientId, onProgress)
 
@@ -257,6 +257,6 @@ npm install
 
 ---
 
-**Status**: ✅ **Frontend Foundation Complete**  
-**Features**: Professional medical interface with Material-UI, complete API integration, file upload, and clinical workflow support.  
+**Status**: ✅ **Frontend Foundation Complete**
+**Features**: Professional medical interface with Material-UI, complete API integration, file upload, and clinical workflow support.
 **Ready For**: DICOM viewer integration, advanced clinical features, and production deployment.

@@ -43,7 +43,7 @@ This is a complete medical imaging GUI system for tumor detection and segmentati
 ```python
 # Supported Model Architectures:
 - UNet: Fast and reliable 3D segmentation
-- SegResNet: High accuracy with efficient inference  
+- SegResNet: High accuracy with efficient inference
 - SwinUNETR: State-of-the-art transformer-based architecture
 
 # Evaluation Metrics:
@@ -88,12 +88,12 @@ This is a complete medical imaging GUI system for tumor detection and segmentati
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
-   
+
    # Frontend setup
    cd frontend
    npm install
    npm run dev
-   
+
    # Start backend
    cd ../src
    python medical_imaging_api.py
@@ -146,19 +146,19 @@ The medical imaging GUI consists of several integrated components:
 
 #### 1. **Single Study Analysis**
 ```
-1. Upload DICOM → 2. Select AI Model → 3. Run Analysis → 
+1. Upload DICOM → 2. Select AI Model → 3. Run Analysis →
 4. Review Results → 5. Export Findings
 ```
 
 #### 2. **Longitudinal Comparison**
 ```
-1. Load Patient → 2. Select Studies → 3. Run Comparison → 
+1. Load Patient → 2. Select Studies → 3. Run Comparison →
 4. Review Changes → 5. Generate Report
 ```
 
 #### 3. **Batch Processing**
 ```
-1. Queue Studies → 2. Configure Parameters → 3. Start Batch → 
+1. Queue Studies → 2. Configure Parameters → 3. Start Batch →
 4. Monitor Progress → 5. Review Results
 ```
 
@@ -166,7 +166,7 @@ The medical imaging GUI consists of several integrated components:
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file inside the `docker/` directory:
 
 ```bash
 # API Configuration
@@ -348,13 +348,13 @@ GRANT ALL PRIVILEGES ON DATABASE medical_imaging TO medical_app;
 server {
     listen 80;
     server_name your-domain.com;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
-    
+
     location /api {
         proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
