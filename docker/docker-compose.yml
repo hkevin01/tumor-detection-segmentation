@@ -4,14 +4,14 @@ services:
   # Developm  # Production environment
   tumor-detection-prod:
     build:
-      context: .
-      dockerfile: Dockerfile.simple
+      context: ..
+      dockerfile: docker/Dockerfile.simple
       target: production
     container_name: tumor-detection-prodironment
   tumor-detection-dev:
     build:
-      context: .
-      dockerfile: Dockerfile.simple
+      context: ..
+      dockerfile: docker/Dockerfile.simple
       target: development
     container_name: tumor-detection-dev
     volumes:
@@ -45,8 +45,8 @@ services:
   # Production environment
   tumor-detection-prod:
     build:
-      context: .
-      dockerfile: Dockerfile.simple
+      context: ..
+      dockerfile: docker/Dockerfile.simple
       target: production
     container_name: tumor-detection-prod
     volumes:
@@ -75,8 +75,8 @@ services:
   # Testing environment
   tumor-detection-test:
     build:
-      context: .
-      dockerfile: Dockerfile.simple
+      context: ..
+      dockerfile: docker/Dockerfile.simple
       target: testing
     container_name: tumor-detection-test
     volumes:
@@ -139,8 +139,8 @@ services:
   # Jupyter Lab for development
   jupyter:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
       target: development
     container_name: tumor-detection-jupyter
     volumes:

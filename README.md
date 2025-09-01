@@ -236,7 +236,7 @@ Pre-configured scenarios in `config/recipes/`:
 ### GPU Support
 
 - **NVIDIA GPUs**: CUDA support with automatic detection
-- **AMD GPUs**: ROCm support (use `Dockerfile.rocm`)
+- **AMD GPUs**: ROCm support (use `docker/Dockerfile.rocm`)
 - **CPU Only**: Automatic fallback for systems without GPU acceleration
 
 ## 🏗️ Architecture & Implementation

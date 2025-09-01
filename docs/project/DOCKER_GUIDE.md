@@ -70,11 +70,11 @@ scripts/validation/test_docker.sh
 
 **NVIDIA GPU (CUDA)**:
 - Automatically detected by the run script
-- Uses `Dockerfile.cuda` for GPU acceleration
+- Uses `docker/Dockerfile.cuda` for GPU acceleration
 - Requires `nvidia-docker` or Docker with GPU support
 
 **AMD GPU (ROCm)**:
-- Modify docker-compose.yml to use `Dockerfile.rocm`
+- Modify docker-compose.yml to use `docker/Dockerfile.rocm`
 - Ensure ROCm drivers are installed
 
 **CPU Only**:

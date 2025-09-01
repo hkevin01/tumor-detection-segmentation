@@ -8,8 +8,8 @@ services:
   # Development service with all integrations
   tumor-detection-dev-phase4:
     build:
-      context: .
-      dockerfile: Dockerfile.phase4
+      context: ..
+      dockerfile: docker/Dockerfile.phase4
       target: development
     container_name: tumor-detection-dev-phase4
     volumes:
@@ -49,8 +49,8 @@ services:
   # Production service optimized for inference
   tumor-detection-prod-phase4:
     build:
-      context: .
-      dockerfile: Dockerfile.phase4
+      context: ..
+      dockerfile: docker/Dockerfile.phase4
       target: production
     container_name: tumor-detection-prod-phase4
     volumes:
@@ -78,8 +78,8 @@ services:
   # Training service for model development
   tumor-detection-train-phase4:
     build:
-      context: .
-      dockerfile: Dockerfile.phase4
+      context: ..
+      dockerfile: docker/Dockerfile.phase4
     container_name: tumor-detection-train-phase4
     volumes:
       - ./src:/app/src
@@ -103,8 +103,8 @@ services:
   # Evaluation service for model benchmarking
   tumor-detection-eval-phase4:
     build:
-      context: .
-      dockerfile: Dockerfile.phase4
+      context: ..
+      dockerfile: docker/Dockerfile.phase4
     container_name: tumor-detection-eval-phase4
     volumes:
       - ./src:/app/src
