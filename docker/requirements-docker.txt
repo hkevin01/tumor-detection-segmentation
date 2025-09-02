@@ -1,0 +1,13 @@
+# Minimal pinned runtime dependencies for container builds
+# Pin exact versions to improve reproducible Docker builds. Test these versions in CI and adjust as needed.
+torch==2.0.0
+torchvision==0.15.0
+monai==1.3.0
+numpy==1.21.0
+pandas==1.5.0
+scikit-learn==1.2.0
+scipy==1.9.0
+nibabel==4.0.0
+pydicom==2.4.0
+SimpleITK==2.2.0
+tqdm==4.64.0

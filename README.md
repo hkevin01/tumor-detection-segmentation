@@ -134,6 +134,21 @@ python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.j
 python src/inference/inference.py
 ```
 
+### Option 3: Run Smoke Tests in Docker
+
+For quick validation without heavy dependencies:
+
+```bash
+# Run smoke tests in lightweight Docker container
+make docker-test
+
+# Or manually:
+docker build -f docker/Dockerfile.test-lite -t tumor-test-lite .
+docker run --rm tumor-test-lite
+```
+
+This runs fast CPU-only tests to verify package imports and basic functionality.
+
 ## 🐳 Docker Services
 
 The platform includes these containerized services:

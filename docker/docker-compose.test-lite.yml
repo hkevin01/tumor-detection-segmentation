@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  tumor-detection-test-lite:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test-lite
+    container_name: tumor-detection-test-lite
+    volumes:
+      - ..:/app:cached
+    environment:
+      - PYTHONPATH=/app
+      - TESTING=true

@@ -1,0 +1,24 @@
+# Lightweight Dockerfile for fast smoke tests (uses only dev/test deps)
+FROM python:3.11-slim
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# Install minimal system deps for tests
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install only dev/test requirements
+COPY requirements-dev.txt /app/requirements-dev.txt
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    python -m pip install -r /app/requirements-dev.txt
+
+# Copy source and tests
+COPY . /app
+
+CMD ["python", "-m", "pytest", "tests/smoke", "-q"]
