@@ -1,0 +1,22 @@
+{
+  "images": {
+    "Dockerfile": "docker/images/Dockerfile",
+    "Dockerfile.simple": "docker/images/Dockerfile.simple",
+    "Dockerfile.cuda": "docker/images/Dockerfile.cuda",
+    "Dockerfile.phase4": "docker/images/Dockerfile.phase4",
+    "Dockerfile.test-lite": "docker/images/Dockerfile.test-lite"
+  },
+  "compose": {
+    "docker-compose.yml": "docker/compose/docker-compose.yml",
+    "docker-compose.cpu.yml": "docker/compose/docker-compose.cpu.yml",
+    "docker-compose.phase4.yml": "docker/compose/docker-compose.phase4.yml",
+    "docker-compose.test-lite.yml": "docker/compose/docker-compose.test-lite.yml"
+  },
+  "scripts": {
+    "docker-helper.sh": "docker/scripts/docker-helper.sh",
+    "docker-manager": "docker/scripts/docker-manager"
+  },
+  "env": {
+    ".env": "docker/.env"
+  }
+}

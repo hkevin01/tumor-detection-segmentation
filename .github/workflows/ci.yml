@@ -241,5 +241,5 @@ jobs:
 
       - name: Run smoke tests in Docker
         run: |
-          docker build -f docker/Dockerfile.test-lite -t tumor-test-lite .
+          docker build -f docker/images/Dockerfile.test-lite -t tumor-test-lite .
           docker run --rm tumor-test-lite

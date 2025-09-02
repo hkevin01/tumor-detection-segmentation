@@ -26,6 +26,14 @@ This directory contains all Docker-related files for the tumor detection segment
 
 - `docker-manager` - Docker management utility
 
+New organized layout (tools available):
+
+- Images: `docker/images/` (Dockerfiles consolidated)
+- Compose: `docker/compose/` (docker-compose files)
+- Scripts: `docker/scripts/` (helpers and managers)
+
+A mapping `docker/docker_files_index.json` lists current -> canonical locations. Use `docker/move_docker_artifacts.sh` to apply the reorganization safely.
+
 ## Usage
 
 ### Quick Start

@@ -32,9 +32,9 @@ test:
 
 docker-build:
 	@echo "Build docker image using docker/requirements-docker.txt"
-	docker build -f docker/Dockerfile -t tumor-detection:local .
+	docker build -f docker/images/Dockerfile -t tumor-detection:local .
 
 docker-test:
 	@echo "Build and run lightweight test image for smoke tests"
-	docker build -f docker/Dockerfile.test-lite -t tumor-test-lite .
+	docker build -f docker/images/Dockerfile.test-lite -t tumor-test-lite .
 	docker run --rm tumor-test-lite

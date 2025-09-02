@@ -140,9 +140,9 @@
 
   "deployment": {
     "docker_support": true,
-    "cuda_docker": "docker/Dockerfile.cuda",
-    "rocm_docker": "docker/Dockerfile.rocm",
-    "compose_file": "docker/docker-compose.yml",
+  "cuda_docker": "docker/images/Dockerfile.cuda",
+  "rocm_docker": "docker/images/Dockerfile.rocm",
+  "compose_file": "docker/compose/docker-compose.yml",
     "health_checks": true,
     "monitoring": true
   }

@@ -143,7 +143,7 @@ For quick validation without heavy dependencies:
 make docker-test
 
 # Or manually:
-docker build -f docker/Dockerfile.test-lite -t tumor-test-lite .
+docker build -f docker/images/Dockerfile.test-lite -t tumor-test-lite .
 docker run --rm tumor-test-lite
 ```
 
@@ -252,6 +252,9 @@ Pre-configured scenarios in `config/recipes/`:
 
 - **NVIDIA GPUs**: CUDA support with automatic detection
 - **AMD GPUs**: ROCm support (use `docker/Dockerfile.rocm`)
+ - **AMD GPUs**: ROCm support (use `docker/images/Dockerfile.rocm`)
+
+Note: Docker artifacts have been organized under `docker/` with subfolders `images/`, `compose/`, and `scripts/`. See `docker/docker_files_index.json` for the canonical mapping.
 - **CPU Only**: Automatic fallback for systems without GPU acceleration
 
 ## 🏗️ Architecture & Implementation
