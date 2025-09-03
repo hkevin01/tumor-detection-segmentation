@@ -21,6 +21,14 @@ model = SegmentationModel(
 )
 
 # Manual device specification for specific hardware
+## Next steps (quick)
+
+- Verify Docker stack and services: `./test_docker.sh`, then `./run.sh start` and `./run.sh status`.
+- Run a quick MONAI smoke test: pull `Task01_BrainTumour` and run a 2-epoch sanity train with `train_enhanced.py`.
+- Run inference with an available checkpoint and export overlays to `reports/inference_exports/`.
+
+Full actionable plan and roadmap are in `docs/TASKS.md`.
+
 model = SegmentationModel(device="cuda:1")  # Specific GPU
 model = SegmentationModel(device="cpu")     # Force CPU mode
 ```

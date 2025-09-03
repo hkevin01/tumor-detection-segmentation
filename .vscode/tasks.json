@@ -333,6 +333,60 @@
 			"label": "Clean up final test files",
 			"type": "shell",
 			"command": "rm -f test_viz_system.py && rm -rf test_viz/"
+		},
+		{
+			"label": "Move Root Files",
+			"type": "shell",
+			"command": "python3 scripts/organization/move_root_files.py",
+			"group": "build"
+		},
+		{
+			"label": "Force Cleanup Root",
+			"type": "shell",
+			"command": "python3 scripts/organization/force_cleanup_root.py",
+			"group": "build"
+		},
+		{
+			"label": "Merge Log Directories",
+			"type": "shell",
+			"command": "if [ -d 'log' ] && [ -d 'logs' ]; then echo 'Merging log directories...'; mkdir -p logs; if [ \"$(ls -A log 2>/dev/null)\" ]; then cp -r log/* logs/ 2>/dev/null || true; fi; rmdir log 2>/dev/null || rm -rf log; echo 'Log merge complete'; else echo 'No duplicate log directories found'; fi",
+			"group": "build"
+		},
+		{
+			"label": "Final Summary",
+			"type": "shell",
+			"command": "python3 scripts/organization/final_summary.py",
+			"group": "build"
+		},
+		{
+			"label": "Auto Update Tasks",
+			"type": "shell",
+			"command": "python3 scripts/tools/auto_update_tasks.py",
+			"group": "build"
+		},
+		{
+			"label": "Remove Duplicates",
+			"type": "shell",
+			"command": "python3 scripts/organization/remove_duplicates.py",
+			"group": "build"
+		},
+		{
+			"label": "Verify Cleanup",
+			"type": "shell",
+			"command": "python3 scripts/organization/verify_cleanup.py",
+			"group": "build"
+		},
+		{
+			"label": "Clean Nested Duplicates",
+			"type": "shell",
+			"command": "python3 scripts/organization/clean_nested.py",
+			"group": "build"
+		},
+		{
+			"label": "Final Verification",
+			"type": "shell",
+			"command": "python3 scripts/organization/verify_cleanup.py",
+			"group": "build"
 		}
 	]
 }

@@ -2,109 +2,113 @@
   "configuration_files": {
     "title": "Organize Configuration Files",
     "description": "Move config files to appropriate directories",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "move_config_json": {
         "description": "Move config.json to config/ directory",
-        "status": "pending"
+        "status": "completed"
       },
       "move_env_files": {
         "description": "Move .env and .env.example to config/",
-        "status": "pending"
+        "status": "completed"
       },
       "move_pytest_config": {
         "description": "Move pytest.ini to config/ directory",
-        "status": "pending"
+        "status": "completed"
       },
       "move_mypy_config": {
         "description": "Move mypy.ini to config/ directory",
-        "status": "pending"
+        "status": "completed"
       },
       "consolidate_requirements": {
         "description": "Review and organize requirements files",
-        "status": "pending"
+        "status": "completed"
       }
     }
   },
   "cleanup_temp_files": {
     "title": "Clean Up Temporary Files",
     "description": "Remove or organize temporary and test files",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "remove_test_temp": {
         "description": "Remove test.tmp, test2.pyc, test_temp/, test_viz/",
-        "status": "pending"
+        "status": "completed"
       },
       "cleanup_temp_dir": {
         "description": "Clean up temp/ directory",
-        "status": "pending"
+        "status": "completed"
       },
       "move_coverage": {
         "description": "Move .coverage to reports/ directory",
-        "status": "pending"
+        "status": "completed"
       }
     }
   },
   "organize_scripts": {
     "title": "Organize Scripts and Utilities",
     "description": "Move scripts to appropriate locations",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "move_run_script": {
         "description": "Move run.sh to scripts/ directory",
-        "status": "pending"
+        "status": "completed"
       },
       "move_validation_scripts": {
         "description": "Move validation scripts to tools/ directory",
-        "status": "pending"
+        "status": "completed"
       }
     }
   },
   "consolidate_logs": {
     "title": "Consolidate Log Directories",
     "description": "Merge log/ and logs/ directories",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "merge_log_dirs": {
         "description": "Merge log/ and logs/ into single logs/ directory",
-        "status": "pending"
+        "status": "completed"
       }
     }
   },
   "update_references": {
     "title": "Update File References",
     "description": "Update all references to moved files",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "update_config_references": {
         "description": "Update references to config.json in scripts and docs",
-        "status": "pending"
+        "status": "completed"
       },
       "update_script_references": {
         "description": "Update references to moved scripts",
-        "status": "pending"
+        "status": "completed"
       },
       "update_documentation": {
         "description": "Update documentation with new file paths",
-        "status": "pending"
+        "status": "completed"
       }
     }
   },
   "final_validation": {
     "title": "Final Validation",
     "description": "Validate the complete organization",
-    "status": "pending",
+    "status": "completed",
     "subtasks": {
       "validate_structure": {
         "description": "Run comprehensive structure validation",
-        "status": "pending"
+        "status": "completed"
       },
       "test_references": {
         "description": "Test that all file references work correctly",
-        "status": "pending"
+        "status": "completed"
       },
       "create_summary": {
         "description": "Create final organization summary",
+        "status": "completed"
+      },
+      "run_smoke_train": {
+        "description": "Run a 2-epoch smoke training inside Docker",
         "status": "pending"
       }
     }
