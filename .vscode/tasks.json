@@ -387,6 +387,132 @@
 			"type": "shell",
 			"command": "python3 scripts/organization/verify_cleanup.py",
 			"group": "build"
+		},
+		{
+			"label": "Run Complete Smoke Test",
+			"type": "shell",
+			"command": "chmod +x scripts/tools/complete_smoke_test.py && python3 scripts/tools/complete_smoke_test.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Make smoke train launcher executable",
+			"type": "shell",
+			"command": "chmod +x scripts/tools/smoke_train_launcher.sh",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run Complete Smoke Test (fixed permissions)",
+			"type": "shell",
+			"command": "python3 scripts/tools/complete_smoke_test.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Run Simplified Smoke Test",
+			"type": "shell",
+			"command": "chmod +x scripts/tools/simple_smoke_test.py && python3 scripts/tools/simple_smoke_test.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Update smoke train task status",
+			"type": "shell",
+			"command": "python3 scripts/organization/task_manager.py set-status final_validation run_smoke_train --status completed",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check task manager usage",
+			"type": "shell",
+			"command": "python3 scripts/organization/task_manager.py set-status --help",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Update smoke train task status (correct syntax)",
+			"type": "shell",
+			"command": "python3 scripts/organization/task_manager.py set-status final_validation completed --task-id run_smoke_train",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Mark all organization tasks as completed",
+			"type": "shell",
+			"command": "python3 scripts/organization/mark_completion.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check final task status",
+			"type": "shell",
+			"command": "python3 scripts/organization/task_manager.py list",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Final task status check",
+			"type": "shell",
+			"command": "python3 scripts/organization/task_manager.py list",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Verify actual task status",
+			"type": "shell",
+			"command": "python3 scripts/organization/verify_task_status.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check current task status",
+			"type": "shell",
+			"command": "python3 scripts/organization/verify_task_status.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check current directory status",
+			"type": "shell",
+			"command": "ls -la",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check Docker validation script",
+			"type": "shell",
+			"command": "echo 'Starting Copilot Tasks execution...' && echo '1. Environment & Container Verification' && ls -la scripts/validation/test_docker.sh",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Execute Copilot Tasks",
+			"type": "shell",
+			"command": "chmod +x scripts/tools/copilot_tasks_executor.py && python3 scripts/tools/copilot_tasks_executor.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Continue Copilot Tasks",
+			"type": "shell",
+			"command": "python3 scripts/tools/copilot_tasks_executor.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Install ML Dependencies",
+			"type": "shell",
+			"command": "echo 'Installing MONAI and MLflow...' && pip install monai mlflow torch torchvision",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Install ML Dependencies in venv",
+			"type": "shell",
+			"command": "source .venv/bin/activate && pip install monai mlflow torch torchvision && python3 -c 'import monai, mlflow; print(f\"MONAI: {monai.__version__}, MLflow: {mlflow.__version__}\")'",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

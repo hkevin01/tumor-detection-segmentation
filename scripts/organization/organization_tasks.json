@@ -2,114 +2,110 @@
   "configuration_files": {
     "title": "Organize Configuration Files",
     "description": "Move config files to appropriate directories",
-    "status": "completed",
+    "status": "pending",
     "subtasks": {
       "move_config_json": {
         "description": "Move config.json to config/ directory",
-        "status": "completed"
+        "status": "pending"
       },
       "move_env_files": {
         "description": "Move .env and .env.example to config/",
-        "status": "completed"
+        "status": "pending"
       },
       "move_pytest_config": {
         "description": "Move pytest.ini to config/ directory",
-        "status": "completed"
+        "status": "pending"
       },
       "move_mypy_config": {
         "description": "Move mypy.ini to config/ directory",
-        "status": "completed"
+        "status": "pending"
       },
       "consolidate_requirements": {
         "description": "Review and organize requirements files",
-        "status": "completed"
+        "status": "pending"
       }
     }
   },
   "cleanup_temp_files": {
     "title": "Clean Up Temporary Files",
-    "description": "Remove and organize temporary files",
-    "status": "completed",
+    "description": "Remove or organize temporary and test files",
+    "status": "pending",
     "subtasks": {
       "remove_test_temp": {
         "description": "Remove test.tmp, test2.pyc, test_temp/, test_viz/",
-        "status": "completed"
+        "status": "pending"
       },
       "cleanup_temp_dir": {
         "description": "Clean up temp/ directory",
-        "status": "completed"
+        "status": "pending"
       },
       "move_coverage": {
         "description": "Move .coverage to reports/ directory",
-        "status": "completed"
+        "status": "pending"
       }
     }
   },
   "organize_scripts": {
     "title": "Organize Scripts and Utilities",
-    "description": "Move scripts to appropriate subdirectories",
-    "status": "completed",
+    "description": "Move scripts to appropriate locations",
+    "status": "pending",
     "subtasks": {
       "move_run_script": {
         "description": "Move run.sh to scripts/ directory",
-        "status": "completed"
+        "status": "pending"
       },
       "move_validation_scripts": {
         "description": "Move validation scripts to tools/ directory",
-        "status": "completed"
+        "status": "pending"
       }
     }
   },
   "consolidate_logs": {
     "title": "Consolidate Log Directories",
-    "description": "Merge log directories",
-    "status": "completed",
+    "description": "Merge log/ and logs/ directories",
+    "status": "pending",
     "subtasks": {
       "merge_log_dirs": {
         "description": "Merge log/ and logs/ into single logs/ directory",
-        "status": "completed"
+        "status": "pending"
       }
     }
   },
   "update_references": {
     "title": "Update File References",
     "description": "Update all references to moved files",
-    "status": "completed",
+    "status": "pending",
     "subtasks": {
       "update_config_references": {
         "description": "Update references to config.json in scripts and docs",
-        "status": "completed"
+        "status": "pending"
       },
       "update_script_references": {
         "description": "Update references to moved scripts",
-        "status": "completed"
+        "status": "pending"
       },
       "update_documentation": {
         "description": "Update documentation with new file paths",
-        "status": "completed"
+        "status": "pending"
       }
     }
   },
   "final_validation": {
     "title": "Final Validation",
-    "description": "Validate organization and run tests",
-    "status": "completed",
+    "description": "Validate the complete organization",
+    "status": "pending",
     "subtasks": {
       "validate_structure": {
         "description": "Run comprehensive structure validation",
-        "status": "completed"
+        "status": "pending"
       },
       "test_references": {
         "description": "Test that all file references work correctly",
-        "status": "completed"
-      },
-      "run_smoke_train": {
-        "description": "Run basic training smoke test",
-        "status": "completed"
+        "status": "pending"
       },
       "create_summary": {
         "description": "Create final organization summary",
-        "status": "completed"
+        "status": "pending"
       }
     }
   }
