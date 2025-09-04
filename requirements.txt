@@ -1,0 +1,78 @@
+# Medical Imaging AI - Complete Dependencies
+
+# Core ML/AI Framework
+monai>=1.3.0
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+pandas>=1.5.0
+scikit-learn>=1.2.0
+scipy>=1.9.0
+tqdm>=4.64.0
+
+# Medical Imaging Libraries
+nibabel>=4.0.0
+pydicom>=2.4.0
+SimpleITK>=2.2.0
+dicom2nifti>=2.4.0
+
+# Deep Learning Utilities
+tensorboard>=2.13.0
+torchmetrics>=0.11.0
+albumentations>=1.3.0
+
+# Web Framework and API
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+sqlalchemy>=2.0.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-dotenv>=1.0.0
+
+# Data Processing and Validation
+pydantic>=2.0.0
+aiofiles>=23.0.0
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+
+# Database and Caching
+redis>=4.6.0
+psycopg2-binary>=2.9.0
+alembic>=1.11.0
+
+# Monitoring and Logging
+prometheus-client>=0.17.0
+structlog>=23.0.0
+
+# Hyperparameter Optimization
+optuna>=3.3.0
+
+# MLflow for experiment tracking
+mlflow>=2.8.0
+
+# Additional medical imaging utilities
+dicom-numpy>=0.6.0
+pynetdicom>=2.0.0
+
+# GPU acceleration support
+cupy-cuda12x>=12.0.0; sys_platform != "darwin"
+
+# Additional visualization tools
+plotly>=5.15.0
+seaborn>=0.12.0
+
+# File format support
+h5py>=3.9.0
+zarr>=2.16.0
+
+# Model serving and deployment
+gradio>=3.40.0
+streamlit>=1.25.0
+
+# Development and testing (optional)
+pytest>=7.4.0
+black>=23.7.0
+ruff>=0.0.280
+mypy>=1.5.0

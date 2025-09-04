@@ -513,6 +513,210 @@
 			"command": "source .venv/bin/activate && pip install monai mlflow torch torchvision && python3 -c 'import monai, mlflow; print(f\"MONAI: {monai.__version__}, MLflow: {mlflow.__version__}\")'",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Run Docker Validation Script",
+			"type": "shell",
+			"command": "chmod +x scripts/validation/test_docker.sh && scripts/validation/test_docker.sh"
+		},
+		{
+			"label": "Check GPU/CUDA Availability",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python -c \"import torch; print(f'PyTorch version: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'CUDA devices: {torch.cuda.device_count()}')\""
+		},
+		{
+			"label": "Download Brain Dataset (Limited Sample)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour --root data/msd --limit 2"
+		},
+		{
+			"label": "Download Brain Dataset (Training Only)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/data/pull_monai_dataset.py --dataset-id Task01_BrainTumour --root data/msd --sections training"
+		},
+		{
+			"label": "Check Downloaded Dataset",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python -c \"import os; print(f'Dataset directory exists: {os.path.exists(\"data/msd/Task01_BrainTumour\")}')\"; if [ -d 'data/msd/Task01_BrainTumour' ]; then echo 'Dataset contents:'; ls -la data/msd/Task01_BrainTumour/; fi"
+		},
+		{
+			"label": "Quick Training Smoke Test",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 2 --val-max-batches 1",
+			"isBackground": false
+		},
+		{
+			"label": "Quick Training Smoke Test (Fixed)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && cd /home/kevin/Projects/tumor-detection-segmentation && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 2 --val-max-batches 1",
+			"isBackground": false
+		},
+		{
+			"label": "Install Medical Imaging Dependencies",
+			"type": "shell",
+			"command": "source .venv/bin/activate && pip install nibabel SimpleITK tqdm pydicom",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "1-Epoch Smoke Test Training",
+			"type": "shell",
+			"command": "source .venv/bin/activate && cd /home/kevin/Projects/tumor-detection-segmentation && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 2 --val-max-batches 1",
+			"isBackground": false,
+			"group": "training"
+		},
+		{
+			"label": "Monitor Training Status",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python scripts/training/training_monitor.py",
+			"isBackground": false
+		},
+		{
+			"label": "Wait for Smoke Test Completion",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python scripts/training/training_monitor.py --wait --timeout 15",
+			"isBackground": false
+		},
+		{
+			"label": "Install Medical Imaging Dependencies",
+			"type": "shell",
+			"command": "source .venv/bin/activate && pip install nibabel SimpleITK pydicom tqdm"
+		},
+		{
+			"label": "Check Current Training Status",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/training/training_monitor.py"
+		},
+		{
+			"label": "1-Epoch Smoke Test Validation",
+			"type": "shell",
+			"command": "source .venv/bin/activate && cd /home/kevin/Projects/tumor-detection-segmentation && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 2 --val-max-batches 1"
+		},
+		{
+			"label": "Launch Expanded Training Sessions",
+			"type": "shell",
+			"command": "source .venv/bin/activate && cd /home/kevin/Projects/tumor-detection-segmentation && python scripts/training/expanded_training_launcher.py",
+			"isBackground": false
+		},
+		{
+			"label": "Run 5-Epoch Baseline Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python scripts/training/expanded_training_launcher.py --session 5-epoch-baseline",
+			"isBackground": false
+		},
+		{
+			"label": "Test 5-Epoch Baseline (Dry Run)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python scripts/training/expanded_training_launcher.py --session 5-epoch-baseline --dry-run",
+			"isBackground": false
+		},
+		{
+			"label": "5-Epoch Baseline Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation /home/kevin/Projects/tumor-detection-segmentation/.venv/bin/python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 5 --save-overlays --overlays-max 5 --save-prob-maps --val-max-batches 3",
+			"isBackground": true
+		},
+		{
+			"label": "Check Training Process",
+			"type": "shell",
+			"command": "ps aux | grep train_enhanced | grep -v grep",
+			"isBackground": false
+		},
+		{
+			"label": "10-Epoch Extended Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation /home/kevin/Projects/tumor-detection-segmentation/.venv/bin/python src/training/train_enhanced.py --config config/recipes/unetr_multimodal.json --dataset-config config/datasets/msd_task01_brain.json --epochs 10 --save-overlays --overlays-max 8 --save-prob-maps --val-max-batches 5",
+			"isBackground": true
+		},
+		{
+			"label": "Test Training Launcher",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python test_training_launcher.py"
+		},
+		{
+			"label": "1-Epoch Smoke Test",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python src/training/train_enhanced.py --config config/recipes/test_overlay.json --dataset-config config/datasets/msd_task01_brain.json --epochs 1 --save-overlays --overlays-max 2 --save-prob-maps --val-max-batches 2",
+			"isBackground": true
+		},
+		{
+			"label": "Clean up test files",
+			"type": "shell",
+			"command": "rm -f test_training_launcher.py monitor_and_launch.py"
+		},
+		{
+			"label": "5-Epoch Baseline Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation python scripts/training/expanded_training_launcher.py --session 5-epoch-baseline",
+			"isBackground": true
+		},
+		{
+			"label": "5-Epoch Baseline Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python scripts/training/expanded_training_launcher.py --session 5-epoch-baseline",
+			"isBackground": true
+		},
+		{
+			"label": "Full Expanded Training Sequence",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python launch_expanded_training.py",
+			"isBackground": true
+		},
+		{
+			"label": "Check Running Training Processes",
+			"type": "shell",
+			"command": "echo '🔍 Checking for active training processes...' && ps aux | grep -E '(train_enhanced|python.*train)' | grep -v grep || echo 'No training processes found' && echo '' && echo '📁 Checking for recent log files...' && find logs/ -name '*.log' -mmin -60 2>/dev/null | head -10 || echo 'No recent log files found' && echo '' && echo '📊 Checking MLflow runs...' && ls -la mlruns/ 2>/dev/null | tail -5 || echo 'No MLflow runs directory found'"
+		},
+		{
+			"label": "Check Recent Training Activity",
+			"type": "shell",
+			"command": "echo '🔍 Checking recent activity and status...' && echo '' && echo '📊 Recent files in project:' && find . -type f -mmin -120 -name '*.py' -o -name '*.log' -o -name '*.json' | grep -E '(train|log|mlruns)' | head -10 && echo '' && echo '📁 Contents of logs directory:' && ls -la logs/ 2>/dev/null || echo 'No logs directory' && echo '' && echo '📈 Checking for any recent training outputs:' && find . -name 'mlruns' -type d 2>/dev/null && find . -name '*.pth' -o -name 'checkpoints' -type d 2>/dev/null | head -5"
+		},
+		{
+			"label": "Test Training Launcher",
+			"type": "shell",
+			"command": "source .venv/bin/activate && echo '🚀 Testing training launcher configuration...' && python test_training_launcher.py"
+		},
+		{
+			"label": "Launch Expanded Training Sequence",
+			"type": "shell",
+			"command": "source .venv/bin/activate && echo '🚀 Launching Expanded Training Sequence...' && echo 'Current time:' $(date) && python launch_expanded_training.py",
+			"isBackground": true
+		},
+		{
+			"label": "Monitor Active Training",
+			"type": "shell",
+			"command": "echo '🔍 Monitoring training process...' && echo 'Checking for active training processes:' && ps aux | grep -E '(train_enhanced|python.*train)' | grep -v grep && echo '' && echo 'Recent files (last 5 minutes):' && find . -type f -mmin -5 | grep -E '(log|mlruns|checkpoints)' | head -10 && echo '' && echo 'Checking system resources:' && echo 'Memory usage:' && free -h | head -2 && echo 'CPU load:' && uptime"
+		},
+		{
+			"label": "Check Training Outputs",
+			"type": "shell",
+			"command": "echo '📈 Checking for training outputs and logs...' && echo '' && echo 'MLflow runs directory:' && ls -la mlruns/ 2>/dev/null || echo 'No mlruns directory yet' && echo '' && echo 'Models/checkpoints directory:' && ls -la models/checkpoints/ 2>/dev/null || echo 'No checkpoints yet' && echo '' && echo 'Any new log files:' && find . -name '*.log' -mmin -10 2>/dev/null | head -5 || echo 'No new log files' && echo '' && echo 'Checking for any .out files:' && find . -name '*.out' -mmin -10 2>/dev/null | head -5 || echo 'No .out files'"
+		},
+		{
+			"label": "Check Training Progress",
+			"type": "shell",
+			"command": "sleep 30 && echo '🔄 Checking training progress after 30 seconds...' && echo 'Training processes:' && ps aux | grep train_enhanced | grep -v grep && echo '' && echo 'Checking for any new directories/files:' && find . -maxdepth 2 -type d -mmin -5 2>/dev/null | grep -E '(mlruns|logs|outputs)' && find . -maxdepth 3 -name '*.log' -o -name '*.out' -mmin -5 2>/dev/null | head -5"
+		},
+		{
+			"label": "Monitor Training Progress",
+			"type": "shell",
+			"command": "echo '📋 Training Status Update:' && date && echo '' && echo 'Active processes:' && ps aux | grep train_enhanced | grep -v grep && echo '' && echo 'Checking for any new outputs:' && find . -type d -name 'mlruns' -o -name 'cache' -o -name 'logs' | head -5 && echo '' && echo 'Memory usage update:' && free -h | grep Mem && echo '' && echo 'Waiting for more progress...'"
+		},
+		{
+			"label": "Detailed Training Monitor",
+			"type": "shell",
+			"command": "echo '📋 Detailed Training Monitoring...' && echo 'Time: '$(date) && echo '' && echo 'Process details:' && ps aux | grep train_enhanced | grep -v grep | head -2 && echo '' && echo 'Checking for MONAI cache:' && find . -path '*cache*' -type d 2>/dev/null | head -5 && echo '' && echo 'Data directory status:' && ls -la data/msd/ | head -5 && echo '' && echo 'Checking for any outputs in models:' && find models/ -type f -mmin -10 2>/dev/null | head -3"
+		},
+		{
+			"label": "Run Training Progress Monitor",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python monitor_training_progress.py"
+		},
+		{
+			"label": "Run Training Status Summary",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python training_status_summary.py"
 		}
 	]
 }
