@@ -121,6 +121,26 @@
 			"label": "Clean up test file",
 			"type": "shell",
 			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm -f test_crash_prevention_simple.py"
+		},
+		{
+			"label": "Test Enhanced Crash Prevention System",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python test_crash_prevention_enhanced.py"
+		},
+		{
+			"label": "Test Enhanced Crash Prevention (Fixed)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python test_crash_prevention_enhanced.py"
+		},
+		{
+			"label": "Test Enhanced Crash Prevention (Fixed check_memory)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python test_crash_prevention_enhanced.py"
+		},
+		{
+			"label": "Clean up test file",
+			"type": "shell",
+			"command": "rm -f /home/kevin/Projects/tumor-detection-segmentation/test_crash_prevention_enhanced.py"
 		}
 	]
 }

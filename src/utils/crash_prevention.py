@@ -734,6 +734,10 @@ class EnhancedMemoryMonitor:
         except Exception as e:
             logger.error(f"Memory check failed: {e}")
             memory_info['status'] = 'error'
+
+        self.total_checks += 1
+        return memory_info
+
     def _calculate_adaptive_sleep(self, snapshot: ResourceSnapshot,
                                   cycle_start: float) -> float:
         """Calculate adaptive sleep time based on system load"""
@@ -1625,11 +1629,16 @@ def enhanced_safe_execution(
                         logger.error(error_msg)
 
                 # Raise appropriate error
-                if isinstance(last_exception, (MemoryExhaustionError, GPUMemoryError)):
+                memory_gpu_errors = (MemoryExhaustionError, GPUMemoryError)
+                if isinstance(last_exception, memory_gpu_errors):
                     raise last_exception
                 else:
+                    func_name = func.__name__
+                    attempts_count = max_retries + 1
+                    error_msg = (f"Function {func_name} failed after "
+                                 f"{attempts_count} attempts")
                     raise CrashPreventionError(
-                        f"Function {func.__name__} failed after {max_retries + 1} attempts",
+                        error_msg,
                         severity=ErrorSeverity.HIGH,
                         recoverable=False,
                         context=execution_context
@@ -1655,7 +1664,7 @@ def enhanced_safe_execution(
 
 @contextmanager
 def resource_monitoring_context(memory_monitor: EnhancedMemoryMonitor,
-                               gpu_monitor: EnhancedGPUMonitor):
+                                gpu_monitor: EnhancedGPUMonitor):
     """Context manager for active resource monitoring during execution"""
     initial_memory = memory_monitor.check_memory()
     initial_gpu = gpu_monitor.get_comprehensive_gpu_usage()
@@ -1670,20 +1679,22 @@ def resource_monitoring_context(memory_monitor: EnhancedMemoryMonitor,
     except Exception:
         # Check if this is a resource-related exception
         current_memory = memory_monitor.check_memory()
-        current_gpu = gpu_monitor.get_comprehensive_gpu_usage()
+        # Skip unused GPU monitoring to reduce overhead
 
         memory_increase = (current_memory['usage_percent'] -
-                          initial_memory['usage_percent'])
+                           initial_memory['usage_percent'])
 
         if memory_increase > 10:  # Significant memory increase
-            logger.warning(f"Memory increased by {memory_increase:.1f}% during execution")
+            memory_msg = f"Memory increased by {memory_increase:.1f}% " \
+                        "during execution"
+            logger.warning(memory_msg)
 
         raise
 
 
 def _execute_resource_recovery(memory_monitor: EnhancedMemoryMonitor,
-                              gpu_monitor: EnhancedGPUMonitor,
-                              critical_section: bool = False):
+                               gpu_monitor: EnhancedGPUMonitor,
+                               critical_section: bool = False):
     """Execute comprehensive resource recovery procedures"""
     recovery_start = time.time()
 
@@ -1767,13 +1778,14 @@ def _record_execution_metrics(execution_context: Dict[str, Any]):
 
 # Maintain backward compatibility
 def safe_execution(max_retries: int = 3,
-                  cleanup_on_failure: bool = True,
-                  memory_threshold: float = 0.85,
-                  gpu_threshold: float = 0.90):
+                   cleanup_on_failure: bool = True,
+                   memory_threshold: float = 0.85,
+                   gpu_threshold: float = 0.90):
     """
     Backward compatible safe execution decorator
 
-    This is a simplified version of enhanced_safe_execution for backward compatibility
+    This is a simplified version of enhanced_safe_execution for
+    backward compatibility
     """
     return enhanced_safe_execution(
         max_retries=max_retries,
@@ -1786,7 +1798,8 @@ def safe_execution(max_retries: int = 3,
 
 
 @contextmanager
-def memory_safe_context(threshold: float = 0.85, cleanup_interval: float = 10.0):
+def memory_safe_context(threshold: float = 0.85,
+                        cleanup_interval: float = 10.0):
     """
     Context manager for memory-safe operations
 
@@ -2018,9 +2031,21 @@ def stop_global_protection():
 
 
 # Convenience decorators
-memory_safe = lambda func: safe_execution()(func)
-gpu_safe = lambda func: safe_execution(gpu_threshold=0.80)(func)
-ultra_safe = lambda func: safe_execution(max_retries=5, memory_threshold=0.75, gpu_threshold=0.80)(func)
+def memory_safe(func):
+    """Decorator for memory-safe execution with default settings"""
+    return safe_execution()(func)
+
+
+def gpu_safe(func):
+    """Decorator for GPU-safe execution with stricter GPU threshold"""
+    return safe_execution(gpu_threshold=0.80)(func)
+
+
+def ultra_safe(func):
+    """Decorator for ultra-safe execution with maximum protection"""
+    return safe_execution(max_retries=5,
+                          memory_threshold=0.75,
+                          gpu_threshold=0.80)(func)
 
 
 if __name__ == "__main__":
