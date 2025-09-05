@@ -6,7 +6,9 @@ using trained models with support for overlay visualization and TTA.
 """
 
 import argparse
+import gc
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -32,12 +34,53 @@ except ImportError:
 # Add repo src to path for training imports when running as a script
 sys.path.append(str(Path(__file__).parent.parent))
 
+# Crash prevention utilities
+try:
+    from src.utils.crash_prevention import (
+        emergency_cleanup,
+        gpu_safe_context,
+        log_system_resources,
+        memory_safe_context,
+        safe_execution,
+        start_global_protection,
+        stop_global_protection,
+    )
+    CRASH_PREVENTION_AVAILABLE = True
+except ImportError:
+    CRASH_PREVENTION_AVAILABLE = False
+    # Fallback implementations
+    from contextlib import contextmanager
+    @contextmanager
+    def memory_safe_context(*args, **kwargs):
+        yield None
+    @contextmanager
+    def gpu_safe_context(*args, **kwargs):
+        yield None
+    def safe_execution(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+    def emergency_cleanup():
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    def log_system_resources(logger=None):
+        pass
+    def start_global_protection(*args, **kwargs):
+        pass
+    def stop_global_protection():
+        pass
+
 try:
     # Import visualization utilities
     from src.training.callbacks.visualization import save_overlay_panel
     VISUALIZATION_AVAILABLE = True
 except ImportError:
     VISUALIZATION_AVAILABLE = False
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class TumorPredictor:
@@ -250,8 +293,9 @@ class TumorPredictor:
             ]
         )
 
+    @safe_execution(max_retries=2, memory_threshold=0.85, gpu_threshold=0.90)
     def predict_single(self, image_path: str) -> Dict[str, Any]:
-        """Run inference on a single image.
+        """Run inference on a single image with crash prevention.
 
         Args:
             image_path: Path to input image
@@ -259,40 +303,72 @@ class TumorPredictor:
         Returns:
             Dictionary containing prediction results
         """
-        # Preprocess image: path str -> Tensor (C, ...)
-        img_tensor = self.transforms(image_path)
-        if not torch.is_tensor(img_tensor):
-            # Safety net if transforms didn't convert to tensor
-            img_tensor = torch.as_tensor(img_tensor)
+        logger.info(f"Processing image: {image_path}")
 
-        # Add batch dimension and move to device
-        image = img_tensor.unsqueeze(0).to(self.device)
+        with memory_safe_context(threshold=0.85):
+            with gpu_safe_context(threshold=0.90):
+                try:
+                    # Preprocess image: path str -> Tensor (C, ...)
+                    img_tensor = self.transforms(image_path)
+                    if not torch.is_tensor(img_tensor):
+                        # Safety net if transforms didn't convert to tensor
+                        img_tensor = torch.as_tensor(img_tensor)
 
-        # Run inference
-        with torch.no_grad():
-            if self.use_tta:
-                prediction = self._predict_with_tta(image)
-            else:
-                logits = self.model(image)
-                probs = torch.softmax(logits, dim=1)
-                prediction = torch.argmax(probs, dim=1)
+                    # Add batch dimension and move to device
+                    image = img_tensor.unsqueeze(0).to(self.device, non_blocking=True)
 
-        # Convert to numpy for easier handling
-        prediction_np = prediction.cpu().numpy().squeeze()
-        # Also export the preprocessed input image (channel squeezed)
-        # for visualization purposes
-        input_np = img_tensor.detach().cpu().numpy()
-        if input_np.shape[0] == 1:
-            input_np = np.squeeze(input_np, axis=0)
+                    logger.info(f"Image shape: {image.shape}, device: {self.device}")
+                    log_system_resources(logger)
 
-        return {
-            "prediction": prediction_np,
-            "input_image": input_np,
-            "input_shape": image.shape,
-            "output_shape": prediction.shape,
-            "device": str(self.device),
-            "tta": self.use_tta,
-        }
+                    # Run inference with memory management
+                    with torch.no_grad():
+                        if self.use_tta:
+                            logger.info("Running TTA inference")
+                            prediction = self._predict_with_tta(image)
+                        else:
+                            logger.info("Running standard inference")
+                            logits = self.model(image)
+                            probs = torch.softmax(logits, dim=1)
+                            prediction = torch.argmax(probs, dim=1)
+
+                            # Clean up intermediate tensors
+                            del logits, probs
+
+                    # Convert to numpy for easier handling
+                    prediction_np = prediction.cpu().numpy().squeeze()
+
+                    # Export preprocessed input image for visualization
+                    input_np = img_tensor.detach().cpu().numpy()
+                    if input_np.shape[0] == 1:
+                        input_np = np.squeeze(input_np, axis=0)
+
+                    # Clean up GPU tensors
+                    del image, prediction, img_tensor
+                    emergency_cleanup()
+
+                    logger.info("Inference completed successfully")
+
+                    return {
+                        "prediction": prediction_np,
+                        "input_image": input_np,
+                        "input_shape": image.shape if 'image' in locals() else None,
+                        "output_shape": prediction.shape if 'prediction' in locals() else None,
+                        "device": str(self.device),
+                        "tta": self.use_tta,
+                    }
+
+                except RuntimeError as e:
+                    if "out of memory" in str(e).lower():
+                        logger.error(f"OOM error during inference: {e}")
+                        emergency_cleanup()
+                        # Try with reduced precision or other fallbacks
+                        raise RuntimeError(f"Inference failed due to memory: {e}")
+                    else:
+                        raise e
+                except Exception as e:
+                    logger.error(f"Inference error: {e}")
+                    emergency_cleanup()
+                    raise e
 
     def _predict_with_tta(self, image: "torch.Tensor") -> "torch.Tensor":
         """Simple flip-based TTA.

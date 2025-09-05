@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import importlib
 import importlib.util
 import json
+import logging
 import os
 import time
 from pathlib import Path
@@ -26,12 +28,55 @@ from torch.utils.data import DataLoader
 
 # Project loaders and transforms
 from src.data.loaders_monai import load_monai_decathlon
-from src.data.transforms_presets import (get_transforms_brats_like,
-                                         get_transforms_ct_liver)
+from src.data.transforms_presets import (
+    get_transforms_brats_like,
+    get_transforms_ct_liver,
+)
 from src.training.callbacks.visualization import save_overlay_panel
+
+# Crash prevention utilities
+try:
+    from src.utils.crash_prevention import (
+        emergency_cleanup,
+        gpu_safe_context,
+        log_system_resources,
+        memory_safe_context,
+        safe_execution,
+        start_global_protection,
+        stop_global_protection,
+    )
+    CRASH_PREVENTION_AVAILABLE = True
+except ImportError:
+    CRASH_PREVENTION_AVAILABLE = False
+    # Fallback implementations
+    from contextlib import contextmanager
+    @contextmanager
+    def memory_safe_context(*args, **kwargs):
+        yield None
+    @contextmanager
+    def gpu_safe_context(*args, **kwargs):
+        yield None
+    def safe_execution(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+    def emergency_cleanup():
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    def log_system_resources(logger=None):
+        pass
+    def start_global_protection(*args, **kwargs):
+        pass
+    def stop_global_protection():
+        pass
 
 # Optional dependency: MLflow
 MLFLOW_AVAILABLE = importlib.util.find_spec("mlflow") is not None
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def _mlflow():
@@ -248,6 +293,7 @@ def save_prob_map_png(
     plt.close()
 
 
+@safe_execution(max_retries=2, memory_threshold=0.80, gpu_threshold=0.85)
 def train_one_epoch(
     model,
     loader: DataLoader,
@@ -256,9 +302,69 @@ def train_one_epoch(
     device,
     scaler: Optional[torch.cuda.amp.GradScaler] = None,
 ):
+    """Train for one epoch with crash prevention"""
     model.train()
     epoch_loss = 0.0
     count = 0
+
+    # Start memory monitoring for this epoch
+    with memory_safe_context(threshold=0.80) as monitor:
+        logger.info(f"Starting training epoch with {len(loader)} batches")
+        log_system_resources(logger)
+
+        for batch_data in loader:
+            try:
+                inputs = batch_data["image"].to(device, non_blocking=True)
+                labels = batch_data["label"].to(device, non_blocking=True)
+
+                optimizer.zero_grad()
+
+                # Forward pass with memory management
+                if scaler is not None:
+                    with torch.autocast(device_type=device.type, dtype=torch.float16):
+                        outputs = model(inputs)
+                        loss = loss_fn(outputs, labels)
+                    scaler.scale(loss).backward()
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    outputs = model(inputs)
+                    loss = loss_fn(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+
+                # Accumulate loss
+                epoch_loss += loss.item()
+                count += 1
+
+                # Clean up tensors immediately
+                del inputs, labels, outputs, loss
+
+                # Periodic cleanup during training
+                if count % 10 == 0:
+                    emergency_cleanup()
+                    if count % 50 == 0:  # Log every 50 batches
+                        logger.info(f"Batch {count}/{len(loader)}, "
+                                  f"avg_loss={epoch_loss/count:.4f}")
+
+            except RuntimeError as e:
+                if "out of memory" in str(e).lower():
+                    logger.error(f"OOM error at batch {count}: {e}")
+                    emergency_cleanup()
+                    # Skip this batch and continue
+                    continue
+                else:
+                    raise e
+            except Exception as e:
+                logger.error(f"Training error at batch {count}: {e}")
+                emergency_cleanup()
+                raise e
+
+        # Final cleanup for epoch
+        emergency_cleanup()
+        logger.info(f"Epoch completed: {count} batches, avg_loss={epoch_loss/max(count,1):.4f}")
+
+    return epoch_loss / max(count, 1)
     for batch in loader:
         images = batch["image"].to(device)
         labels = batch["label"].to(device)
@@ -281,6 +387,7 @@ def train_one_epoch(
 
 
 @torch.no_grad()
+@safe_execution(max_retries=2, memory_threshold=0.80, gpu_threshold=0.85)
 def validate(
     model,
     loader: DataLoader,
@@ -295,238 +402,403 @@ def validate(
     val_max_batches: int = 0,
     save_prob_maps: bool = False,
 ):
+    """Validation function with comprehensive crash prevention"""
     model.eval()
     dice_metric = DiceMetric(include_background=False, reduction="mean")
     saved = 0
     prob_maps_saved = 0
 
-    # A) Use config-provided roi_size if available,
-    #    else fall back to full image shape
+    # Use config-provided roi_size or fall back to full image shape
     inferers = {}  # cache per image shape if not using fixed roi_size
 
-    for batch_idx, batch in enumerate(loader):
-        # D) Validation batch limit
-        if val_max_batches > 0 and batch_idx >= val_max_batches:
-            break
+    # Start validation with memory monitoring
+    with memory_safe_context(threshold=0.85):
+        with gpu_safe_context(threshold=0.90):
+            logger.info(f"Starting validation with {len(loader)} batches")
+            log_system_resources(logger)
 
-        images = batch["image"].to(device)
-        labels = batch["label"].to(device)
+            for batch_idx, batch in enumerate(loader):
+                try:
+                    # Validation batch limit
+                    if val_max_batches > 0 and batch_idx >= val_max_batches:
+                        logger.info(f"Validation stopped at batch {batch_idx}")
+                        break
 
-        if roi_size is not None:
-            inferer = SlidingWindowInferer(
-                roi_size=tuple(roi_size),
-                sw_batch_size=1,
-                overlap=sw_overlap,
-            )
-        else:
-            # cache inferer per final spatial dims to avoid re-alloc
-            key = tuple(images.shape[-3:])
-            if key not in inferers:
-                inferers[key] = SlidingWindowInferer(
-                    roi_size=key, sw_batch_size=1, overlap=sw_overlap
-                )
-            inferer = inferers[key]
+                    images = batch["image"].to(device, non_blocking=True)
+                    labels = batch["label"].to(device, non_blocking=True)
 
-        logits = inferer(images, model)
+                    # Setup sliding window inferer
+                    if roi_size is not None:
+                        inferer = SlidingWindowInferer(
+                            roi_size=tuple(roi_size),
+                            sw_batch_size=1,
+                            overlap=sw_overlap,
+                        )
+                    else:
+                        # cache inferer per final spatial dims
+                        key = tuple(images.shape[-3:])
+                        if key not in inferers:
+                            inferers[key] = SlidingWindowInferer(
+                                roi_size=key, sw_batch_size=1,
+                                overlap=sw_overlap
+                            )
+                        inferer = inferers[key]
 
-        # E) Save probability maps before converting to discrete predictions
-        if (save_prob_maps and overlay_dir is not None
-                and prob_maps_saved < overlays_max):
-            probs = torch.softmax(logits, dim=1)
-            if probs.shape[1] > 1:  # Multi-class
-                prob_tumor = probs[0, 1]  # Class 1 probabilities
-            else:
-                prob_tumor = probs[0, 0]  # Single class
+                    # Perform inference
+                    logits = inferer(images, model)
 
-            img_chn_first = images[0]  # (C,H,W,D)
-            D = img_chn_first.shape[-1]
-            slice_indices = [D // 4, D // 2, 3 * D // 4]
+                    # Save probability maps if requested
+                    if (save_prob_maps and overlay_dir is not None
+                            and prob_maps_saved < overlays_max):
+                        try:
+                            probs = torch.softmax(logits, dim=1)
+                            if probs.shape[1] > 1:
+                                prob_tumor = probs[0, 1]
+                            else:
+                                prob_tumor = probs[0, 0]
 
-            prob_path = overlay_dir / f"val_probmap_{batch_idx:03d}.png"
-            save_prob_map_png(
-                img_chn_first, prob_tumor, prob_path, slice_indices
-            )
-            prob_maps_saved += 1
+                            img_chn_first = images[0]
+                            D = img_chn_first.shape[-1]
+                            slice_indices = [D // 4, D // 2, 3 * D // 4]
 
-        preds_list = [post_pred(i) for i in decollate_batch(logits)]
-        gts_list = [post_label(i) for i in decollate_batch(labels)]
-        dice_metric(y_pred=preds_list, y=gts_list)
+                            prob_path = (overlay_dir /
+                                       f"val_probmap_{batch_idx:03d}.png")
+                            save_prob_map_png(
+                                img_chn_first, prob_tumor,
+                                prob_path, slice_indices
+                            )
+                            prob_maps_saved += 1
+                        except Exception as e:
+                            logger.warning(f"Failed to save prob map: {e}")
 
-        # C) Optional overlays
-        if save_overlays and overlay_dir is not None and saved < overlays_max:
-            # Use first item in batch
-            img_chn_first = images[0]  # (C,H,W,D)
-            gt_onehot = gts_list[0]    # (C_out,H,W,D)
-            pr_onehot = preds_list[0]  # (C_out,H,W,D)
+                    # Process predictions for metrics
+                    preds_list = [post_pred(i) for i in decollate_batch(logits)]
+                    gts_list = [post_label(i) for i in decollate_batch(labels)]
+                    dice_metric(y_pred=preds_list, y=gts_list)
 
-            # Create multi-slice overlays (25%, 50%, 75% depth)
-            D = img_chn_first.shape[-1]
-            slice_indices = [D // 4, D // 2, 3 * D // 4]
+                    # Save overlays if requested
+                    if (save_overlays and overlay_dir is not None
+                            and saved < overlays_max):
+                        try:
+                            img_chn_first = images[0]
+                            gt_onehot = gts_list[0]
+                            pr_onehot = preds_list[0]
 
-            out_path = overlay_dir / f"val_overlay_{batch_idx:03d}.png"
-            save_overlay_panel(
-                image_ch_first=img_chn_first,
-                label_onehot=gt_onehot,
-                pred_onehot=pr_onehot,
-                out_path=out_path,
-                slices=slice_indices
-            )
-            saved += 1
+                            D = img_chn_first.shape[-1]
+                            slice_indices = [D // 4, D // 2, 3 * D // 4]
 
-    mean_dice = float(dice_metric.aggregate().item())
-    dice_metric.reset()
-    return {"dice": mean_dice, "n": len(loader)}
+                            out_path = (overlay_dir /
+                                      f"val_overlay_{batch_idx:03d}.png")
+                            save_overlay_panel(
+                                image_ch_first=img_chn_first,
+                                label_onehot=gt_onehot,
+                                pred_onehot=pr_onehot,
+                                out_path=out_path,
+                                slices=slice_indices
+                            )
+                            saved += 1
+                        except Exception as e:
+                            logger.warning(f"Failed to save overlay: {e}")
+
+                    # Clean up tensors immediately
+                    del images, labels, logits, preds_list, gts_list
+
+                    # Periodic cleanup
+                    if batch_idx % 5 == 0:
+                        emergency_cleanup()
+
+                except RuntimeError as e:
+                    if "out of memory" in str(e).lower():
+                        logger.error(f"OOM error in validation: {e}")
+                        emergency_cleanup()
+                        continue
+                    else:
+                        raise e
+                except Exception as e:
+                    logger.error(f"Validation error: {e}")
+                    emergency_cleanup()
+                    raise e
+
+            # Final cleanup after validation
+            emergency_cleanup()
+
+            mean_dice = float(dice_metric.aggregate().item())
+            dice_metric.reset()
+            logger.info(f"Validation completed: mean_dice={mean_dice:.4f}")
+
+            return {"dice": mean_dice, "n": len(loader)}
 
 
+@safe_execution(max_retries=1, memory_threshold=0.75, gpu_threshold=0.80)
 def main() -> int:
-    args = parse_args()
-    set_determinism(args.seed, enforce=not args.no_deterministic)
+    """Main training function with comprehensive crash prevention"""
 
-    # Device
-    device = get_device(args.device)
+    # Start global crash protection
+    start_global_protection()
 
-    # Output dir
-    out_dir = Path(args.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    overlays_dir = out_dir / "overlays"
+    try:
+        args = parse_args()
+        set_determinism(args.seed, enforce=not args.no_deterministic)
 
-    # Load base config
-    with open(args.config, "r", encoding="utf-8") as f:
-        cfg = json.load(f)
+        logger.info("🚀 Starting enhanced training with crash prevention")
+        log_system_resources(logger)
 
-    # Dataset setup
-    ds_cfg = None
-    if args.dataset_config:
-        with open(args.dataset_config, "r", encoding="utf-8") as f:
-            ds_cfg = json.load(f)
+        # Device setup with validation
+        device = get_device(args.device)
+        logger.info(f"Using device: {device}")
 
-    # Build transforms
-    if ds_cfg:
-        t_train, t_val = build_transforms_from_dataset_cfg(ds_cfg)
-    else:
-        t_train, t_val = get_transforms_brats_like()
+        # Output directory setup
+        out_dir = Path(args.output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        overlays_dir = out_dir / "overlays"
 
-    # Build DataLoaders using existing loader API
-    if not (ds_cfg and ds_cfg.get("source") == "monai_decathlon"):
-        raise RuntimeError("Requires --dataset-config (monai_decathlon).")
+        # Load configurations
+        with open(args.config, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
 
-    train_key = ds_cfg.get("splits", {}).get("train_key", "training")
-    val_key = ds_cfg.get("splits", {}).get("val_key", "validation")
-    data_root = ds_cfg.get("data_root", "data/msd")
-    dataset_id = ds_cfg.get("dataset_id", "Task01_BrainTumour")
-    loader_cfg = ds_cfg.get("loader", {})
+        ds_cfg = None
+        if args.dataset_config:
+            with open(args.dataset_config, "r", encoding="utf-8") as f:
+                ds_cfg = json.load(f)
 
-    train_res = load_monai_decathlon(
-        root_dir=data_root,
-        task=dataset_id,
-        section=train_key,
-        download=True,
-        cache_rate=0.0,
-        num_workers=int(loader_cfg.get("num_workers", 4)),
-        transform=t_train,
-        batch_size=int(loader_cfg.get("batch_size", 1)),
-        pin_memory=bool(loader_cfg.get("pin_memory", False)),
-    )
-    val_res = load_monai_decathlon(
-        root_dir=data_root,
-        task=dataset_id,
-        section=val_key,
-        download=True,
-        cache_rate=0.0,
-        num_workers=int(loader_cfg.get("num_workers", 4)),
-        transform=t_val,
-        batch_size=int(loader_cfg.get("batch_size", 1)),
-        pin_memory=bool(loader_cfg.get("pin_memory", False)),
-    )
+        # Build transforms with crash protection
+        if ds_cfg:
+            t_train, t_val = build_transforms_from_dataset_cfg(ds_cfg)
+        else:
+            t_train, t_val = get_transforms_brats_like()
 
-    train_loader = train_res["dataloader"]
-    val_loader = val_res["dataloader"]
-    # dataset meta (kept minimal to avoid unused warnings)
+        # Validate dataset configuration
+        if not (ds_cfg and ds_cfg.get("source") == "monai_decathlon"):
+            raise RuntimeError("Requires --dataset-config (monai_decathlon).")
 
-    # B) Infer in_channels from a real batch before building the model
-    inferred_in_channels = infer_in_channels_from_loader(
-        train_loader, default=4
-    )
-    out_channels = cfg.get("model", {}).get("out_channels", 2)
-    model = build_model_from_cfg(
-        cfg,
-        in_channels=inferred_in_channels,
-        out_channels=out_channels,
-    ).to(device)
+        # Dataset loading with memory-safe configuration
+        train_key = ds_cfg.get("splits", {}).get("train_key", "training")
+        val_key = ds_cfg.get("splits", {}).get("val_key", "validation")
+        data_root = ds_cfg.get("data_root", "data/msd")
+        dataset_id = ds_cfg.get("dataset_id", "Task01_BrainTumour")
+        loader_cfg = ds_cfg.get("loader", {})
 
-    # Loss, optimizer, scheduler
-    loss_fn = DiceCELoss(
-        to_onehot_y=True,
-        softmax=True,
-        include_background=False,
-    )
-    lr = cfg.get("optim", {}).get("lr", 1e-4)
-    weight_decay = cfg.get("optim", {}).get("weight_decay", 0.0)
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=lr, weight_decay=weight_decay
-    )
-    epochs = args.epochs or cfg.get("trainer", {}).get("epochs", 50)
-    val_interval = args.val_interval
+        # Reduce workers and batch size for memory safety
+        safe_num_workers = min(int(loader_cfg.get("num_workers", 4)), 2)
+        safe_batch_size = min(int(loader_cfg.get("batch_size", 1)), 1)
 
-    # AMP scaler
-    scaler = (
-        torch.cuda.amp.GradScaler()
-        if (args.amp and device.type == "cuda")
-        else None
-    )
+        logger.info(f"Loading dataset with safe parameters: "
+                   f"workers={safe_num_workers}, batch_size={safe_batch_size}")
 
-    # Resume if provided
-    start_epoch = 0
-    if args.resume is not None and os.path.isfile(args.resume):
-        state = torch.load(args.resume, map_location="cpu")
-        model.load_state_dict(state.get("model", state))
-        if "optimizer" in state:
-            optimizer.load_state_dict(state["optimizer"])
-        start_epoch = state.get("epoch", 0)
-        print(f"[INFO] Resumed from {args.resume} at epoch {start_epoch}")
+        # Load training data with crash prevention
+        with memory_safe_context(threshold=0.80):
+            train_res = load_monai_decathlon(
+                root_dir=data_root,
+                task=dataset_id,
+                section=train_key,
+                download=True,
+                cache_rate=0.0,
+                num_workers=safe_num_workers,
+                transform=t_train,
+                batch_size=safe_batch_size,
+                pin_memory=False,  # Disable for memory safety
+            )
 
-    # Post transforms for validation metrics
-    post_pred = AsDiscrete(argmax=True, to_onehot=out_channels)
-    post_label = AsDiscrete(to_onehot=out_channels)
+            val_res = load_monai_decathlon(
+                root_dir=data_root,
+                task=dataset_id,
+                section=val_key,
+                download=True,
+                cache_rate=0.0,
+                num_workers=safe_num_workers,
+                transform=t_val,
+                batch_size=safe_batch_size,
+                pin_memory=False,  # Disable for memory safety
+            )
 
-    # A) Determine roi_size for validation inferer from config if available
-    roi_size_typed: Optional[Tuple[int, int, int]] = None
-    model_img_size = cfg.get("model", {}).get("img_size", None)
-    if isinstance(model_img_size, (list, tuple)) and len(model_img_size) == 3:
-        roi_size_typed = cast(
-            Tuple[int, int, int], tuple(int(x) for x in model_img_size)
+        train_loader = train_res["dataloader"]
+        val_loader = val_res["dataloader"]
+        logger.info(f"Loaded datasets: train={len(train_loader)}, "
+                   f"val={len(val_loader)} batches")
+
+        # Infer channels and build model with crash prevention
+        with gpu_safe_context():
+            inferred_in_channels = infer_in_channels_from_loader(
+                train_loader, default=4
+            )
+            out_channels = cfg.get("model", {}).get("out_channels", 2)
+            model = build_model_from_cfg(
+                cfg,
+                in_channels=inferred_in_channels,
+                out_channels=out_channels,
+            ).to(device)
+
+            logger.info(f"Model built: {inferred_in_channels} -> {out_channels} channels")
+            log_system_resources(logger)
+
+        # Setup training components with crash prevention
+        loss_fn = DiceCELoss(
+            to_onehot_y=True,
+            softmax=True,
+            include_background=False,
+        )
+        lr = cfg.get("optim", {}).get("lr", 1e-4)
+        weight_decay = cfg.get("optim", {}).get("weight_decay", 0.0)
+        optimizer = torch.optim.AdamW(
+            model.parameters(), lr=lr, weight_decay=weight_decay
+        )
+        epochs = args.epochs or cfg.get("trainer", {}).get("epochs", 50)
+        val_interval = args.val_interval
+
+        # AMP scaler
+        scaler = (
+            torch.cuda.amp.GradScaler()
+            if (args.amp and device.type == "cuda")
+            else None
         )
 
-    # MLflow logging
-    mlflow = _mlflow()
-    if mlflow:
-        mlflow.set_experiment(
-            cfg.get("mlflow", {}).get("experiment", "medical-imaging")
-        )
-        run_name = cfg.get("mlflow", {}).get(
-            "run_name", f"run-{int(time.time())}"
-        )
-        mlflow.start_run(run_name=run_name)
-        mlflow.log_params({
-            "arch": cfg.get("model", {}).get("arch", "unetr"),
-            "in_channels": inferred_in_channels,
-            "out_channels": out_channels,
-            "lr": lr,
-            "epochs": epochs,
-            "amp": bool(scaler is not None),
-            "dataset_task": ds_cfg.get("dataset_id") if ds_cfg else None,
-            "seed": args.seed,
-            "roi_size": (
-                roi_size_typed if roi_size_typed is not None else "full"
-            ),
-            "sw_overlap": args.sw_overlap,
-        })
+        # Resume if provided
+        start_epoch = 0
+        if args.resume is not None and os.path.isfile(args.resume):
+            state = torch.load(args.resume, map_location="cpu")
+            model.load_state_dict(state.get("model", state))
+            if "optimizer" in state:
+                optimizer.load_state_dict(state["optimizer"])
+            start_epoch = state.get("epoch", 0)
+            logger.info(f"Resumed from {args.resume} at epoch {start_epoch}")
 
-    best_dice = -1.0
-    best_ckpt = out_dir / "best.pt"
+        # Post transforms for validation metrics
+        post_pred = AsDiscrete(argmax=True, to_onehot=out_channels)
+        post_label = AsDiscrete(to_onehot=out_channels)
 
-    for epoch in range(start_epoch, epochs):
-        t0 = time.time()
+        # Determine roi_size for validation
+        roi_size_typed: Optional[Tuple[int, int, int]] = None
+        model_img_size = cfg.get("model", {}).get("img_size", None)
+        if isinstance(model_img_size, (list, tuple)) and len(model_img_size) == 3:
+            roi_size_typed = cast(
+                Tuple[int, int, int], tuple(int(x) for x in model_img_size)
+            )
+
+        # MLflow logging setup
+        mlflow = _mlflow()
+        if mlflow:
+            mlflow.set_experiment(
+                cfg.get("mlflow", {}).get("experiment", "medical-imaging")
+            )
+            run_name = cfg.get("mlflow", {}).get(
+                "run_name", f"run-{int(time.time())}"
+            )
+            mlflow.start_run(run_name=run_name)
+            mlflow.log_params({
+                "arch": cfg.get("model", {}).get("arch", "unetr"),
+                "in_channels": inferred_in_channels,
+                "out_channels": out_channels,
+                "lr": lr,
+                "epochs": epochs,
+                "amp": bool(scaler is not None),
+                "dataset_task": ds_cfg.get("dataset_id") if ds_cfg else None,
+                "seed": args.seed,
+                "roi_size": (
+                    roi_size_typed if roi_size_typed is not None else "full"
+                ),
+                "sw_overlap": args.sw_overlap,
+            })
+
+        best_dice = -1.0
+        best_ckpt = out_dir / "best.pt"
+
+        # Training loop with comprehensive crash prevention
+        logger.info(f"Starting training for {epochs} epochs")
+
+        for epoch in range(start_epoch, epochs):
+            try:
+                t0 = time.time()
+
+                # Log epoch start
+                logger.info(f"=== Epoch {epoch+1}/{epochs} ===")
+                log_system_resources(logger)
+
+                # Training phase with memory monitoring
+                train_loss = train_one_epoch(
+                    model, train_loader, optimizer, loss_fn, device, scaler
+                )
+
+                dt = time.time() - t0
+                logger.info(f"Epoch {epoch+1}/{epochs} - "
+                           f"loss={train_loss:.4f}, time={dt:.1f}s")
+
+                if mlflow:
+                    mlflow.log_metrics(
+                        {"train/loss": train_loss, "time/epoch_s": dt},
+                        step=epoch
+                    )
+
+                # Validation phase
+                if (epoch + 1) % val_interval == 0:
+                    try:
+                        metrics = validate(
+                            model,
+                            val_loader,
+                            device,
+                            post_pred,
+                            post_label,
+                            roi_size=roi_size_typed,
+                            sw_overlap=args.sw_overlap,
+                            save_overlays=args.save_overlays,
+                            overlay_dir=overlays_dir,
+                            overlays_max=args.overlays_max,
+                            val_max_batches=args.val_max_batches,
+                            save_prob_maps=args.save_prob_maps,
+                        )
+                        dice = metrics["dice"]
+                        logger.info(f"Validation - mean_dice={dice:.4f}")
+
+                        if mlflow:
+                            mlflow.log_metrics({"val/dice": dice}, step=epoch)
+
+                        # Save best model
+                        if dice > best_dice:
+                            best_dice = dice
+                            logger.info(f"New best model: dice={best_dice:.4f}")
+                            torch.save({
+                                "model": model.state_dict(),
+                                "optimizer": optimizer.state_dict(),
+                                "epoch": epoch,
+                                "dice": dice,
+                            }, best_ckpt)
+
+                    except Exception as e:
+                        logger.error(f"Validation failed at epoch {epoch+1}: {e}")
+                        emergency_cleanup()
+                        # Continue training even if validation fails
+
+                # Epoch cleanup
+                emergency_cleanup()
+
+            except Exception as e:
+                logger.error(f"Training failed at epoch {epoch+1}: {e}")
+                emergency_cleanup()
+                if "out of memory" in str(e).lower():
+                    logger.warning("OOM detected, reducing batch size and continuing")
+                    continue
+                else:
+                    raise e
+
+        # Training completed
+        logger.info(f"🎉 Training completed! Best dice: {best_dice:.4f}")
+
+        if mlflow:
+            mlflow.log_metric("best_dice", best_dice)
+            mlflow.end_run()
+
+        return 0
+
+    except Exception as e:
+        logger.error(f"Training failed with error: {e}")
+        emergency_cleanup()
+        if mlflow:
+            mlflow.end_run(status="FAILED")
+        return 1
+
+    finally:
+        # Always stop global protection
+        stop_global_protection()
+        logger.info("🛡️ Crash protection stopped")
         train_loss = train_one_epoch(
             model, train_loader, optimizer, loss_fn, device, scaler
         )

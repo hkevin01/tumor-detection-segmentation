@@ -66,6 +66,21 @@
 			"command": "source .venv/bin/activate && python scripts/monitoring/setup_crash_recovery.py",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Test Crash Prevention System",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python test_crash_prevention_system.py"
+		},
+		{
+			"label": "Test Crash Prevention System (Fixed)",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python test_crash_prevention_system.py"
+		},
+		{
+			"label": "Clean up test file",
+			"type": "shell",
+			"command": "rm test_crash_prevention_system.py"
 		}
 	]
 }
