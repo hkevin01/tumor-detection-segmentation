@@ -141,6 +141,16 @@
 			"label": "Clean up test file",
 			"type": "shell",
 			"command": "rm -f /home/kevin/Projects/tumor-detection-segmentation/test_crash_prevention_enhanced.py"
+		},
+		{
+			"label": "Move root files to subdirectories",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python3 move_root_files.py"
+		},
+		{
+			"label": "Clean up temporary script",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm move_root_files.py && echo '🧹 Temporary script removed'"
 		}
 	]
 }
