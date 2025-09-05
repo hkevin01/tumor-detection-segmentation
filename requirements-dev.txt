@@ -1,0 +1,9 @@
+# Developer dependencies (lightweight) — keep separate from heavy runtime deps
+pytest==7.4.0
+pytest-cov==4.1.0
+pytest-asyncio==0.21.0
+black==24.1.0
+ruff==0.12.12
+mypy==1.4.1
+pre-commit==3.4.0
+isort==5.12.0
