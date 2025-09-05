@@ -1,0 +1,62 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "\ud83e\udde0 Safe Training (Low Memory)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/training/train_enhanced.py",
+      "args": [
+        "--config",
+        "config/memory_optimized/low_memory_unetr.json",
+        "--dataset-config",
+        "config/datasets/msd_task01_brain.json",
+        "--epochs",
+        "1",
+        "--amp",
+        "--output-dir",
+        "logs/safe_training"
+      ],
+      "console": "integratedTerminal",
+      "env": {
+        "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:128",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "\ud83d\udda5\ufe0f CPU-Only Training",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/training/train_enhanced.py",
+      "args": [
+        "--config",
+        "config/memory_optimized/cpu_fallback.json",
+        "--dataset-config",
+        "config/datasets/msd_task01_brain.json",
+        "--epochs",
+        "1",
+        "--no-cuda",
+        "--output-dir",
+        "logs/cpu_training"
+      ],
+      "console": "integratedTerminal",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "2"
+      }
+    },
+    {
+      "name": "\ud83d\udd0d Memory Monitor",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/monitoring/vscode_crash_monitor.py",
+      "args": [
+        "--action",
+        "start"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}

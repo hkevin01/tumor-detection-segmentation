@@ -26,5 +26,66 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "workbench.editor.enablePreview": false,
-  "chat.todoListTool.enabled": true
+  "chat.todoListTool.enabled": true,
+  "files.watcherExclude": {
+    "**/logs/**": true,
+    "**/data/**": true,
+    "**/models/**": true,
+    "**/reports/**": true,
+    "**/.venv/**": true,
+    "**/venv/**": true,
+    "**/__pycache__/**": true,
+    "**/*.pyc": true,
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/temp/**": true,
+    "**/tmp/**": true
+  },
+  "files.maxMemoryForLargeFilesMB": 512,
+  "search.maxResults": 10000,
+  "search.smartCase": true,
+  "search.followSymlinks": false,
+  "python.analysis.memory.keepLibraryAst": false,
+  "python.analysis.indexing": false,
+  "python.analysis.packageIndexDepths": [
+    {
+      "name": "",
+      "depth": 1
+    }
+  ],
+  "python.analysis.autoImportCompletions": false,
+  "python.analysis.completeFunctionParens": false,
+  "jupyter.enableCellCodeLens": false,
+  "jupyter.askForKernelRestart": false,
+  "jupyter.alwaysTrustNotebooks": true,
+  "jupyter.widgetScriptSources": [
+    "jsdelivr.com",
+    "unpkg.com"
+  ],
+  "jupyter.outputScrolling": true,
+  "jupyter.enableScrollingForCellOutputs": true,
+  "jupyter.maxOutputSize": 400,
+  "jupyter.textOutputLimit": 30000,
+  "git.enabled": true,
+  "git.autoRepositoryDetection": false,
+  "git.decorations.enabled": false,
+  "git.autoStash": false,
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "editor.suggest.showWords": false,
+  "editor.suggest.showSnippets": false,
+  "editor.quickSuggestions": {
+    "other": false,
+    "comments": false,
+    "strings": false
+  },
+  "terminal.integrated.scrollback": 1000,
+  "terminal.integrated.fastScrollSensitivity": 5,
+  "python.defaultInterpreterPath": "./.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.envFile": "${workspaceFolder}/.env",
+  "window.title": "\ud83e\udde0 Tumor Detection - ${activeEditorShort}",
+  "workbench.colorTheme": "Solarized Dark"
 }

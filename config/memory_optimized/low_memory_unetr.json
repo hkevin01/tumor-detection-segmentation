@@ -1,0 +1,31 @@
+{
+  "model": {
+    "name": "UNETR",
+    "img_size": [
+      64,
+      64,
+      64
+    ],
+    "feature_size": 16,
+    "hidden_size": 512,
+    "mlp_dim": 2048,
+    "num_heads": 8,
+    "pos_embed": "conv",
+    "norm_name": "instance",
+    "dropout_rate": 0.0
+  },
+  "training": {
+    "batch_size": 1,
+    "val_batch_size": 1,
+    "cache_mode": "none",
+    "num_workers": 1,
+    "pin_memory": false,
+    "persistent_workers": false
+  },
+  "memory_optimization": {
+    "gradient_checkpointing": true,
+    "mixed_precision": true,
+    "gradient_accumulation_steps": 4,
+    "empty_cache_frequency": 10
+  }
+}
