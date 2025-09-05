@@ -36,5 +36,5 @@ docker-build:
 
 docker-test:
 	@echo "Build and run lightweight test image for smoke tests"
-	docker build -f docker/images/Dockerfile.test-lite -t tumor-test-lite .
+	docker build -f docker/Dockerfile.test-lite -t tumor-test-lite .
 	docker run --rm tumor-test-lite

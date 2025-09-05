@@ -13,9 +13,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install only dev/test requirements
+# Copy and install test requirements with numpy
 COPY requirements-dev.txt /app/requirements-dev.txt
 RUN python -m pip install --upgrade pip setuptools wheel && \
+    python -m pip install numpy>=1.24 && \
     python -m pip install -r /app/requirements-dev.txt
 
 # Copy source and tests
