@@ -91,6 +91,34 @@ class MemoryMonitor:
                 logger.error(f"Memory monitoring error: {e}")
                 time.sleep(self.check_interval * 2)
 
+    def check_memory(self) -> Dict[str, Any]:
+        """Get current memory usage information"""
+        memory_info = {
+            'usage_percent': 0.0,
+            'available_gb': 0.0,
+            'used_gb': 0.0,
+            'total_gb': 0.0,
+            'status': 'unknown'
+        }
+
+        try:
+            if PSUTIL_AVAILABLE:
+                vm = psutil.virtual_memory()
+                memory_info.update({
+                    'usage_percent': vm.percent,
+                    'available_gb': vm.available / (1024**3),
+                    'used_gb': vm.used / (1024**3),
+                    'total_gb': vm.total / (1024**3),
+                    'status': 'normal' if vm.percent < self.threshold * 100 else 'high'
+                })
+            else:
+                memory_info['status'] = 'psutil_unavailable'
+        except Exception as e:
+            logger.error(f"Memory check failed: {e}")
+            memory_info['status'] = 'error'
+
+        return memory_info
+
     def _execute_cleanup(self):
         """Execute cleanup callbacks"""
         for callback in self.callbacks:
