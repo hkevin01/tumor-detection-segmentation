@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-09-06T00:14:48.546743",
+  "operator_implementation": {
+    "objective": "Stand up full stack for clinical workflows",
+    "dataset": "MSD Task01 (brain) as clinical MRI surrogate",
+    "model": "UNETR with multi-modal fusion",
+    "features": [
+      "MLflow tracking",
+      "Overlay generation for clinical QA",
+      "Monitoring and safety",
+      "Reproducibility"
+    ],
+    "implementation_status": "COMPLETE"
+  },
+  "nine_step_workflow": {
+    "1_bootstrap": {
+      "description": "Environment & container verification",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 1",
+      "features": [
+        "Docker setup",
+        "Script permissions",
+        "Service URLs"
+      ]
+    },
+    "2_venv": {
+      "description": "Create local dev virtual environment",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 2",
+      "features": [
+        "Virtual environment",
+        "Dependencies",
+        "MONAI/MLflow"
+      ]
+    },
+    "3_dataset": {
+      "description": "Pull real dataset (MSD Task01 BrainTumour)",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 3",
+      "features": [
+        "MONAI dataset download",
+        "Data validation",
+        "Structure creation"
+      ]
+    },
+    "4_config": {
+      "description": "Set reproducible training configuration",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 4",
+      "features": [
+        "UNETR multimodal recipe",
+        "Hardware optimization",
+        "MSD config"
+      ]
+    },
+    "5_training": {
+      "description": "Start baseline training with MLflow tracking",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 5",
+      "features": [
+        "Training launcher",
+        "MLflow integration",
+        "Hardware-specific configs"
+      ]
+    },
+    "6_monitoring": {
+      "description": "Monitor training and system health",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 6",
+      "features": [
+        "Progress monitoring",
+        "Status tracking",
+        "Service health"
+      ]
+    },
+    "7_inference": {
+      "description": "Baseline inference for clinical QA overlays",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 7",
+      "features": [
+        "Inference script",
+        "Overlay generation",
+        "QA outputs"
+      ]
+    },
+    "8_onboarding": {
+      "description": "Prepare for clinical data onboarding",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 8",
+      "features": [
+        "Clinical directories",
+        "Onboarding guide",
+        "Data workflows"
+      ]
+    },
+    "9_documentation": {
+      "description": "Document baseline and sign-off",
+      "status": "\u2705 IMPLEMENTED",
+      "script": "scripts/clinical/clinical_operator.py - Step 9",
+      "features": [
+        "Baseline documentation",
+        "MLflow tagging",
+        "Sign-off checklist"
+      ]
+    }
+  },
+  "hyperparam_sweep": {
+    "description": "Grid search with concurrent execution",
+    "status": "\u2705 IMPLEMENTED",
+    "script": "scripts/training/launch_expanded_training.py",
+    "features": [
+      "Grid parameter parsing",
+      "Experiment combinations generation",
+      "Concurrent execution support",
+      "MLflow integration",
+      "Timeout handling",
+      "Progress tracking"
+    ]
+  },
+  "hardware_detection": {
+    "description": "Auto-detect GPU and optimize configurations",
+    "status": "\u2705 IMPLEMENTED",
+    "configurations": {
+      "large_gpu": "48GB+ VRAM: ROI 160x160x160, Batch 4, Cache full",
+      "medium_gpu": "16-24GB VRAM: ROI 128x128x128, Batch 2, Cache smart",
+      "small_gpu": "8-12GB VRAM: ROI 96x96x96, Batch 1, Cache smart",
+      "cpu_only": "CPU: ROI 64x64x64, Batch 1, Cache smart"
+    }
+  },
+  "clinical_features": {
+    "dataset_integration": "\u2705 MSD Task01 BrainTumour downloading and configuration",
+    "model_training": "\u2705 UNETR MultiModal with 4-channel input (T1, T1c, T2, FLAIR)",
+    "mlflow_tracking": "\u2705 Experiment tracking with clinical tags and baselines",
+    "overlay_generation": "\u2705 QA overlays and probability maps for clinical review",
+    "monitoring_tools": "\u2705 Training progress and system health monitoring",
+    "inference_scripts": "\u2705 Clinical inference with overlay generation",
+    "onboarding_guides": "\u2705 Clinical data workflow documentation",
+    "baseline_documentation": "\u2705 Model performance and sign-off checklists",
+    "hyperparameter_sweeps": "\u2705 Grid search capabilities with MLflow integration"
+  },
+  "generated_artifacts": {
+    "main_operator": "scripts/clinical/clinical_operator.py (600+ lines)",
+    "training_launcher": "scripts/training/launch_expanded_training.py (387 lines)",
+    "deployment_script": "run_clinical_operator.sh",
+    "configs_created": [
+      "config/recipes/unetr_multimodal.json",
+      "config/datasets/msd_task01_brain.json"
+    ],
+    "training_scripts": [
+      "scripts/clinical/start_training.sh",
+      "scripts/clinical/run_inference.sh",
+      "scripts/clinical/run_clinical_inference.sh"
+    ],
+    "monitoring_scripts": [
+      "scripts/monitoring/monitor_training_progress.py",
+      "scripts/monitoring/training_status_summary.py"
+    ],
+    "documentation": [
+      "docs/clinical/onboarding_guide.md",
+      "reports/baselines/msd-task01-unetr-mm-baseline-v1/documentation.md"
+    ]
+  },
+  "ready_commands": {
+    "large_gpu_training": "\npython scripts/training/launch_expanded_training.py \\\n  --config config/recipes/unetr_multimodal.json \\\n  --dataset-config config/datasets/msd_task01_brain.json \\\n  --grid \"roi=160,192 batch_size=4,6 cache=cache amp=true\" \\\n  --epochs 50 \\\n  --experiment-name msd-task01-unetr-mm-large-gpu\n        ",
+    "medium_gpu_training": "\npython scripts/training/launch_expanded_training.py \\\n  --config config/recipes/unetr_multimodal.json \\\n  --dataset-config config/datasets/msd_task01_brain.json \\\n  --grid \"roi=128,160 batch_size=2,3 cache=smart,cache amp=true\" \\\n  --epochs 50 \\\n  --experiment-name msd-task01-unetr-mm-medium-gpu\n        ",
+    "small_gpu_training": "\npython scripts/training/launch_expanded_training.py \\\n  --config config/recipes/unetr_multimodal.json \\\n  --dataset-config config/datasets/msd_task01_brain.json \\\n  --grid \"roi=96,128 batch_size=1,2 cache=smart amp=true\" \\\n  --epochs 50 \\\n  --experiment-name msd-task01-unetr-mm-small-gpu\n        ",
+    "cpu_training": "\npython scripts/training/launch_expanded_training.py \\\n  --config config/recipes/unetr_multimodal.json \\\n  --dataset-config config/datasets/msd_task01_brain.json \\\n  --grid \"roi=64,96 batch_size=1 cache=smart amp=false\" \\\n  --epochs 50 \\\n  --experiment-name msd-task01-unetr-mm-cpu\n        "
+  }
+}

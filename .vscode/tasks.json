@@ -343,6 +343,34 @@
 			"command": "python3 scripts/clinical/deployment_guide.py",
 			"isBackground": false,
 			"group": "test"
+		},
+		{
+			"label": "Execute Clinical Operator",
+			"type": "shell",
+			"command": "chmod +x run_clinical_operator.sh && ./run_clinical_operator.sh",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run Clinical Operator",
+			"type": "shell",
+			"command": "./run_clinical_operator.sh",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run Complete Clinical Operator",
+			"type": "shell",
+			"command": "./run_clinical_operator.sh",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Generate Implementation Summary",
+			"type": "shell",
+			"command": "python scripts/clinical/operator_implementation_summary.py",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
