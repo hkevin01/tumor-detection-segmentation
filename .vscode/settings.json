@@ -55,7 +55,6 @@
   ],
   "python.analysis.autoImportCompletions": false,
   "python.analysis.completeFunctionParens": false,
-  "jupyter.enableCellCodeLens": false,
   "jupyter.askForKernelRestart": false,
   "jupyter.alwaysTrustNotebooks": true,
   "jupyter.widgetScriptSources": [
@@ -87,5 +86,6 @@
   "python.terminal.activateEnvironment": true,
   "python.envFile": "${workspaceFolder}/.env",
   "window.title": "\ud83e\udde0 Tumor Detection - ${activeEditorShort}",
-  "workbench.colorTheme": "Solarized Dark"
+  "workbench.colorTheme": "Solarized Dark",
+  "jupyter.interactiveWindow.codeLens.enable": false
 }

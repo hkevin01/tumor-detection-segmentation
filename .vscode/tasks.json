@@ -258,6 +258,63 @@
 			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '🎆 PRIORITIZED ACTION PLAN EXECUTION COMPLETE' && echo '================================================================' && echo '' && echo '📊 COMPLETION SUMMARY:' && echo '' && echo '✅ Step 1: Docker Stack & Services Validation - COMPLETE' && echo '   • Docker 28.3.3 with Compose 1.29.2 validated' && echo '   • AMD GPU (Radeon RX 5600 XT/5700 XT) detected with ROCm' && echo '   • 31GB RAM system with 289GB free disk space' && echo '   • All Docker containers and services operational' && echo '' && echo '✅ Step 2: MONAI Verification Checklist - COMPLETE' && echo '   • 7/7 tests passing consistently' && echo '   • MONAI 1.5.0 and MLflow 3.3.2 confirmed working' && echo '   • PyTorch 2.6.0+cu124 integrated (CPU mode)' && echo '   • Crash prevention system fully operational' && echo '' && echo '⚠️ Step 3: CPU-only Smoke Tests - MOSTLY COMPLETE' && echo '   • Docker test-lite container builds successfully' && echo '   • Core Docker functionality validated' && echo '   • Minor issue: numpy missing in test environment (non-critical)' && echo '' && echo '✅ Step 4: Dataset Download & Validation - COMPLETE' && echo '   • Task01_BrainTumour successfully downloaded' && echo '   • 484 training images, 484 training labels, 266 test images' && echo '   • BRATS brain tumor dataset with 4 modalities validated' && echo '' && echo '🔄 Step 5: Training Validation - IN PROGRESS' && echo '   • Enhanced training started with crash prevention active' && echo '   • Memory monitoring and safety systems engaged' && echo '   • UNETR model training on Brain dataset initiated' && echo '   • MLflow experiment tracking ready' && echo '' && echo '🎉 SYSTEM STATUS: FULLY OPERATIONAL' && echo '🛡️ Crash prevention: 6/6 systems active' && echo '📊 Experiment tracking: MLflow ready' && echo '🧠 Dataset: 484 Brain tumor samples ready' && echo '🐳 Docker: Full container orchestration ready' && echo '' && echo '📝 READY FOR: Turn on experiment tracking and monitoring'",
 			"isBackground": false,
 			"group": "validation"
+		},
+		{
+			"label": "Implement Remaining Tasks",
+			"type": "shell",
+			"command": "python3 scripts/tools/implement_remaining_tasks.py",
+			"isBackground": false
+		},
+		{
+			"label": "Test Enhanced Evaluation",
+			"type": "shell",
+			"command": "python3 src/evaluation/evaluate_enhanced.py --help",
+			"isBackground": false
+		},
+		{
+			"label": "Test Enhanced Evaluation with venv",
+			"type": "shell",
+			"command": "source venv/bin/activate && python3 src/evaluation/evaluate_enhanced.py --help",
+			"isBackground": false
+		},
+		{
+			"label": "Test Enhanced Evaluation with .venv",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python3 src/evaluation/evaluate_enhanced.py --help",
+			"isBackground": false
+		},
+		{
+			"label": "Verify Implementation",
+			"type": "shell",
+			"command": "python3 scripts/tools/verify_implementation.py",
+			"isBackground": false
+		},
+		{
+			"label": "Verify Implementation Final",
+			"type": "shell",
+			"command": "python3 scripts/tools/verify_implementation.py",
+			"isBackground": false
+		},
+		{
+			"label": "Run Complete Tasks Validation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && python scripts/validation/complete_tasks_validation.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Run Tasks Validation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python3 scripts/validation/complete_tasks_validation.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Final Tasks Validation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python3 scripts/validation/complete_tasks_validation.py",
+			"isBackground": false,
+			"group": "test"
 		}
 	]
 }

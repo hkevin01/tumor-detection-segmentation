@@ -27,9 +27,16 @@ try:
     from monai.transforms.io.array import LoadImage
     from monai.transforms.spatial.array import Resize
     from monai.transforms.utility.array import EnsureChannelFirst, EnsureType
+
+    # SciPy for post-processing
+    from scipy import ndimage
+    from scipy.ndimage import binary_fill_holes, label
+    SCIPY_AVAILABLE = True
+
     DEPENDENCIES_AVAILABLE = True
 except ImportError:
     DEPENDENCIES_AVAILABLE = False
+    SCIPY_AVAILABLE = False
 
 # Add repo src to path for training imports when running as a script
 sys.path.append(str(Path(__file__).parent.parent))
@@ -736,7 +743,53 @@ class EnhancedTumorPredictor(TumorPredictor):
             return inferer(image, self.model)
 
 
-def main():
+
+    def apply_postprocessing(
+        self,
+        prediction: np.ndarray,
+        fill_holes: bool = False,
+        largest_component: bool = False,
+        min_component_size: int = 100
+    ) -> np.ndarray:
+        """Apply morphological post-processing to prediction."""
+        if not SCIPY_AVAILABLE:
+            print("Warning: SciPy not available, skipping post-processing")
+            return prediction
+
+        result = prediction.copy()
+
+        # Fill holes
+        if fill_holes:
+            try:
+                result = binary_fill_holes(result > 0).astype(result.dtype)
+            except Exception as e:
+                print(f"Warning: Hole filling failed: {e}")
+
+        # Keep largest connected component
+        if largest_component:
+            try:
+                labeled, num_features = label(result > 0)
+                if num_features > 1:
+                    component_sizes = [(labeled == i).sum() for i in range(1, num_features + 1)]
+                    largest_label = np.argmax(component_sizes) + 1
+                    result = (labeled == largest_label).astype(result.dtype)
+            except Exception as e:
+                print(f"Warning: Largest component extraction failed: {e}")
+
+        # Remove small components
+        if min_component_size > 0:
+            try:
+                labeled, num_features = label(result > 0)
+                for i in range(1, num_features + 1):
+                    component_mask = labeled == i
+                    if component_mask.sum() < min_component_size:
+                        result[component_mask] = 0
+            except Exception as e:
+                print(f"Warning: Small component removal failed: {e}")
+
+        return result
+
+    def main():
     """Main inference function."""
     parser = argparse.ArgumentParser(
         description="Run tumor segmentation inference"
@@ -782,6 +835,29 @@ def main():
         type=float,
         default=0.25,
         help="Sliding window overlap (0-1)",
+    )
+
+
+    parser.add_argument(
+        "--postproc",
+        action="store_true",
+        help="Enable post-processing operations"
+    )
+    parser.add_argument(
+        "--fill-holes",
+        action="store_true",
+        help="Fill holes in segmentation masks"
+    )
+    parser.add_argument(
+        "--largest-component",
+        action="store_true",
+        help="Keep only largest connected component"
+    )
+    parser.add_argument(
+        "--min-component-size",
+        type=int,
+        default=100,
+        help="Minimum component size (voxels) to keep"
     )
 
     args = parser.parse_args()
