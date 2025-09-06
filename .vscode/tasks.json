@@ -421,6 +421,12 @@
 			"type": "shell",
 			"command": "source .venv/bin/activate && python scripts/clinical/test_phase2_setup.py",
 			"group": "build"
+		},
+		{
+			"label": "Test Phase 2 Setup (Fixed Paths)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/test_phase2_setup.py",
+			"group": "build"
 		}
 	]
 }
