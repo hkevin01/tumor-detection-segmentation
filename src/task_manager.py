@@ -12,7 +12,7 @@ from pathlib import Path
 class TaskManager:
     def __init__(self, project_root):
         self.project_root = Path(project_root)
-        self.tasks_file = self.project_root / "organization_tasks.json"
+        self.tasks_file = self.project_root / "config/organization/organization_tasks.json"
         self.tasks = self.load_tasks()
 
     def load_tasks(self):

@@ -37,7 +37,7 @@ def monitor_and_launch():
 
     # Launch expanded training
     project_root = Path(__file__).parent
-    launcher_script = project_root / "launch_expanded_training.py"
+    launcher_script = project_root / "scripts/training/launch_expanded_training.py"
 
     if launcher_script.exists():
         print("🚀 Starting expanded training sequence...")

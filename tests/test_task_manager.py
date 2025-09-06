@@ -9,7 +9,7 @@ def test_task_manager_load_and_update(tmp_path: Path):
     manager = TaskManager(root)
 
     # initial file created
-    assert (root / "organization_tasks.json").exists()
+    assert (root / "config/organization/organization_tasks.json").exists()
 
     # update a subtask
     ok = manager.update_task_status(
@@ -19,7 +19,7 @@ def test_task_manager_load_and_update(tmp_path: Path):
     )
     assert ok
 
-    data = json.loads((root / "organization_tasks.json").read_text())
+    data = json.loads((root / "config/organization/organization_tasks.json").read_text())
     assert (
         data["organize_scripts"]["subtasks"]["move_validation_scripts"][
             "status"

@@ -371,6 +371,20 @@
 			"command": "python scripts/clinical/operator_implementation_summary.py",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Clean Root Folder",
+			"type": "shell",
+			"command": "python scripts/organization/cleanup_root_folder.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Remove Remaining Duplicates",
+			"type": "shell",
+			"command": "echo 'Removing remaining duplicate files from root folder...' && rm -f test_training_launcher.py launch_expanded_training.py monitor_and_launch.py move_root_files.py requirements-dev.txt && echo 'Cleanup of remaining duplicates complete'",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

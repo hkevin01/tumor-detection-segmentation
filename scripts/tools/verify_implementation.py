@@ -151,7 +151,7 @@ def verify_task_completion_status():
     """Verify that task completion status has been updated."""
     print("🔍 Verifying task completion status updates...")
 
-    tasks_file = ROOT / "organization_tasks.json"
+    tasks_file = ROOT / "config/organization/organization_tasks.json"
     if not tasks_file.exists():
         print("⚠️  Task status file not found (optional)")
         return True

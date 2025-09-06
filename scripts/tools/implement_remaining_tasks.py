@@ -534,7 +534,7 @@ def update_task_completion():
     print("📝 Updating task completion status...")
 
     # Update the organization tasks file
-    tasks_file = ROOT / "organization_tasks.json"
+    tasks_file = ROOT / "config/organization/organization_tasks.json"
     if tasks_file.exists():
         with open(tasks_file, 'r') as f:
             tasks = json.load(f)

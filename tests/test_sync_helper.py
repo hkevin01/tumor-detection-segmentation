@@ -9,7 +9,7 @@ def test_sync_runs_and_writes_tasks():
     sync_tasks_from_fs.main()
 
     tasks_file = (
-        Path(__file__).resolve().parents[1] / "organization_tasks.json"
+        Path(__file__).resolve().parents[1] / "config/organization/organization_tasks.json"
     )
     assert tasks_file.exists()
 
