@@ -1,0 +1,59 @@
+# Phase 2: Enhanced Clinical Features - Additional Dependencies
+# These dependencies support hospital workflow integration and clinical interoperability
+
+# DICOM Server and Processing
+pydicom>=2.4.3
+pynetdicom>=2.0.2
+dicom2nifti>=2.4.8
+
+# HL7 FHIR Support
+fhir.resources>=7.0.2
+fhirclient>=4.1.0
+pydantic>=2.4.0
+
+# Clinical Report Generation
+reportlab>=4.0.4
+python-docx>=0.8.11
+jinja2>=3.1.2
+weasyprint>=60.0  # HTML to PDF conversion
+
+# 3D Slicer Integration (for development/testing)
+# Note: These are optional and only needed for Slicer plugin development
+# vtk>=9.2.6
+# SimpleITK>=2.3.1
+
+# Additional Medical Imaging
+nibabel>=5.1.0
+# pyradiomics>=3.0.1  # Temporarily disabled due to build issues
+
+# Enhanced Security and Authentication
+cryptography>=41.0.4
+pyjwt[crypto]>=2.8.0
+python-oauth2>=1.1.1
+
+# Database Support for Clinical Data
+sqlalchemy>=2.0.21
+alembic>=1.12.0
+psycopg2-binary>=2.9.7
+
+# Task Queue for DICOM Processing
+celery>=5.3.2
+redis>=5.0.0
+
+# Additional Utilities
+python-dateutil>=2.8.2
+python-magic>=0.4.27
+pillow>=10.0.0
+
+# API Documentation and Validation
+fastapi>=0.103.0
+pydantic-settings>=2.0.3
+
+# Testing for Clinical Features
+pytest-asyncio>=0.21.1
+pytest-mock>=3.11.1
+
+# Development Tools
+black>=23.7.0
+ruff>=0.0.287
+mypy>=1.5.1

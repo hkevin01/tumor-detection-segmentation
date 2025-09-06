@@ -1,0 +1,19 @@
+{
+    "fhir_server": {
+        "base_url": "http://localhost:8080/fhir",
+        "version": "R4",
+        "enable_bulk_export": true,
+        "supported_resources": [
+            "Patient",
+            "ImagingStudy",
+            "DiagnosticReport",
+            "Observation",
+            "Encounter"
+        ]
+    },
+    "interoperability": {
+        "enable_smart_on_fhir": true,
+        "oauth_endpoint": "http://localhost:8080/auth",
+        "patient_demographics_sync": true
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "template_name": "Brain Tumor Standard Report",
+    "report_type": "brain_tumor",
+    "sections": [
+        {
+            "name": "clinical_history", 
+            "title": "Clinical History",
+            "required": true
+        },
+        {
+            "name": "technique",
+            "title": "Technique", 
+            "required": true
+        },
+        {
+            "name": "findings",
+            "title": "Findings",
+            "required": true
+        },
+        {
+            "name": "impression", 
+            "title": "Impression",
+            "required": true
+        },
+        {
+            "name": "recommendations",
+            "title": "Recommendations", 
+            "required": true
+        }
+    ],
+    "style": {
+        "font_family": "Arial",
+        "font_size": 11,
+        "line_spacing": 1.2,
+        "margins": "0.5in"
+    }
+}

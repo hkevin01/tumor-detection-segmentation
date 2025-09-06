@@ -1,0 +1,17 @@
+{
+    "dicom_server": {
+        "ae_title": "TUMOR_AI_SCP",
+        "bind_address": "localhost",
+        "port": 11112,
+        "storage_path": "data/dicom_storage",
+        "max_pdu_size": 16384,
+        "enable_ai_processing": true,
+        "enable_audit_logging": true
+    },
+    "ai_processing": {
+        "queue_backend": "redis://localhost:6379/0",
+        "processing_timeout": 300,
+        "auto_segment": true,
+        "generate_reports": true
+    }
+}

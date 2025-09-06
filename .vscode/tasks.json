@@ -385,6 +385,42 @@
 			"command": "echo 'Removing remaining duplicate files from root folder...' && rm -f test_training_launcher.py launch_expanded_training.py monitor_and_launch.py move_root_files.py requirements-dev.txt && echo 'Cleanup of remaining duplicates complete'",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Run Phase 2 Kickoff Script",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/phase2_kickoff.py",
+			"group": "build"
+		},
+		{
+			"label": "Run Phase 2 Kickoff Script (Fixed)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/phase2_kickoff.py",
+			"group": "build"
+		},
+		{
+			"label": "Run Phase 2 Kickoff Script (Fixed Dependencies)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/phase2_kickoff.py",
+			"group": "build"
+		},
+		{
+			"label": "Install Core Phase 2 Dependencies",
+			"type": "shell",
+			"command": "source .venv/bin/activate && pip install pydicom pynetdicom fhir.resources reportlab python-docx jinja2 cryptography pyjwt sqlalchemy",
+			"group": "build"
+		},
+		{
+			"label": "Run Phase 2 Setup (Skip Dependencies)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/phase2_kickoff.py --skip-dependencies",
+			"group": "build"
+		},
+		{
+			"label": "Test Phase 2 Setup Validation",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python scripts/clinical/test_phase2_setup.py",
+			"group": "build"
 		}
 	]
 }
