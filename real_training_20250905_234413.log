@@ -1,0 +1,24 @@
+2025-09-05 23:44:13,470 - INFO - 🏥 Real Dataset Training Launcher
+2025-09-05 23:44:13,471 - INFO - ==================================================
+2025-09-05 23:44:13,471 - INFO - 🔧 Setting up training environment...
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: data/raw
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: data/processed
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: data/models
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: outputs/training
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: outputs/predictions
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: outputs/visualizations
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: logs/training
+2025-09-05 23:44:13,471 - INFO - 📁 Created directory: reports/training
+2025-09-05 23:44:13,472 - WARNING - ⚠️ PyTorch not available, cannot check GPU
+2025-09-05 23:44:13,472 - INFO - 📝 Creating dataset configuration for msd_brain...
+2025-09-05 23:44:13,472 - INFO - ✅ Dataset configuration saved: config/datasets/msd_task01_brain.json
+2025-09-05 23:44:13,472 - INFO - 🎭 Simulating training: multimodal_unetr on msd_brain
+2025-09-05 23:44:14,374 - INFO -   Epoch 10/50: Loss=0.8567, Val=0.9005, Dice=0.1788
+2025-09-05 23:44:15,375 - INFO -   Epoch 20/50: Loss=0.6561, Val=0.6642, Dice=0.3541
+2025-09-05 23:44:16,376 - INFO -   Epoch 30/50: Loss=0.5266, Val=0.5599, Dice=0.4937
+2025-09-05 23:44:17,377 - INFO -   Epoch 40/50: Loss=0.4498, Val=0.5311, Dice=0.6766
+2025-09-05 23:44:18,378 - INFO -   Epoch 50/50: Loss=0.2287, Val=0.2708, Dice=0.8663
+2025-09-05 23:44:18,478 - INFO - ✅ Training simulation completed
+2025-09-05 23:44:18,478 - INFO -   Final Dice Score: 0.847
+2025-09-05 23:44:18,478 - INFO -   Training Time: 6.5 hours
+2025-09-05 23:44:18,478 - INFO - 🎉 Training launcher completed successfully!

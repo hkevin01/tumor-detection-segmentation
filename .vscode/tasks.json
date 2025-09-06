@@ -315,6 +315,34 @@
 			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python3 scripts/validation/complete_tasks_validation.py",
 			"isBackground": false,
 			"group": "test"
+		},
+		{
+			"label": "Run Clinical Integration Suite",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python3 scripts/clinical/clinical_integration_suite.py",
+			"isBackground": false,
+			"group": "clinical"
+		},
+		{
+			"label": "Clinical Integration Demo",
+			"type": "shell",
+			"command": "python3 scripts/clinical/clinical_demo.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Test Real Dataset Launcher",
+			"type": "shell",
+			"command": "python3 scripts/clinical/real_dataset_launcher.py --simulate --model multimodal_unetr --dataset msd_brain --epochs 50",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Clinical Deployment Guide",
+			"type": "shell",
+			"command": "python3 scripts/clinical/deployment_guide.py",
+			"isBackground": false,
+			"group": "test"
 		}
 	]
 }
