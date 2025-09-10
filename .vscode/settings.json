@@ -57,10 +57,7 @@
   "python.analysis.completeFunctionParens": false,
   "jupyter.askForKernelRestart": false,
   "jupyter.alwaysTrustNotebooks": true,
-  "jupyter.widgetScriptSources": [
-    "jsdelivr.com",
-    "unpkg.com"
-  ],
+  "jupyter.widgetScriptSources": ["jsdelivr.com", "unpkg.com"],
   "jupyter.outputScrolling": true,
   "jupyter.enableScrollingForCellOutputs": true,
   "jupyter.maxOutputSize": 400,
@@ -87,5 +84,6 @@
   "python.envFile": "${workspaceFolder}/.env",
   "window.title": "\ud83e\udde0 Tumor Detection - ${activeEditorShort}",
   "workbench.colorTheme": "Solarized Dark",
-  "jupyter.interactiveWindow.codeLens.enable": false
+  "jupyter.interactiveWindow.codeLens.enable": false,
+  "cmake.sourceDirectory": "/home/kevin/Projects/tumor-detection-segmentation/src/clinical/slicer_plugin"
 }

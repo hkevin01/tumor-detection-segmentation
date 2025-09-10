@@ -427,6 +427,60 @@
 			"type": "shell",
 			"command": "source .venv/bin/activate && python scripts/clinical/test_phase2_setup.py",
 			"group": "build"
+		},
+		{
+			"label": "Test Package Installation",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python test_package_install.py",
+			"group": "test"
+		},
+		{
+			"label": "Install Package in Development Mode",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && pip install -e .",
+			"group": "build"
+		},
+		{
+			"label": "Check for Virtual Environment",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && ls -la | grep venv",
+			"group": "build"
+		},
+		{
+			"label": "Install Package in Virtual Environment",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && pip install -e .",
+			"group": "build"
+		},
+		{
+			"label": "Test Package Installation in Virtual Environment",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python test_package_install.py",
+			"group": "test"
+		},
+		{
+			"label": "Test Package Name with Underscores",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python -c 'import tumor_detection_segmentation; print(\"Package found with underscore name!\")'",
+			"group": "test"
+		},
+		{
+			"label": "Test CLI Entry Point for Training",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && tumor-detect-train --help",
+			"group": "test"
+		},
+		{
+			"label": "Test CLI Entry Point for Inference",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && tumor-detect-infer --help",
+			"group": "test"
+		},
+		{
+			"label": "Clean up test files",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm -f test_package_install.py",
+			"group": "test"
 		}
 	]
 }

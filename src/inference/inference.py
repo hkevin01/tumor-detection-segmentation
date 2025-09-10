@@ -27,7 +27,6 @@ try:
     from monai.transforms.io.array import LoadImage
     from monai.transforms.spatial.array import Resize
     from monai.transforms.utility.array import EnsureChannelFirst, EnsureType
-
     # SciPy for post-processing
     from scipy import ndimage
     from scipy.ndimage import binary_fill_holes, label
@@ -43,15 +42,13 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 # Crash prevention utilities
 try:
-    from src.utils.crash_prevention import (
-        emergency_cleanup,
-        gpu_safe_context,
-        log_system_resources,
-        memory_safe_context,
-        safe_execution,
-        start_global_protection,
-        stop_global_protection,
-    )
+    from src.utils.crash_prevention import (emergency_cleanup,
+                                            gpu_safe_context,
+                                            log_system_resources,
+                                            memory_safe_context,
+                                            safe_execution,
+                                            start_global_protection,
+                                            stop_global_protection)
     CRASH_PREVENTION_AVAILABLE = True
 except ImportError:
     CRASH_PREVENTION_AVAILABLE = False
@@ -789,7 +786,8 @@ class EnhancedTumorPredictor(TumorPredictor):
 
         return result
 
-    def main():
+
+def main():
     """Main inference function."""
     parser = argparse.ArgumentParser(
         description="Run tumor segmentation inference"

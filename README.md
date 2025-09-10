@@ -115,6 +115,43 @@ python scripts/training/launch_expanded_training.py \
 - **Deployment**: ✅ One-command clinical platform deployment
 - **Documentation**: ✅ Comprehensive guides for clinical and development workflows
 
+## 📦 Consumers / SDK
+
+The tumor-detection-segmentation platform can be installed and used as a Python package, enabling integration with other systems and SDKs.
+
+### 🚀 Installation
+
+```bash
+# Install in development mode
+pip install -e .
+```
+
+### 📋 Public APIs
+
+The package exposes high-level APIs for inference and configuration management:
+
+```python
+# Core inference functions
+from tumor_detection.inference.api import load_model, run_inference, save_mask, generate_overlays
+
+# Configuration management
+from tumor_detection.config import load_recipe_config, load_dataset_config
+
+# Example usage
+model = load_model("path/to/model.pth", "config/recipes/unetr_multimodal.json")
+prediction = run_inference(model, "brain_scan.nii.gz")
+save_mask(prediction, "output_mask.nii.gz")
+generate_overlays("brain_scan.nii.gz", prediction, "overlay.png")
+```
+
+### 🎯 MyTwin Integration
+
+**Compatibility Note**: The `mytwin_tumor_sdk v0.1` targets:
+- **Recipe Config**: `config/recipes/unetr_multimodal.json`
+- **Dataset Config**: `config/datasets/msd_task01_brain.json`
+
+These configurations provide optimized settings for brain tumor segmentation using the UNETR multi-modal architecture with MSD Task01 BrainTumour dataset parameters.
+
 ## 🧠 AI Architecture Overview
 
 ### Multi-Modal Fusion
