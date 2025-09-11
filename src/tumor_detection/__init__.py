@@ -34,6 +34,9 @@ __email__ = "team@medical-ai.org"
 from .api import (ImagePreprocessor, ModelEvaluator, TumorDetector,
                   TumorSegmenter, detect_tumors, evaluate_model,
                   preprocess_medical_image, segment_tumors)
+# Integration utilities for other applications
+from .integration import (TumorAnalyzer, analyze_folder, quick_detect,
+                          quick_segment)
 # Service integrations
 from .services import (CloudComputeClient, CloudService, CloudStorageClient,
                        DicomClient, DicomService, FhirClient, FhirService)
@@ -65,6 +68,12 @@ __all__ = [
     "preprocess_medical_image",
     "evaluate_model",
 
+    # Integration utilities
+    "TumorAnalyzer",
+    "quick_detect",
+    "quick_segment",
+    "analyze_folder",
+
     # Service integrations
     "DicomService",
     "DicomClient",
@@ -76,6 +85,19 @@ __all__ = [
 
     # Legacy API functions
     "load_model",
+    "run_inference",
+    "save_mask",
+    "generate_overlays",
+    "load_recipe_config",
+    "load_dataset_config",
+    "auto_device_resolve",
+
+    # Submodules
+    "inference",
+    "config",
+    "utils",
+    "models",
+]
     "run_inference",
     "save_mask",
     "generate_overlays",

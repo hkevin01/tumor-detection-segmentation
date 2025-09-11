@@ -163,7 +163,7 @@ echo "2. Download datasets: --download flag with real_dataset_launcher.py"
 echo "3. Launch clinical training: scripts/clinical/clinical_integration_suite.py"
 '''
 
-        script_path = Path('scripts/deployment/deploy_clinical_platform.sh')
+        script_path = Path('scripts/deployment/scripts/deployment/deploy_clinical_platform.sh')
         with open(script_path, 'w') as f:
             f.write(script_content)
 
@@ -171,7 +171,7 @@ echo "3. Launch clinical training: scripts/clinical/clinical_integration_suite.p
         script_path.chmod(0o755)
 
         print(f"📋 Deployment script created: {script_path}")
-        print("   Run with: ./scripts/deployment/deploy_clinical_platform.sh")
+        print("   Run with: ./scripts/deployment/scripts/deployment/deploy_clinical_platform.sh")
         print()
 
 

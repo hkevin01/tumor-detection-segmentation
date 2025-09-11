@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-TASKS_FILE = ROOT / "config/organization/organization_tasks.json"
+TASKS_FILE = ROOT / "config/organization/config/organization/organization_tasks.json"
 
 
 def mark_all_tasks_completed():

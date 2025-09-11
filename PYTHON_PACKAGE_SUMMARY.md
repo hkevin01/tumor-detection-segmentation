@@ -27,6 +27,7 @@ src/tumor_detection/
 ## 🚀 Installation
 
 ### Virtual Environment (Recommended)
+
 ```bash
 # Create and activate virtual environment
 python3 -m venv .venv
@@ -39,6 +40,7 @@ pip install -e .
 ```
 
 ### Production Installation
+
 ```bash
 pip install tumor-detection-segmentation
 ```
@@ -46,6 +48,7 @@ pip install tumor-detection-segmentation
 ## 🔧 Usage Examples
 
 ### High-Level API
+
 ```python
 import tumor_detection
 
@@ -67,6 +70,7 @@ tumor_detection.generate_overlays(
 ```
 
 ### Configuration Management
+
 ```python
 from tumor_detection import load_recipe_config, load_dataset_config
 
@@ -78,6 +82,7 @@ dataset = load_dataset_config("msd_task01_brain.json")
 ```
 
 ### Device Management
+
 ```python
 from tumor_detection import auto_device_resolve, get_device_info
 
@@ -90,6 +95,7 @@ print(f"Device: {info['device']}, Memory: {info['memory_gb']:.1f} GB")
 ```
 
 ### Model Access
+
 ```python
 from tumor_detection.models import create_model_safe, MultiModalUNETR
 
@@ -109,6 +115,7 @@ multimodal_model = MultiModalUNETR(
 The package preserves all existing CLI functionality with new entry points:
 
 ### Training
+
 ```bash
 # New package entry point
 tumor-detect-train --config config.json --dataset dataset.json
@@ -118,6 +125,7 @@ python -m tumor_detection.cli.train --config config.json
 ```
 
 ### Inference
+
 ```bash
 # New package entry point
 tumor-detect-infer --model model.pth --input scan.nii.gz
@@ -129,6 +137,7 @@ python -m tumor_detection.cli.infer --model model.pth --input scan.nii.gz
 ## 📋 Package Features
 
 ### ✅ Core Functionality
+
 - **High-level API**: Simple functions for model loading, inference, and output saving
 - **Configuration Management**: Utilities for loading recipes and dataset configs
 - **Device Detection**: Automatic CUDA/CPU detection with memory checking
@@ -136,6 +145,7 @@ python -m tumor_detection.cli.infer --model model.pth --input scan.nii.gz
 - **CLI Preservation**: All existing command-line tools remain functional
 
 ### ✅ Advanced Features
+
 - **Sliding Window Inference**: Automatic handling of large images
 - **Test Time Augmentation**: Optional TTA for improved accuracy
 - **Multi-class Support**: Handles tumor subregion segmentation
@@ -143,6 +153,7 @@ python -m tumor_detection.cli.infer --model model.pth --input scan.nii.gz
 - **Memory Safety**: Robust error handling and cleanup
 
 ### ✅ Development Features
+
 - **Editable Installation**: Development mode with `pip install -e .`
 - **Modern Build System**: Uses hatchling and pyproject.toml
 - **Dependency Management**: Comprehensive requirements specification
@@ -159,6 +170,7 @@ python test_package_install.py
 ```
 
 Test results show 7/7 tests passing:
+
 - ✅ Package import
 - ✅ API function imports
 - ✅ Configuration imports
@@ -170,6 +182,7 @@ Test results show 7/7 tests passing:
 ## 🔄 Backward Compatibility
 
 All existing functionality is preserved:
+
 - Original training scripts in `src/training/` continue to work
 - Original inference scripts in `src/inference/` continue to work
 - All configuration files remain compatible
@@ -178,6 +191,7 @@ All existing functionality is preserved:
 ## 🎯 Next Steps
 
 The package is now ready for:
+
 1. **Distribution**: Can be uploaded to PyPI for public installation
 2. **CI/CD Integration**: Automated testing and deployment pipelines
 3. **Documentation**: Sphinx documentation generation

@@ -15,7 +15,7 @@ def verify_cleanup():
     essential_files = {
         '.dockerignore', '.gitignore', '.pre-commit-config.yaml',
         '.ruff.toml', 'LICENSE', 'Makefile', 'README.md',
-        'config/organization/organization_tasks.json', 'pyproject.toml', 'setup.py'
+        'config/organization/config/organization/organization_tasks.json', 'pyproject.toml', 'setup.py'
     }
 
     print(f"\n📁 Root Directory: {len(root_files)} files")

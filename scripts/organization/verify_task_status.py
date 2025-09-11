@@ -9,10 +9,10 @@ from pathlib import Path
 
 def main():
     project_root = Path("/home/kevin/Projects/tumor-detection-segmentation")
-    tasks_file = project_root / "config/organization/organization_tasks.json"
+    tasks_file = project_root / "config/organization/config/organization/organization_tasks.json"
 
     if not tasks_file.exists():
-        print("❌ config/organization/organization_tasks.json not found")
+        print("❌ config/organization/config/organization/organization_tasks.json not found")
         return
 
     with open(tasks_file, 'r', encoding='utf-8') as f:

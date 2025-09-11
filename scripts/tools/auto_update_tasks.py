@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Auto-update config/organization/organization_tasks.json based on repo artifacts.
+"""Auto-update config/organization/config/organization/organization_tasks.json based on repo artifacts.
 
 This script is conservative: it only marks things completed when it finds clear evidence
 in the repository (files moved, scripts present, dockerfiles present).
@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-TASK_FILE = ROOT / "config/organization/organization_tasks.json"
+TASK_FILE = ROOT / "config/organization/config/organization/organization_tasks.json"
 
 
 def load_tasks():
@@ -63,7 +63,7 @@ def main():
         final.setdefault("status", "in-progress")
 
     save_tasks(tasks)
-    print("config/organization/organization_tasks.json updated based on repository artifacts.")
+    print("config/organization/config/organization/organization_tasks.json updated based on repository artifacts.")
 
 
 if __name__ == "__main__":

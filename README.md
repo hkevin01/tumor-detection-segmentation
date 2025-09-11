@@ -87,10 +87,41 @@ python scripts/training/launch_expanded_training.py \
 - **Small GPU (8-12GB)**: ROI 96³, Batch 1, Smart caching
 - **CPU Only**: ROI 64³, Batch 1, Smart caching
 
-## 📅 Latest Updates (September 2025)
+## 🏥 Data Management & Security
+
+This project implements **medical-grade data management** with separate repositories for secure handling of medical imaging data:
+
+### 🔒 Repository Structure
+- **Main Repository**: Public code and configurations (this repo)
+- **Data Repository**: Private medical datasets with HIPAA/GDPR compliance
+- **Models Repository**: Private model weights and checkpoints
+
+### � Quick Data Setup
+```bash
+# Setup secure data repositories
+./scripts/data/setup_data_repositories.sh
+
+# Download public datasets (MSD, BraTS)
+python scripts/data/download_public_datasets.py msd_task01
+
+# Validate data integrity
+python scripts/data/validate_datasets.py
+```
+
+### 📚 Medical Data Compliance
+- **HIPAA/GDPR compliant** data handling
+- **Institutional access controls** with audit logging
+- **Automated data validation** and integrity checks
+- **Public dataset integration** (MSD, BraTS, etc.)
+- **Clinical workflow** support with DICOM processing
+
+📖 **Full Guide**: [Data Management Documentation](docs/DATA_MANAGEMENT.md)
+
+## �📅 Latest Updates (September 2025)
 
 ### ✅ Recent Accomplishments
 
+🏥 **Medical Data Management**: Secure separate repository system with HIPAA/GDPR compliance
 🎉 **Clinical Integration Complete**: Full 9-step clinical workflow automation implemented and tested
 🏗️ **Project Organization**: Professional root folder structure with proper file organization
 🎛️ **Hyperparameter Optimization**: Grid search capabilities with concurrent execution and MLflow integration

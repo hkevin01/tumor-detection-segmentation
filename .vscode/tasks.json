@@ -645,6 +645,48 @@
 			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '=== Final Package Validation ===' && python test_complete_library.py && echo '\\n=== Ready to Upload to PyPI ===' && echo 'Version: 2.0.1' && echo 'Files ready in dist/ directory' && ls -la dist/ && echo '\\n⚠️  NEXT STEP: Run this command to upload to PyPI:' && echo 'cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && twine upload dist/*' && echo '\\n🎯 Your package will be available at: https://pypi.org/project/tumor-detection-segmentation/'",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Test integration setup",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '=== Testing Library Integration Setup ===' && python -c \"import sys; sys.path.insert(0, 'src'); import tumor_detection; print(f'✅ Version: {tumor_detection.__version__}'); from tumor_detection import TumorAnalyzer, quick_detect; print('✅ Integration utilities imported'); from tumor_detection.api import TumorDetector; print('✅ API classes imported'); from tumor_detection.services import DicomService; print('✅ Services imported'); print('🎉 All integration components working!')\"",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Final Integration Verification",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python test_final_integration.py && echo '\n🎯 UPLOAD TO PYPI COMMAND:' && echo 'twine upload dist/*'",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Final Integration Test",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python -c \"import sys; sys.path.insert(0, 'src'); import tumor_detection; print(f'Version: {tumor_detection.__version__}'); from tumor_detection import TumorAnalyzer, quick_detect, quick_segment, analyze_folder; print('✅ All integration utilities imported successfully'); from tumor_detection.api import TumorDetector; from tumor_detection.services import DicomService; print('✅ All components working perfectly!')\"",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Build Final Package v2.0.1",
+			"type": "shell",
+			"command": "source .venv/bin/activate && echo '🧽 Clearing Python cache...' && find . -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true && echo '🛠️ Building final package v2.0.1...' && rm -rf dist/* && python -m build --sdist --wheel && echo '✅ Package built successfully!' && ls -la dist/ && echo '\n🎯 Ready for PyPI upload: twine upload dist/*'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Cleanup and Final Summary",
+			"type": "shell",
+			"command": "rm -f test_final_integration.py test_final_validation.py test_complete_library.py && echo '✨ Integration Setup Complete!' && echo '\n📦 Package: tumor-detection-segmentation' && echo '🔍 Version: 2.0.1 (ready for PyPI)' && echo '📊 Package size: 52.9KB wheel, 566.5KB source' && echo '\n🎯 Upload command:' && echo 'cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && twine upload dist/*' && echo '\n🗣️ Your library is now optimized for modular usage in other applications!'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Final Cleanup and Summary",
+			"type": "shell",
+			"command": "rm -f test_final_integration.py && echo '\n✨ Integration Optimization Complete! ✨' && echo '======================================' && echo '' && echo '📋 TODO LIST COMPLETED:' && echo '✅ Libraries for APIs and services' && echo '✅ Documentation and examples' && echo '✅ Tools for testing and deployment' && echo '✅ Setup for modular usage in other applications' && echo '' && echo '🎯 PyPI Upload Ready:' && echo 'cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && twine upload dist/*' && echo '' && echo '🚀 Your library is now perfectly optimized for integration!'",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

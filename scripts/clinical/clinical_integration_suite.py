@@ -25,7 +25,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/clinical/clinical_integration.log'),
+        logging.FileHandler('logs/clinical/logs/clinical/clinical_integration.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )

@@ -25,38 +25,38 @@ def get_file_moves() -> Dict[str, str]:
     """Define file moves from root to appropriate subfolders"""
     return {
         # Log files to logs/
-        "logs/clinical/clinical_demo_20250905_234239.log": "logs/clinical/",
-        "logs/clinical/clinical_integration.log": "logs/clinical/",
-        "logs/clinical/clinical_operator_20250906_001225.log": "logs/clinical/",
-        "logs/clinical/clinical_operator_20250906_001254.log": "logs/clinical/",
-        "logs/clinical/clinical_operator_20250906_001312.log": "logs/clinical/",
-        "logs/training/real_training_20250905_234413.log": "logs/training/",
+        "logs/clinical/logs/clinical/clinical_demo_20250905_234239.log": "logs/clinical/",
+        "logs/clinical/logs/clinical/clinical_integration.log": "logs/clinical/",
+        "logs/clinical/logs/clinical/clinical_operator_20250906_001225.log": "logs/clinical/",
+        "logs/clinical/logs/clinical/clinical_operator_20250906_001254.log": "logs/clinical/",
+        "logs/clinical/logs/clinical/clinical_operator_20250906_001312.log": "logs/clinical/",
+        "logs/training/logs/training/real_training_20250905_234413.log": "logs/training/",
 
         # Test scripts to tests/
-        "tests/system/test_crash_prevention_enhanced.py": "tests/system/",
-        "tests/system/test_crash_prevention_simple.py": "tests/system/",
-        "tests/system/test_crash_prevention_system.py": "tests/system/",
-        "tests/training/test_training_launcher.py": "tests/training/",
-        "tests/training/simple_train_test.py": "tests/training/",
+        "tests/system/tests/system/test_crash_prevention_enhanced.py": "tests/system/",
+        "tests/system/tests/system/test_crash_prevention_simple.py": "tests/system/",
+        "tests/system/tests/system/test_crash_prevention_system.py": "tests/system/",
+        "tests/training/tests/training/test_training_launcher.py": "tests/training/",
+        "tests/training/tests/training/simple_train_test.py": "tests/training/",
 
         # Script files to scripts/
-        "scripts/training/launch_expanded_training.py": "scripts/training/",
-        "scripts/monitoring/monitor_and_launch.py": "scripts/monitoring/",
-        "scripts/organization/move_root_files.py": "scripts/organization/",
+        "scripts/training/scripts/training/launch_expanded_training.py": "scripts/training/",
+        "scripts/monitoring/scripts/monitoring/monitor_and_launch.py": "scripts/monitoring/",
+        "scripts/organization/scripts/organization/move_root_files.py": "scripts/organization/",
 
         # Shell scripts to scripts/
-        "scripts/deployment/deploy_clinical_platform.sh": "scripts/deployment/",
-        "scripts/clinical/run_clinical_operator.sh": "scripts/clinical/",
+        "scripts/deployment/scripts/deployment/deploy_clinical_platform.sh": "scripts/deployment/",
+        "scripts/clinical/scripts/clinical/run_clinical_operator.sh": "scripts/clinical/",
 
         # Documentation files to docs/
-        "docs/status/CRASH_PREVENTION_COMPLETE.md": "docs/status/",
-        "docs/status/CRASH_PREVENTION_COMPLETION_REPORT.md": "docs/status/",
-        "docs/status/FINAL_TASK_COMPLETION.md": "docs/status/",
-        "docs/status/IMMEDIATE_EXECUTION_PLAN.md": "docs/status/",
+        "docs/status/docs/status/CRASH_PREVENTION_COMPLETE.md": "docs/status/",
+        "docs/status/docs/status/CRASH_PREVENTION_COMPLETION_REPORT.md": "docs/status/",
+        "docs/status/docs/status/FINAL_TASK_COMPLETION.md": "docs/status/",
+        "docs/status/docs/status/IMMEDIATE_EXECUTION_PLAN.md": "docs/status/",
 
         # Configuration files to config/
-        "config/organization/organization_tasks.json": "config/organization/",
-        "config/requirements/requirements-dev.txt": "config/requirements/",
+        "config/organization/config/organization/organization_tasks.json": "config/organization/",
+        "config/requirements/config/requirements/requirements-dev.txt": "config/requirements/",
     }
 
 

@@ -82,7 +82,7 @@ MOVES = {
     "docker-compose.yml": "docker/compose/",
 
     # Requirements files to config/
-    "config/requirements/requirements-dev.txt": "config/requirements/",
+    "config/requirements/config/requirements/requirements-dev.txt": "config/requirements/",
     "requirements-docker.txt": "config/requirements/",
     "requirements-fixed.txt": "config/requirements/",
     "requirements-integrations.txt": "config/requirements/",

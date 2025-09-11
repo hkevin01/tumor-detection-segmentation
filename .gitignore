@@ -246,3 +246,8 @@ gui/dist/
 *PHI*
 *protected*
 *confidential*
+
+# ===== PRIVATE DATA REPOSITORY LINKS =====
+data/private-datasets/
+models/private-weights/
+../tumor-detection-data/

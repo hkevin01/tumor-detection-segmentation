@@ -130,12 +130,12 @@ class ClinicalOperator:
                     logger.warning("⚠️ Docker test failed, continuing without Docker")
 
             # Check run.sh availability
-            if Path('run.sh').exists():
+            if Path('scripts/runtime/run.sh').exists():
                 logger.info("✅ run.sh available for service management")
-                # Note: In real deployment, you would run ./run.sh start here
-                logger.info("💡 In production, run: ./run.sh start")
+                # Note: In real deployment, you would run ./scripts/runtime/run.sh start here
+                logger.info("💡 In production, run: ./scripts/runtime/run.sh start")
             else:
-                logger.warning("⚠️ run.sh not found")
+                logger.warning("⚠️ scripts/runtime/run.sh not found")
 
             # Display service URLs
             self.display_service_urls()
@@ -603,7 +603,7 @@ echo "📁 Check outputs in: reports/clinical_exports/"
         """Display next steps for clinical deployment"""
         logger.info("\n🚀 NEXT STEPS FOR CLINICAL DEPLOYMENT:")
         logger.info("-" * 50)
-        logger.info("1. Start services: ./run.sh start")
+        logger.info("1. Start services: ./scripts/runtime/run.sh start")
         logger.info("2. Run training: ./scripts/clinical/start_training.sh")
         logger.info("3. Monitor at: http://localhost:5001 (MLflow)")
         logger.info("4. Run inference: ./scripts/clinical/run_inference.sh")
@@ -1360,7 +1360,7 @@ def main():
         operator.gpu_memory = args.gpu_memory
         operator.config_recommendations = operator.get_hardware_recommendations()
 
-    logger.info(f"🏥 Clinical Integration Operator Starting")
+    logger.info("🏥 Clinical Integration Operator Starting")
     logger.info(f"🎮 Hardware: {operator.config_recommendations['description']}")
     logger.info(f"🧬 Data Modality: {args.data_modality.upper()}")
 

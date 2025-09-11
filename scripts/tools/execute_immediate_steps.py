@@ -371,8 +371,8 @@ class TaskExecutor:
 
         # Check for launch utilities
         launch_scripts = [
-            'scripts/training/scripts/training/launch_expanded_training.py',
-            'scripts/training/scripts/monitoring/monitor_and_launch.py',
+            'scripts/training/scripts/training/scripts/training/launch_expanded_training.py',
+            'scripts/training/scripts/monitoring/scripts/monitoring/monitor_and_launch.py',
             'scripts/training/monitor_training_progress.py'
         ]
 
@@ -393,7 +393,7 @@ class TaskExecutor:
                 print(f"❌ Missing: {script}")
 
         # Look for test files
-        test_files = list(self.project_root.glob('**/tests/training/test_training_launcher.py'))
+        test_files = list(self.project_root.glob('**/tests/training/tests/training/test_training_launcher.py'))
         if test_files:
             print(f"✅ Found test file: {test_files[0]}")
 

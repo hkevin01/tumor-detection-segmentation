@@ -100,7 +100,7 @@ def main():
     hyperparam_sweep = {
         "description": "Grid search with concurrent execution",
         "status": "✅ IMPLEMENTED",
-        "script": "scripts/training/scripts/training/launch_expanded_training.py",
+        "script": "scripts/training/scripts/training/scripts/training/launch_expanded_training.py",
         "features": [
             "Grid parameter parsing",
             "Experiment combinations generation",
@@ -139,8 +139,8 @@ def main():
     # Generated scripts and configurations
     generated_artifacts = {
         "main_operator": "scripts/clinical/clinical_operator.py (600+ lines)",
-        "training_launcher": "scripts/training/scripts/training/launch_expanded_training.py (387 lines)",
-        "deployment_script": "scripts/clinical/run_clinical_operator.sh",
+        "training_launcher": "scripts/training/scripts/training/scripts/training/launch_expanded_training.py (387 lines)",
+        "deployment_script": "scripts/clinical/scripts/clinical/run_clinical_operator.sh",
         "configs_created": [
             "config/recipes/unetr_multimodal.json",
             "config/datasets/msd_task01_brain.json"
@@ -163,7 +163,7 @@ def main():
     # Ready-to-run commands for different GPU configurations
     ready_commands = {
         "large_gpu_training": """
-python scripts/training/scripts/training/launch_expanded_training.py \\
+python scripts/training/scripts/training/scripts/training/launch_expanded_training.py \\
   --config config/recipes/unetr_multimodal.json \\
   --dataset-config config/datasets/msd_task01_brain.json \\
   --grid "roi=160,192 batch_size=4,6 cache=cache amp=true" \\
@@ -172,7 +172,7 @@ python scripts/training/scripts/training/launch_expanded_training.py \\
         """,
 
         "medium_gpu_training": """
-python scripts/training/scripts/training/launch_expanded_training.py \\
+python scripts/training/scripts/training/scripts/training/launch_expanded_training.py \\
   --config config/recipes/unetr_multimodal.json \\
   --dataset-config config/datasets/msd_task01_brain.json \\
   --grid "roi=128,160 batch_size=2,3 cache=smart,cache amp=true" \\
@@ -181,7 +181,7 @@ python scripts/training/scripts/training/launch_expanded_training.py \\
         """,
 
         "small_gpu_training": """
-python scripts/training/scripts/training/launch_expanded_training.py \\
+python scripts/training/scripts/training/scripts/training/launch_expanded_training.py \\
   --config config/recipes/unetr_multimodal.json \\
   --dataset-config config/datasets/msd_task01_brain.json \\
   --grid "roi=96,128 batch_size=1,2 cache=smart amp=true" \\
@@ -190,7 +190,7 @@ python scripts/training/scripts/training/launch_expanded_training.py \\
         """,
 
         "cpu_training": """
-python scripts/training/scripts/training/launch_expanded_training.py \\
+python scripts/training/scripts/training/scripts/training/launch_expanded_training.py \\
   --config config/recipes/unetr_multimodal.json \\
   --dataset-config config/datasets/msd_task01_brain.json \\
   --grid "roi=64,96 batch_size=1 cache=smart amp=false" \\
