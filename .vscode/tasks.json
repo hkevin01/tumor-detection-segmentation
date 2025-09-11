@@ -481,6 +481,51 @@
 			"type": "shell",
 			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && rm -f test_package_install.py",
 			"group": "test"
+		},
+		{
+			"label": "Check Status After Restore",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && git status"
+		},
+		{
+			"label": "Explain Push Protection Resolution Options",
+			"type": "shell",
+			"command": "echo 'GitHub Push Protection Issue:\\n\\n1. The issue is that PyPI tokens exist in git history (commits 7df646f and 9ed5f2c)\\n2. GitHub is blocking the push to protect against secret exposure\\n\\nTo resolve this issue, you can:\\n\\n**Option 1 (Recommended): Use GitHub URL to allow the secret**\\nVisit: https://github.com/hkevin01/tumor-detection-segmentation/security/secret-scanning/unblock-secret/32YirkjjqD0MxbFse2KHt0pKoK1\\n\\n**Option 2: Force push after history cleanup**\\nWe would need to use git filter-repo to remove the sensitive data from history\\n\\n**Option 3: Create a new branch**\\nPush changes to a new branch that does not contain the sensitive commits\\n\\nThe secret is already revoked (the old PyPI token is no longer valid), so allowing it temporarily is safe.'"
+		},
+		{
+			"label": "Test Professional Package Build",
+			"type": "shell",
+			"command": "python3 test_package_build.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Install Build Tools and Test Package",
+			"type": "shell",
+			"command": "pip3 install build twine && python3 -m build --sdist --wheel && echo '\\n📦 Package Contents:' && tar -tzf dist/*.tar.gz | head -20 && echo '\\n✅ Professional package build complete!'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Professional Package Validation",
+			"type": "shell",
+			"command": "source venv/bin/activate && pip install build twine && echo '\\n🔍 Building professional PyPI package...' && python -m build --sdist --wheel && echo '\\n📦 Package Contents (first 20 files):' && tar -tzf dist/*.tar.gz | head -20 && echo '\\n📊 Package Statistics:' && ls -lh dist/ && echo '\\n✅ Professional package validation complete!'",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Complete Professional Package Validation",
+			"type": "shell",
+			"command": "source .venv/bin/activate && pip install build twine && echo '\\n🔍 Building professional PyPI package...' && python -m build --sdist --wheel && echo '\\n📦 Package Contents (first 20 files):' && tar -tzf dist/*.tar.gz | head -20 && echo '\\n📊 Package Statistics:' && ls -lh dist/ && echo '\\n✅ Professional package validation complete! Ready for PyPI distribution.'",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Clean up test files",
+			"type": "shell",
+			"command": "rm -f test_package_build.py",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

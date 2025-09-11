@@ -165,6 +165,68 @@ README.md.backup
 .huggingface/
 .transformers_cache/
 
+# ===== DEVELOPMENT & BUILD ARTIFACTS =====
+# PyPI build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# Development tools and scripts (exclude from distribution)
+scripts/cleanup/
+scripts/debugging/
+scripts/maintenance/
+scripts/organization/
+scripts/testing/
+scripts/tools/
+scripts/utilities/
+scripts/setup/
+scripts/docker/
+scripts/archive/
+
+# Development configuration files
+.vscode/
+.idea/
+*.code-workspace
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Temporary and test files
+test_*.py
+*_test.py
+temp/
+tmp/
+recovery/
+validation_reports/
+outputs/
+mlruns/
+
+# Development requirements and setup
+requirements-dev.txt
+setup.py
+test_package_install.py
+run_clinical_operator.sh
+FINAL_TASK_COMPLETION.md
+PACKAGING_COMPLETE.md
+PYTHON_PACKAGE_SUMMARY.md
+
+# Docker development files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+docker/
+
+# Frontend development (if not part of main package)
+frontend/
+gui/node_modules/
+gui/build/
+gui/dist/
+
 # ===== MEDICAL IMAGING SPECIFIC =====
 # DICOM and medical imaging formats
 *.dcm

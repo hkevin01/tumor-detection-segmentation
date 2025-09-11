@@ -1,0 +1,86 @@
+# ===== ESSENTIAL FILES FOR PYPI PACKAGE =====
+# Core package files
+include README.md
+include LICENSE
+include pyproject.toml
+
+# Include essential configuration files only
+recursive-include config/recipes *.json
+recursive-include config/datasets *.json
+recursive-include config/requirements requirements.txt
+
+# Include core documentation (user-facing only)
+include docs/README.md
+recursive-include docs/user-guide *.md
+recursive-include docs/api *.md
+
+# Include only demo and validation scripts (user examples)
+recursive-include scripts/demo *.py
+recursive-include scripts/validation *.py
+
+# Include tests for development installations only
+recursive-include tests *.py
+
+# ===== EXCLUDE DEVELOPMENT AND BUILD ARTIFACTS =====
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude *.pyo
+global-exclude .pytest_cache
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.swp
+global-exclude *.swo
+global-exclude *~
+global-exclude .env
+
+# Exclude all data directories (no patient data in packages!)
+prune data
+prune models
+prune logs
+prune reports
+prune temp
+prune mlruns
+prune outputs
+prune recovery
+prune validation_reports
+
+# Exclude Docker and deployment artifacts
+prune docker
+exclude docker-compose*.yml
+exclude Dockerfile*
+exclude run.sh
+exclude test_docker.sh
+exclude run_clinical_operator.sh
+
+# Exclude IDE and development files
+prune .vscode
+prune .idea
+prune .mypy_cache
+exclude *.code-workspace
+exclude .pytest_cache
+exclude .coverage
+exclude htmlcov
+
+# Exclude development scripts and tools
+prune scripts/cleanup
+prune scripts/debugging
+prune scripts/maintenance
+prune scripts/organization
+prune scripts/testing
+prune scripts/tools
+prune scripts/utilities
+prune scripts/setup
+prune scripts/docker
+prune scripts/archive
+
+# Exclude build artifacts and temporary files
+exclude setup.py
+exclude requirements-dev.txt
+exclude test_package_install.py
+exclude FINAL_TASK_COMPLETION.md
+exclude PACKAGING_COMPLETE.md
+exclude PYTHON_PACKAGE_SUMMARY.md
+
+# Exclude frontend if not part of core package
+prune frontend
+prune gui/frontend
