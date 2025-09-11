@@ -575,6 +575,76 @@
 			"command": "rm -f test_complete_library.py test_final_validation.py && echo '\n🎉 LIBRARY REFACTORING COMPLETE!' && echo '=======================================' && echo '✅ Successfully transformed monolithic project into professional PyPI library' && echo '' && echo '📦 PACKAGE CONTENTS:' && echo '• Core APIs: Detection, Segmentation, Preprocessing, Evaluation' && echo '• Service Integrations: DICOM, FHIR, Cloud Storage' && echo '• Examples: 3 quickstart applications' && echo '• Tools: Model validation and testing utilities' && echo '• CLI: Entry points for training and inference' && echo '' && echo '🚀 READY FOR PyPI DISTRIBUTION!' && echo '• Package builds successfully (580KB)' && echo '• All library components validated' && echo '• Professional APIs with clean interfaces' && echo '• Comprehensive documentation and examples' && echo '' && echo '📋 NEXT STEPS:' && echo '• Use \"twine upload dist/*\" to publish to PyPI' && echo '• Install with \"pip install tumor-detection-segmentation\"' && echo '• Import with \"from tumor_detection.api import TumorDetector\"'",
 			"isBackground": false,
 			"group": "test"
+		},
+		{
+			"label": "Check current package build status",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && python -m build --sdist --wheel && ls -la dist/",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Install build and check package",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && pip install build && python -m build --sdist --wheel && ls -la dist/",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check package build with venv",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source venv/bin/activate && pip install build && python -m build --sdist --wheel && ls -la dist/",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check package build with .venv",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && pip install build && python -m build --sdist --wheel && ls -la dist/",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check for recent changes and current package status",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && echo '=== Current Version ===' && grep '__version__' src/tumor_detection/__init__.py && echo '\\n=== Recent file changes ===' && find . -type f -name '*.py' -mtime -1 | head -10 && echo '\\n=== Package contents comparison ===' && source .venv/bin/activate && python -c \"import tumor_detection; print(f'Local version: {tumor_detection.__version__}')\" && pip show tumor-detection-segmentation | grep Version || echo 'Package not installed locally'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Test package import and check version",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && python -c \"import sys; sys.path.insert(0, 'src'); import tumor_detection; print(f'Local version: {tumor_detection.__version__}'); print('Import successful!')\" && echo '\\n=== Checking if update needed ===' && pip show tumor-detection-segmentation | grep Version || echo 'Package not installed locally - need to check PyPI status'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Compare current package with PyPI and check for improvements",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '=== Package Build Comparison ===' && ls -la dist/ && echo '\\n=== Checking for recent improvements ===' && echo 'Manual edits made to key files:' && ls -la src/tumor_detection/api/ src/tumor_detection/services/ examples/quickstart/ tools/testing/ && echo '\\n=== Library validation test ===' && python test_complete_library.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build updated package v2.0.1",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '=== Building Updated Package v2.0.1 ===' && rm -rf dist/* && python -m build --sdist --wheel && ls -la dist/ && echo '\\n=== Verifying Version ===' && python -c \"import sys; sys.path.insert(0, 'src'); import tumor_detection; print(f'Updated version: {tumor_detection.__version__}')\"",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Install twine and prepare PyPI upload",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && pip install twine && echo '\\n=== Package Ready for PyPI Upload ===' && ls -la dist/ && echo '\\n=== Upload Command ===' && echo 'twine upload dist/*' && echo '\\n=== Test Upload Command (recommended first) ===' && echo 'twine upload --repository testpypi dist/*'",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Final validation and PyPI upload",
+			"type": "shell",
+			"command": "cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && echo '=== Final Package Validation ===' && python test_complete_library.py && echo '\\n=== Ready to Upload to PyPI ===' && echo 'Version: 2.0.1' && echo 'Files ready in dist/ directory' && ls -la dist/ && echo '\\n⚠️  NEXT STEP: Run this command to upload to PyPI:' && echo 'cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && twine upload dist/*' && echo '\\n🎯 Your package will be available at: https://pypi.org/project/tumor-detection-segmentation/'",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

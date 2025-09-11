@@ -26,7 +26,7 @@ Library Usage:
     >>> studies = dicom.find_studies(patient_id="PATIENT_001")
 """
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 __author__ = "Medical Imaging AI Team"
 __email__ = "team@medical-ai.org"
 
@@ -55,28 +55,37 @@ __all__ = [
     "__author__",
     "__email__",
 
+    # Main API classes and functions
+    "TumorDetector",
+    "TumorSegmenter",
+    "ImagePreprocessor",
+    "ModelEvaluator",
+    "detect_tumors",
+    "segment_tumors",
+    "preprocess_medical_image",
+    "evaluate_model",
+
+    # Service integrations
+    "DicomService",
+    "DicomClient",
+    "FhirService",
+    "FhirClient",
+    "CloudService",
+    "CloudStorageClient",
+    "CloudComputeClient",
+
+    # Legacy API functions
+    "load_model",
+    "run_inference",
+    "save_mask",
+    "generate_overlays",
+    "load_recipe_config",
+    "load_dataset_config",
+    "auto_device_resolve",
+
     # Submodules
     "inference",
     "config",
     "utils",
     "models",
-
-    # Core API functions
-    "load_model",
-    "run_inference",
-    "save_mask",
-    "generate_overlays",
-    "load_recipe_config",
-    "load_dataset_config",
-    "auto_device_resolve",
-]
-
-    # Core API functions
-    "load_model",
-    "run_inference",
-    "save_mask",
-    "generate_overlays",
-    "load_recipe_config",
-    "load_dataset_config",
-    "auto_device_resolve",
 ]
