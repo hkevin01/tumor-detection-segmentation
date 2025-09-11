@@ -1,8 +1,8 @@
 """
-CLI package for tumor detection.
-
-Command-line interfaces for training and inference.
+Command-line interface for tumor detection and segmentation.
 """
 
-# CLI modules will import the actual scripts
-# This allows the package to work as both library and CLI tool
+from .infer import main as infer_main
+from .train import main as train_main
+
+__all__ = ["train_main", "infer_main"]

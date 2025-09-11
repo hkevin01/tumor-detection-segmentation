@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "tumor-detection-segmentation"
 dynamic = ["version"]
-description = "Advanced Medical Imaging AI Platform for tumor detection and segmentation"
+description = "Professional Medical Imaging Library for tumor detection and segmentation with APIs, services, and deployment tools"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Medical Imaging AI Team", email = "team@medical-ai.org" }]
@@ -15,8 +15,14 @@ keywords = [
     "ai",
     "tumor-detection",
     "segmentation",
-    "monai",
+    "library",
+    "api",
     "dicom",
+    "fhir",
+    "monai",
+    "pytorch",
+    "clinical-ai",
+    "healthcare",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -87,6 +93,8 @@ Issues = "https://github.com/hkevin01/tumor-detection-segmentation/issues"
 [project.scripts]
 tumor-detect-train = "tumor_detection.cli.train:main"
 tumor-detect-infer = "tumor_detection.cli.infer:main"
+tumor-detect-validate = "tools.testing.model_validator:run_model_validation"
+tumor-deploy = "tools.deployment.deploy:main"
 
 [tool.hatch.version]
 path = "src/tumor_detection/__init__.py"

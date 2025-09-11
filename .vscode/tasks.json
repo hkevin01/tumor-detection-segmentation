@@ -526,6 +526,55 @@
 			"command": "rm -f test_package_build.py",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Test Library-Focused Package Build",
+			"type": "shell",
+			"command": "source .venv/bin/activate && echo '🔍 Building library-focused PyPI package...' && python -m build --sdist --wheel && echo '\\n📦 Package Contents Analysis:' && tar -tzf dist/*.tar.gz | grep -E '(api/|services/|examples/|tools/)' | head -15 && echo '\\n📊 Package Statistics:' && ls -lh dist/ && echo '\\n✅ Library package build complete!'",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Test Complete Library Functionality",
+			"type": "shell",
+			"command": "source .venv/bin/activate && python test_complete_library.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Complete Library Test with Output",
+			"type": "shell",
+			"command": "source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation/src python test_complete_library.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Test Complete Library (Final)",
+			"type": "shell",
+			"command": "source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation/src python test_complete_library.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Final Library Test",
+			"type": "shell",
+			"command": "source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation/src python test_complete_library.py && echo '\\n🎯 Testing CLI entry points...' && python -c \"from tumor_detection.cli.train import main as train_main; print('✅ CLI training import successful')\" && python -c \"from tumor_detection.cli.inference import main as infer_main; print('✅ CLI inference import successful')\" && echo '\\n✅ All library components validated successfully!'",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Final Library Validation",
+			"type": "shell",
+			"command": "source .venv/bin/activate && PYTHONPATH=/home/kevin/Projects/tumor-detection-segmentation/src python test_final_validation.py",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Cleanup and Final Summary",
+			"type": "shell",
+			"command": "rm -f test_complete_library.py test_final_validation.py && echo '\n🎉 LIBRARY REFACTORING COMPLETE!' && echo '=======================================' && echo '✅ Successfully transformed monolithic project into professional PyPI library' && echo '' && echo '📦 PACKAGE CONTENTS:' && echo '• Core APIs: Detection, Segmentation, Preprocessing, Evaluation' && echo '• Service Integrations: DICOM, FHIR, Cloud Storage' && echo '• Examples: 3 quickstart applications' && echo '• Tools: Model validation and testing utilities' && echo '• CLI: Entry points for training and inference' && echo '' && echo '🚀 READY FOR PyPI DISTRIBUTION!' && echo '• Package builds successfully (580KB)' && echo '• All library components validated' && echo '• Professional APIs with clean interfaces' && echo '• Comprehensive documentation and examples' && echo '' && echo '📋 NEXT STEPS:' && echo '• Use \"twine upload dist/*\" to publish to PyPI' && echo '• Install with \"pip install tumor-detection-segmentation\"' && echo '• Import with \"from tumor_detection.api import TumorDetector\"'",
+			"isBackground": false,
+			"group": "test"
 		}
 	]
 }

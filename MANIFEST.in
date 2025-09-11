@@ -1,24 +1,37 @@
-# ===== ESSENTIAL FILES FOR PYPI PACKAGE =====
+# ===== PROFESSIONAL LIBRARY PACKAGE FILES =====
 # Core package files
 include README.md
 include LICENSE
 include pyproject.toml
+include LIBRARY_REFACTORING_PLAN.md
 
-# Include essential configuration files only
+# ===== LIBRARY SOURCE CODE =====
+recursive-include src/tumor_detection *.py
+recursive-include src/tumor_detection/api *.py
+recursive-include src/tumor_detection/services *.py
+recursive-include src/tumor_detection/cli *.py
+
+# ===== EXAMPLES AND TUTORIALS =====
+recursive-include examples *.py *.md *.ipynb *.yaml *.json
+recursive-include examples/quickstart *.py
+recursive-include examples/tutorials *.py *.ipynb
+
+# ===== TESTING AND DEPLOYMENT TOOLS =====
+recursive-include tools *.py *.sh *.yaml *.json
+recursive-include tools/testing *.py
+recursive-include tools/deployment *.py
+
+# Include essential configuration files
 recursive-include config/recipes *.json
 recursive-include config/datasets *.json
 recursive-include config/requirements requirements.txt
 
-# Include core documentation (user-facing only)
+# Include core documentation (user-facing)
 include docs/README.md
 recursive-include docs/user-guide *.md
 recursive-include docs/api *.md
 
-# Include only demo and validation scripts (user examples)
-recursive-include scripts/demo *.py
-recursive-include scripts/validation *.py
-
-# Include tests for development installations only
+# Include tests for development installations
 recursive-include tests *.py
 
 # ===== EXCLUDE DEVELOPMENT AND BUILD ARTIFACTS =====
