@@ -687,6 +687,24 @@
 			"command": "rm -f test_final_integration.py && echo '\n✨ Integration Optimization Complete! ✨' && echo '======================================' && echo '' && echo '📋 TODO LIST COMPLETED:' && echo '✅ Libraries for APIs and services' && echo '✅ Documentation and examples' && echo '✅ Tools for testing and deployment' && echo '✅ Setup for modular usage in other applications' && echo '' && echo '🎯 PyPI Upload Ready:' && echo 'cd /home/kevin/Projects/tumor-detection-segmentation && source .venv/bin/activate && twine upload dist/*' && echo '' && echo '🚀 Your library is now perfectly optimized for integration!'",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Run Requirements Traceability Validation",
+			"type": "shell",
+			"command": "python3 scripts/validation/validate_requirements_traceability.py",
+			"group": "test"
+		},
+		{
+			"label": "Debug Traceability Detection",
+			"type": "shell",
+			"command": "python3 debug_traceability.py",
+			"group": "test"
+		},
+		{
+			"label": "Clean up debug files",
+			"type": "shell",
+			"command": "rm -f debug_traceability.py",
+			"group": "build"
 		}
 	]
 }

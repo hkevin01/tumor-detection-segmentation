@@ -1,6 +1,48 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Enhanced Training Module for Medical Imaging AI Platform
+
+NASA-STD-8739.8 Requirement Implementation Traceability:
+=========================================================
+
+REQ-F-001: AI Model Training and Management
+- Implements comprehensive AI model training pipeline
+- Supports multiple architectures (UNETR, UNet, SegResNet)
+- Provides model versioning and artifact management
+- Implements training progress monitoring and validation
+
+REQ-NF-P-001: Training Performance
+- Distributed training across multiple GPUs
+- Automatic mixed precision (AMP) for memory efficiency
+- Linear scaling support up to 8 GPUs
+- Memory optimization for large medical datasets
+- Training progress monitoring with ETA estimation
+
+REQ-NF-R-002: Error Handling and Recovery
+- Comprehensive crash prevention system
+- Graceful error handling and recovery
+- System resource monitoring and protection
+- Automatic cleanup on failures
+
+REQ-F-009: Experiment Tracking Dashboard
+- MLflow integration for experiment tracking
+- Parameter and metric logging
+- Model artifact management
+- Performance visualization and comparison
+
+Technical Implementation:
+- PyTorch/MONAI-based deep learning pipeline
+- Configurable training recipes and datasets
+- Advanced visualization and overlay generation
+- Production-ready deployment preparation
+
+Author: Medical Imaging AI Team
+Classification: Unclassified
+Version: 2.0
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -28,23 +70,19 @@ from torch.utils.data import DataLoader
 
 # Project loaders and transforms
 from src.data.loaders_monai import load_monai_decathlon
-from src.data.transforms_presets import (
-    get_transforms_brats_like,
-    get_transforms_ct_liver,
-)
+from src.data.transforms_presets import (get_transforms_brats_like,
+                                         get_transforms_ct_liver)
 from src.training.callbacks.visualization import save_overlay_panel
 
 # Crash prevention utilities
 try:
-    from src.utils.crash_prevention import (
-        emergency_cleanup,
-        gpu_safe_context,
-        log_system_resources,
-        memory_safe_context,
-        safe_execution,
-        start_global_protection,
-        stop_global_protection,
-    )
+    from src.utils.crash_prevention import (emergency_cleanup,
+                                            gpu_safe_context,
+                                            log_system_resources,
+                                            memory_safe_context,
+                                            safe_execution,
+                                            start_global_protection,
+                                            stop_global_protection)
     CRASH_PREVENTION_AVAILABLE = True
 except ImportError:
     CRASH_PREVENTION_AVAILABLE = False

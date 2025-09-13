@@ -1,39 +1,65 @@
 #!/usr/bin/env python3
 """
 Comprehensive Crash Prevention Utilities
-==========================================
 
-This module provides enterprise-grade crash prevention utilities for medical imaging workflows.
-Designed to handle both nominal and off-nominal situations with graceful degradation.
+NASA-STD-8739.8 Requirement Implementation Traceability:
+=========================================================
 
-Enhanced Features:
+REQ-NF-R-002: Error Handling and Recovery
+- Comprehensive exception handling with typed errors
+- Automatic failover and recovery mechanisms
+- Emergency recovery with data persistence
+- Graceful crash handling with recovery procedures
+- Process monitoring with resource forecasting
+
+REQ-NF-R-001: System Availability
+- 99.9% uptime for critical medical imaging operations
+- Automatic failover and recovery mechanisms
+- Comprehensive health monitoring and alerting
+- Data integrity protection during system failures
+- Automated backup and disaster recovery procedures
+
+REQ-NF-P-001: Training Performance (Resource Management)
 - Advanced memory monitoring with predictive analysis
 - GPU memory management with automatic scaling
-- Comprehensive exception handling with typed errors
-- Process monitoring with resource forecasting
-- Emergency recovery with data persistence
-- Time measurement utilities with multiple precision levels
-- Boundary condition handling for edge cases
-- Data recording and audit trails
-- Graceful crash handling with recovery procedures
+- Memory optimization for large medical imaging datasets
+- Resource usage optimization and monitoring
 
-Performance & Reliability:
+REQ-NF-P-002: Inference Response Time (Performance Protection)
 - Sub-second response time for resource monitoring
-- 99.9% uptime for critical operations
-- Automatic failover and recovery mechanisms
-- Comprehensive logging and telemetry
-- Memory leak detection and prevention
-- Deadlock prevention and detection
+- Performance-aware resource management
+- Deadlock prevention and detection for clinical workflows
+
+REQ-F-006: Medical Data Security Framework (Data Protection)
+- Data persistence and integrity protection
+- Audit trails for medical data processing
+- Secure crash handling without data exposure
+- Comprehensive logging and telemetry for compliance
+
+REQ-F-001: AI Model Training and Management (Training Protection)
+- Training process protection with checkpoint management
+- Model state preservation during failures
+- Graceful degradation for training operations
+
+Technical Implementation:
+- Enterprise-grade crash prevention for medical imaging workflows
+- Production-ready resource monitoring and management
+- Clinical-grade reliability and error handling
+- NASA-standard software assurance practices
 
 Usage Examples:
-    # Basic usage
+    # Basic usage for medical imaging tasks
     @safe_execution(max_retries=3, record_metrics=True)
-    def my_function():
-        return process_medical_data()
+    def process_medical_scan():
+        return analyze_tumor_data()
 
-    # Advanced usage with persistence
+    # Advanced usage with clinical checkpoint management
     with crash_resistant_context(persist_state=True) as ctx:
-        model_training(checkpoint_manager=ctx.checkpoint_manager)
+        clinical_model_training(checkpoint_manager=ctx.checkpoint_manager)
+
+Author: Medical Imaging AI Team
+Classification: Unclassified
+Version: 2.0
 """
 
 import functools
