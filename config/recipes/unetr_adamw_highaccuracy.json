@@ -1,0 +1,32 @@
+{
+  "model": {
+    "architecture": "unetr",
+    "in_channels": 4,
+    "out_channels": 3,
+    "img_size": [128, 128, 128],
+    "feature_size": 24,
+    "hidden_size": 1024,
+    "mlp_dim": 4096,
+    "num_heads": 16,
+    "dropout_rate": 0.15
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "lr": 0.00005,
+    "weight_decay": 0.05
+  },
+  "scheduler": {
+    "type": "ReduceLROnPlateau",
+    "mode": "max",
+    "factor": 0.3,
+    "patience": 7,
+    "min_lr": 1e-08
+  },
+  "training": {
+    "batch_size": 1,
+    "num_epochs": 150,
+    "use_amp": true,
+    "grad_clip": 1.0,
+    "early_stopping_patience": 20
+  }
+}
