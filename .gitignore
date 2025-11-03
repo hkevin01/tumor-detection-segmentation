@@ -56,17 +56,53 @@ mlruns/
 wandb/
 
 # ===== MEDICAL DATA (NEVER COMMIT PATIENT DATA!) =====
+# Core data directories - ALWAYS ignored to prevent large dataset commits
 data/
 !data/README.md
+!data/.gitkeep
 datasets/
 models/
 !models/README.md
+!models/.gitkeep
+
+# Medical imaging file formats - typically very large
 *.dcm
 *.dicom
 *.nii
 *.nii.gz
 *.ima
 *.img
+*.hdr
+*.mgz
+*.mgh
+*.mnc
+*.mnc.gz
+*.par
+*.rec
+
+# Common dataset archives - prevent large file commits
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.tar.bz2
+*.7z
+*.rar
+
+# Specific large dataset patterns
+**/imagesTr/
+**/imagesTs/
+**/labelsTr/
+**/labelsTs/
+**/Task*/
+**/BraTS*/
+**/MSD*/
+**/Decathlon*/
+**/raw_data/
+**/processed_data/
+**/preprocessed/
+
+# Temporary processing files
 temp/
 tmp/
 logs/
@@ -74,6 +110,12 @@ logs/
 reports/*.pdf
 reports/*.docx
 !reports/README.md
+
+# Large result files
+*.npy
+*.npz
+*_predictions.nii.gz
+*_segmentation.nii.gz
 
 # ===== JUPYTER NOTEBOOK =====
 .ipynb_checkpoints/
@@ -251,3 +293,154 @@ gui/dist/
 data/private-datasets/
 models/private-weights/
 ../tumor-detection-data/
+
+# ===== LARGE FILE PROTECTION =====
+# Prevent accidentally committing large files (>100MB)
+# Use Git LFS for necessary large files instead
+
+# Large model checkpoints and weights
+*.pth
+*.pt
+*.ckpt
+*.weights
+*.caffemodel
+*.pb
+*.onnx
+*.tflite
+*.mlmodel
+
+# Large numpy arrays and pickles
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+
+# Large HDF5 files
+*.h5
+*.hdf5
+*.he5
+
+# Large CSV/Excel files (use samples or summaries instead)
+**/large_*.csv
+**/full_dataset*.csv
+*.xlsx
+
+# ===== COMMON MEDICAL IMAGING DATASETS =====
+# Prevent committing well-known public datasets
+# Download these programmatically instead
+
+# BraTS (Brain Tumor Segmentation Challenge)
+**/BraTS*/
+**/BRATS*/
+**/brats*/
+**/BraTS2020/
+**/BraTS2021/
+**/BraTS2023/
+
+# Medical Segmentation Decathlon (MSD)
+**/Task01_BrainTumour/
+**/Task02_Heart/
+**/Task03_Liver/
+**/Task04_Hippocampus/
+**/Task05_Prostate/
+**/Task06_Lung/
+**/Task07_Pancreas/
+**/Task08_HepaticVessel/
+**/Task09_Spleen/
+**/Task10_Colon/
+**/MSD_Task*/
+
+# HECKTOR Challenge
+**/HECKTOR*/
+**/hecktor*/
+
+# ISLES (Ischemic Stroke Lesion Segmentation)
+**/ISLES*/
+**/isles*/
+
+# LiTS (Liver Tumor Segmentation)
+**/LiTS*/
+**/lits*/
+
+# KiTS (Kidney Tumor Segmentation)
+**/KiTS*/
+**/kits*/
+
+# Medical Image Datasets
+**/MICCAI*/
+**/miccai*/
+**/ImageNet/
+**/COCO/
+**/Pascal_VOC/
+
+# ===== CACHE AND TEMPORARY PROCESSING =====
+# Prevent committing cached/processed data
+
+# MONAI cache directories
+**/.monai_cache/
+**/monai_cache/
+**/cache/
+**/cached_data/
+
+# Processing temporary files
+**/temp_processing/
+**/preprocessing_tmp/
+**/augmentation_cache/
+
+# MLflow artifacts (can be large)
+mlruns/
+mlartifacts/
+
+# TensorBoard logs (can accumulate)
+**/runs/
+**/tensorboard/
+**/tb_logs/
+
+# ===== BACKUP AND ARCHIVE PROTECTION =====
+# Prevent committing backup copies of large data
+
+*_backup/
+*_archive/
+backup_*/
+archive_*/
+old_data/
+deprecated_data/
+
+# Database dumps
+*.sql
+*.dump
+*.db
+
+# ===== SIZE-BASED RULES =====
+# If a file matches these patterns, it's likely too large
+
+# Very large text files (usually logs or datasets)
+**/*_large.txt
+**/*_full.txt
+**/*_complete.txt
+
+# Video files (for documentation, use links instead)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.flv
+
+# ===== INSTITUTIONAL DATA =====
+# Patterns that suggest protected/institutional data
+
+**/patient_data/
+**/clinical_data/
+**/hospital_*/
+**/institution_*/
+**/protected_health_information/
+**/phi/
+**/pii/
+**/confidential/
+**/proprietary/
+
+# HIPAA/GDPR protected patterns
+**/*_patient_*.nii.gz
+**/*_mrn_*.dcm
+**/*_phi_*.json
