@@ -85,5 +85,25 @@
   "window.title": "\ud83e\udde0 Tumor Detection - ${activeEditorShort}",
   "workbench.colorTheme": "Solarized Dark",
   "jupyter.interactiveWindow.codeLens.enable": false,
-  "cmake.sourceDirectory": "/home/kevin/Projects/tumor-detection-segmentation/src/clinical/slicer_plugin"
+  "cmake.sourceDirectory": "/home/kevin/Projects/tumor-detection-segmentation/src/clinical/slicer_plugin",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#1b5a39",
+    "activityBar.background": "#1b5a39",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#9d6cd3",
+    "activityBarBadge.foreground": "#15202b",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#1b5a39",
+    "statusBar.background": "#0f3320",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#1b5a39",
+    "statusBarItem.remoteBackground": "#0f3320",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#0f3320",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#0f332099",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#0f3320"
 }

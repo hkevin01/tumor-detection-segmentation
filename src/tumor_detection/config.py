@@ -1,5 +1,24 @@
+# =============================================================================
+# ID: CONFIG-001
+# Requirement: Provide validated, reproducible configuration loading for all
+#              training recipes and dataset definitions used in the platform.
+# Purpose: Centralise configuration I/O so all pipeline components share a
+#          single, consistent interface with clear error messages.
+# Rationale: JSON-based configuration enables fully reproducible experiments
+#             without code modification; recipe files are version-controlled
+#             alongside checkpoints.
+# Inputs:
+#   - config_path : str or Path — valid path to JSON config file
+# Outputs: dict — validated configuration or raises FileNotFoundError
+# Preconditions: JSON file must exist and be valid UTF-8 encoded JSON
+# Postconditions: Returns dict; no filesystem side effects
+# Failure Modes: FileNotFoundError if path missing; json.JSONDecodeError on
+#                malformed JSON — both propagated to caller
+# Error Handling: No silent defaults; caller must handle exceptions
+# Verification: tests/test_config.py
+# =============================================================================
 """
-Configuration management for tumor detection package.
+Configuration management for the tumor detection package.
 
 Utilities for loading and parsing recipe and dataset configurations.
 """

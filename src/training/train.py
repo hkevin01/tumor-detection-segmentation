@@ -1,8 +1,25 @@
+# =============================================================================
+# ID: TRAIN-CLI-001
+# Requirement: Provide a command-line entry point for training segmentation
+#              models from a JSON configuration file.
+# Purpose: Allow non-Python users and CI pipelines to launch training runs
+#          without any Python glue code.
+# Inputs:
+#   - --config PATH : JSON configuration file (required)
+#   - --resume PATH : checkpoint .pth to resume from (optional)
+# Outputs: Trained model checkpoint in config["checkpoint_dir"]
+# Preconditions: MONAI, torch, tqdm installed; config file exists
+# Postconditions: best_model.pth persisted in checkpoint directory
+# Failure Modes: Exits with code 1 on missing config or import failure
+# References: src/training/trainer.py ModelTrainer
+# =============================================================================
 """
-Simplified training script for tumor detection and segmentation.
+Training CLI for tumor detection and segmentation.
 
-This script provides an easy-to-use interface for training models
-using the comprehensive trainer class.
+Usage::
+
+    python src/training/train.py --config config/recipes/unetr_multimodal.json
+    python src/training/train.py --config config.json --resume checkpoints/latest.pth
 """
 
 import argparse
@@ -24,8 +41,8 @@ def main():
     """Main training function."""
     parser = argparse.ArgumentParser(description='Train tumor segmentation model')
     parser.add_argument(
-        '--config', 
-        type=str, 
+        '--config',
+        type=str,
         default='config.json',
         help='Path to configuration file'
     )
@@ -35,31 +52,31 @@ def main():
         default=None,
         help='Path to checkpoint to resume from'
     )
-    
+
     args = parser.parse_args()
-    
+
     if not DEPENDENCIES_AVAILABLE:
         print("Error: Required dependencies not available.")
         print("Please install the required packages:")
         print("  pip install -r requirements.txt")
         sys.exit(1)
-    
+
     # Load configuration
     if not Path(args.config).exists():
         print(f"Configuration file not found: {args.config}")
         sys.exit(1)
-    
+
     with open(args.config, 'r') as f:
         config = json.load(f)
-    
+
     print("Tumor Detection and Segmentation Training")
     print("=" * 45)
     print(f"Configuration: {args.config}")
-    
+
     try:
         # Setup training components
         model, train_loader, val_loader = setup_training(args.config)
-        
+
         # Create trainer
         trainer = ModelTrainer(
             model=model,
@@ -67,18 +84,18 @@ def main():
             val_loader=val_loader,
             config=config
         )
-        
+
         # Resume from checkpoint if specified
         if args.resume:
             trainer.load_checkpoint(args.resume)
             print(f"Resumed from checkpoint: {args.resume}")
-        
+
         # Start training
         num_epochs = config.get('epochs', 100)
         trainer.train(num_epochs)
-        
+
         print("Training completed successfully!")
-        
+
     except Exception as e:
         print(f"Training failed: {e}")
         import traceback
