@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first for better Docker layer caching
-COPY requirements.txt .
+COPY config/requirements/requirements.txt .
 
 # Install Python dependencies
 RUN python -m pip install --upgrade pip setuptools wheel && \

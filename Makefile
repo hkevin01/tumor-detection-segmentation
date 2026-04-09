@@ -15,7 +15,7 @@ setup: venv install-dev
 
 install-dev:
 	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements-dev.txt
+	$(PIP) install -r config/requirements/requirements-dev.txt
 
 lint:
 	$(VENV_DIR)/bin/ruff check . || true
