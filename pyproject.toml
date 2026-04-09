@@ -1,59 +1,60 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
 name = "tumor-detection-segmentation"
 dynamic = ["version"]
-description = "Professional Medical Imaging Library for tumor detection and segmentation with APIs, services, and deployment tools"
+description = "Production-grade 3-D brain tumour detection & segmentation: UNETR, MedNext, VISTA3D, DiNTS NAS, semi-supervised, and clinical DICOM/FHIR outputs"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [{ name = "Medical Imaging AI Team", email = "team@medical-ai.org" }]
-maintainers = [{ name = "Kevin", email = "hkevin01@github.com" }]
+authors = [{ name = "hkevin01", email = "hkevin01@users.noreply.github.com" }]
 keywords = [
     "medical-imaging",
-    "ai",
-    "tumor-detection",
+    "brain-tumor",
     "segmentation",
-    "library",
-    "api",
-    "dicom",
-    "fhir",
+    "unetr",
+    "mednext",
+    "vista3d",
+    "dints",
+    "nas",
     "monai",
     "pytorch",
+    "brats",
+    "dicom",
+    "fhir",
     "clinical-ai",
-    "healthcare",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Healthcare Industry",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
-    "torch>=1.12.0",
-    "torchvision>=0.13.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
     "monai>=1.5.0",
     "nibabel>=4.0.0",
     "numpy>=1.21.0",
-    "scipy>=1.8.0",
+    "scipy>=1.9.0",
     "scikit-image>=0.19.0",
-    "pandas>=1.4.0",
+    "pandas>=1.5.0",
     "matplotlib>=3.5.0",
-    "seaborn>=0.11.0",
+    "seaborn>=0.12.0",
     "tqdm>=4.64.0",
     "pyyaml>=6.0",
-    "pathlib2>=2.3.0; python_version<'3.4'",
     "typing-extensions>=4.0.0",
     "pillow>=9.0.0",
     "SimpleITK>=2.2.0",
@@ -93,14 +94,28 @@ Issues = "https://github.com/hkevin01/tumor-detection-segmentation/issues"
 [project.scripts]
 tumor-detect-train = "tumor_detection.cli.train:main"
 tumor-detect-infer = "tumor_detection.cli.infer:main"
-tumor-detect-validate = "tools.testing.model_validator:run_model_validation"
-tumor-deploy = "tools.deployment.deploy:main"
 
 [tool.hatch.version]
 path = "src/tumor_detection/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tumor_detection"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".git",
+    "*.egg-info",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "logs/",
+    "memory-bank/",
+    "recovery/",
+    "reports/",
+    "validation_reports/",
+    "frontend/",
+    "gui/",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

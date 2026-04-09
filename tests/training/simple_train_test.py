@@ -190,6 +190,3 @@ class TestTrainerSmoke:
         # Parameter values must match after loading
         for p1, p2 in zip(model.parameters(), model2.parameters()):
             assert torch.allclose(p1, p2), "Checkpoint weights not restored correctly"
-
-
-from torch.utils.data import DataLoader  # noqa: E402  (needed in test body)
