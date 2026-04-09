@@ -16,8 +16,20 @@ from typing import Any, Dict, Generator
 
 import numpy as np
 import pytest
-import torch
-from fastapi.testclient import TestClient
+
+try:
+    import torch
+    _TORCH_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    torch = None  # type: ignore
+    _TORCH_AVAILABLE = False
+
+try:
+    from fastapi.testclient import TestClient
+    _FASTAPI_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    TestClient = None  # type: ignore
+    _FASTAPI_AVAILABLE = False
 
 # Suppress SWIG-related deprecation warnings
 warnings.filterwarnings("ignore", message=".*has no __module__ attribute.*")
@@ -84,8 +96,10 @@ def ensure_test_data() -> None:
 
 
 @pytest.fixture(scope="session")
-def test_device() -> torch.device:
+def test_device():
     """Get the appropriate device for testing."""
+    if not _TORCH_AVAILABLE:
+        pytest.skip("torch not installed")
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 

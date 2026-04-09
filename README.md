@@ -97,15 +97,101 @@ Input (T1/T1c/T2/FLAIR NIfTI)
 
 ---
 
+## Why This Tech Stack
+
+### Why UNETR?
+
+UNETR (UNEt TRansformers, Hatamizadeh et al. WACV 2022) is selected as the primary transformer architecture for three reasons that matter specifically to brain tumour segmentation:
+
+1. **Global context from the first layer** — the ViT encoder tokenises the entire volume into non-overlapping patches and attends to every patch simultaneously at every layer. A 5-level CNN UNet at 96³ achieves only a ~32-voxel receptive field; glioblastoma infiltration spans the whole hemisphere and requires understanding the full-brain layout from the start.
+
+2. **Multi-scale skip connections at {3, 6, 9, 12} transformer depths** — UNETR extracts feature maps from multiple ViT encoder layers and passes them directly to the CNN decoder. This gives the decoder simultaneous access to coarse semantic tokens (deep layers) _and_ fine-grained spatial detail (early layers) — outperforming single-depth skip connections found in standard CNNs.
+
+3. **Multi-modal readiness** — because the encoder operates on flattened tokens, adding or removing input channels (T1, T1c, T2, FLAIR → any combination) requires changing only the first linear projection layer, not the full architecture.
+
+**vs pure UNet** — CNN receptive field grows only polynomially with depth; insufficient for diffuse tumour infiltration.
+**vs SwinUNETR** — shifted-window attention adds window-size and shift-mode hyper-parameters. UNETR's global attention is simpler to configure and fine-tune on new datasets.
+**vs nnUNet** — nnUNet compensates for limited receptive field by using larger patches, demanding proportionally more VRAM. UNETR achieves comparable or superior accuracy at standard patch sizes.
+
+---
+
+### DiNTS Neural Architecture Search Process
+
+DiNTS (Differentiable Neural Network Topology Search, He et al. CVPR 2021, `monai.networks.nets.dints`) automates the discovery of the network topology — the graph of skip connections, resolution changes, and cell operations — instead of hand-designing an encoder-decoder.
+
+**Two stages:**
+
+```
+Stage 1 — Joint Search (~50 epochs on half the dataset)
+┌──────────────────────────────────────────────────────────────────┐
+│  Alternate updates:                                              │
+│  (a) Update network weights W on labelled mini-batch             │
+│      Loss = DiceCE(pred, label)                                  │
+│  (b) Update architecture params (log_alpha_a, log_alpha_c)       │
+│      Loss = DiceCE + λ₁·TopologyEntropy + λ₂·RAMCost            │
+│                                                                  │
+│  TopologySearch maintains a continuous probability over all      │
+│  feasible path activations (up to 1023 for depth=4 space)       │
+└──────────────────────────────────────────────────────────────────┘
+                    ↓  TopologySearch.decode()  [Dijkstra]
+Stage 2 — Re-Train Discovered Architecture (~150 epochs full dataset)
+┌──────────────────────────────────────────────────────────────────┐
+│  TopologyInstance(arch_code=[arch_code_a, arch_code_c])          │
+│  DiNTS(dints_space=instance, ..., node_a=decoded_node_a)         │
+│  Standard DiceCELoss training; no architecture parameters        │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Why DiNTS over hand-designed backbones?**
+
+- Discovers task-specific topologies for each dataset; different MRI protocols or tumour types produce different optimal graphs.
+- RAM-cost regulariser (`get_ram_cost_usage`) constrains search to topologies that fit within a specified GPU memory budget — critical when switching from an A100 to a clinical workstation with 8 GB VRAM.
+- Uses P3D (pseudo-3D) separable convolutions as cell operations, natively capturing MRI anisotropy without extra configuration.
+- 10× faster than RL/EA NAS methods because architecture and weight updates share forward passes.
+
+**Usage:**
+```python
+from src.models.dints_search import build_dints_search_model, build_dints_instance
+
+# Stage 1
+searcher = build_dints_search_model(in_channels=4, num_classes=3)
+for epoch in range(50):
+    pred = searcher(batch_x)
+    task_loss = criterion(pred, batch_y)
+    total_loss = searcher.compute_search_loss(task_loss, batch_x)
+    total_loss.backward()
+
+arch = searcher.decode_architecture()
+
+# Stage 2
+model = build_dints_instance(arch, in_channels=4, num_classes=3)
+```
+
+---
+
+### Why MONAI instead of plain PyTorch?
+
+| Need | MONAI provides | Alternatives considered |
+|------|---------------|------------------------|
+| 3-D NIfTI/DICOM I/O | `LoadImaged`, `MetaTensor` with affine tracking | nibabel + manual transforms |
+| Spatially-consistent augmentation | `RandAffined`, `RandFlipd` (volume + label together) | torchvision (2-D only) |
+| Sliding-window inference | `SlidingWindowInferer` with Gaussian importance map | Custom tiling (error-prone boundary effects) |
+| Decollate + per-sample metrics | `decollate_batch` + `DiceMetric(reduction="mean_batch")` | Manual batch disaggregation |
+| Pre-trained medical weights | VISTA3D, SwinUNETR, UNETR via `monai.bundle` | No equivalent in timm/HuggingFace for 3-D |
+| DICOM-SR / FHIR output | `monai.deploy` operators | Custom implementation |
+
+---
+
 ## Models
 
 | Model | Params | BraTS Dice | Speed | Notes |
 |-------|--------|-----------|-------|-------|
 | UNet (3D) | 4M | 0.83 | Fast | Baseline, low VRAM |
 | SwinUNETR | 62M | 0.89 | Medium | Transformer-CNN hybrid |
-| UNETR | 93M | 0.88 | Medium | Pure transformer |
+| UNETR | 93M | 0.88 | Medium | Pure ViT encoder + CNN decoder |
 | **MedNext-B** | 35M | **0.91** | Medium | MONAI 1.5, large-kernel CNN |
 | **VISTA3D** | 670M | **0.93** | Slow | Foundation model, fine-tunable |
+| DiNTS (searched) | Varies | Task-optimal | Medium | NAS-discovered topology |
 
 ---
 
@@ -234,7 +320,7 @@ print(result.dice_scores)   # {"whole_tumor": 0.92, "tumor_core": 0.88}
 print(result.report_path)   # "/results/patient_001_report.pdf"
 ```
 
-REST API (FastAPI):  
+REST API (FastAPI):
 ```
 POST /api/v1/segment   — Upload DICOM/NIfTI, get segmentation job ID
 GET  /api/v1/status/<id> — Poll segmentation status
@@ -264,6 +350,7 @@ cd docker && docker build -f Dockerfile -t tumor-seg:latest .
 tumor-detection-segmentation/
 ├── src/
 │   ├── models/
+│   │   ├── dints_search.py          # DiNTS NAS: search + deploy factory
 │   │   ├── vista3d_integration.py   # VISTA3D foundation model wrapper
 │   │   └── mednext_wrapper.py       # MedNext architecture (MONAI 1.5)
 │   ├── training/
@@ -271,12 +358,17 @@ tumor-detection-segmentation/
 │   │   ├── hybrid_supervised.py     # DiceCE + NACL hybrid trainer
 │   │   ├── semi_supervised.py       # Mean-Teacher semi-supervised
 │   │   └── mae_pretrain.py          # Masked Autoencoder pre-training
+│   ├── fusion/
+│   │   └── attention_fusion.py      # MultiModalUNETR + cross-modal attention
 │   └── tumor_detection/             # Production library (CLI, API, services)
 ├── config/
 │   ├── recipes/                     # Training configurations
 │   └── clinical/                    # Clinical deployment configs
 ├── docker/                          # Docker configuration
-├── tests/                           # Test suite
+├── tests/
+│   ├── test_unetr_dints.py          # UNETR + DiNTS architecture tests
+│   └── training/
+│       └── simple_train_test.py     # Trainer smoke tests
 ├── docs/                            # Documentation
 └── pyproject.toml
 ```
@@ -287,7 +379,7 @@ tumor-detection-segmentation/
 
 ### Fixes
 1. **Secure checkpoint loading** — `torch.load(..., weights_only=True)` mitigates CVE-2022-45907
-2. **Correct Dice evaluation** — `decollate_batch` + per-sample post-processing prevents inflated metric reporting  
+2. **Correct Dice evaluation** — `decollate_batch` + per-sample post-processing prevents inflated metric reporting
 3. **DiceCELoss default** — replaces Dice+Focal; more stable gradients on imbalanced labels
 4. **`zero_grad(set_to_none=True)`** — reduces GPU memory bandwidth ~15 %
 
