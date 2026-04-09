@@ -26,20 +26,23 @@ Library Usage:
     >>> studies = dicom.find_studies(patient_id="PATIENT_001")
 """
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __author__ = "Medical Imaging AI Team"
 __email__ = "team@medical-ai.org"
 
 # Library API imports - Main public interface
-from .api import (ImagePreprocessor, ModelEvaluator, TumorDetector,
-                  TumorSegmenter, detect_tumors, evaluate_model,
-                  preprocess_medical_image, segment_tumors)
-# Integration utilities for other applications
-from .integration import (TumorAnalyzer, analyze_folder, quick_detect,
-                          quick_segment)
-# Service integrations
-from .services import (CloudComputeClient, CloudService, CloudStorageClient,
-                       DicomClient, DicomService, FhirClient, FhirService)
+try:
+    from .api import (ImagePreprocessor, ModelEvaluator, TumorDetector,
+                      TumorSegmenter, detect_tumors, evaluate_model,
+                      preprocess_medical_image, segment_tumors)
+    # Integration utilities for other applications
+    from .integration import (TumorAnalyzer, analyze_folder, quick_detect,
+                              quick_segment)
+    # Service integrations
+    from .services import (CloudComputeClient, CloudService, CloudStorageClient,
+                           DicomClient, DicomService, FhirClient, FhirService)
+except ImportError:
+    pass
 
 # Legacy compatibility imports (for existing code)
 try:
@@ -50,7 +53,10 @@ try:
 except ImportError:
     # Graceful degradation if legacy modules not available
     pass
-from .utils.device import auto_device_resolve
+try:
+    from .utils.device import auto_device_resolve
+except ImportError:
+    pass
 
 __all__ = [
     # Version info
@@ -85,19 +91,6 @@ __all__ = [
 
     # Legacy API functions
     "load_model",
-    "run_inference",
-    "save_mask",
-    "generate_overlays",
-    "load_recipe_config",
-    "load_dataset_config",
-    "auto_device_resolve",
-
-    # Submodules
-    "inference",
-    "config",
-    "utils",
-    "models",
-]
     "run_inference",
     "save_mask",
     "generate_overlays",
