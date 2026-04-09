@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import pytest
+
+pytest.importorskip("torch")
 import torch
 
 from src.data.transforms_presets import get_transforms_brats_like, get_transforms_ct_liver

@@ -2,6 +2,10 @@
 """Unit tests for transform presets."""
 
 import numpy as np
+import pytest
+
+pytest.importorskip("torch")
+pytest.importorskip("monai")
 import torch
 from monai.transforms import Compose, RandSpatialCropd, ToTensord
 

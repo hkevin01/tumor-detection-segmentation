@@ -10,9 +10,11 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-import nibabel as nib
 import numpy as np
 import pytest
+
+pytest.importorskip("nibabel")
+import nibabel as nib
 import torch
 from monai.networks.nets import UNet
 

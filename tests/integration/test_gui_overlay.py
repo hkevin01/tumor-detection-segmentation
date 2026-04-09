@@ -11,6 +11,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+pytest.importorskip("fastapi")
+
 
 @pytest.mark.integration
 def test_gui_study_overlay_png(tmp_path: Path):

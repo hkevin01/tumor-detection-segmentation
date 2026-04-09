@@ -48,7 +48,7 @@
   "organize_scripts": {
     "title": "Organize Scripts and Utilities",
     "description": "Move scripts to appropriate subdirectories",
-    "status": "completed",
+    "status": "in-progress",
     "subtasks": {
       "move_run_script": {
         "description": "Move run.sh to scripts/ directory",

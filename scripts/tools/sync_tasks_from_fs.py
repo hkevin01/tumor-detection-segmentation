@@ -7,7 +7,7 @@ expected artifact exists. It does not move or delete files.
 
 from pathlib import Path
 
-from task_manager import TaskManager
+from src.task_manager import TaskManager
 
 
 def main():
@@ -23,8 +23,8 @@ def main():
             status="completed",
         )
 
-    # If config/organization/config/organization/organization_tasks.json exists, we consider update_references done
-    tasks_file = root / "config/organization/config/organization/organization_tasks.json"
+    # If config/organization/organization_tasks.json exists, we consider update_references done
+    tasks_file = root / "config/organization/organization_tasks.json"
     if tasks_file.exists():
         manager.update_task_status("update_references", status="completed")
 

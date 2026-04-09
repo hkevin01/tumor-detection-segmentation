@@ -12,7 +12,7 @@ from pathlib import Path
 class TaskManager:
     def __init__(self, project_root):
         self.project_root = Path(project_root)
-        self.tasks_file = self.project_root / "config/organization/config/organization/organization_tasks.json"
+        self.tasks_file = self.project_root / "config/organization/organization_tasks.json"
         self.tasks = self.load_tasks()
 
     def load_tasks(self):
@@ -142,17 +142,22 @@ class TaskManager:
         """Save tasks to file."""
         if tasks is None:
             tasks = self.tasks
+        self.tasks_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.tasks_file, 'w', encoding='utf-8') as f:
             json.dump(tasks, f, indent=2)
 
-    def update_task_status(self, category, task_id, status):
-        """Update the status of a specific task."""
-        if (category in self.tasks and
-                task_id in self.tasks[category]["subtasks"]):
+    def update_task_status(self, category, task_id=None, status="completed"):
+        """Update the status of a task category or specific subtask."""
+        if category not in self.tasks:
+            return False
+        if task_id is None:
+            self.tasks[category]["status"] = status
+        elif task_id in self.tasks[category].get("subtasks", {}):
             self.tasks[category]["subtasks"][task_id]["status"] = status
-            self.save_tasks()
-            return True
-        return False
+        else:
+            return False
+        self.save_tasks()
+        return True
 
     def get_pending_tasks(self):
         """Get all pending tasks."""

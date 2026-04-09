@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+pytest.importorskip("nibabel")  # src.data_preprocessing imports nibabel
 from src.data_preprocessing import MedicalImagePreprocessor
 
 
