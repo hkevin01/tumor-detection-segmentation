@@ -12,7 +12,7 @@ import logging
 import sys
 import warnings
 from pathlib import Path
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import numpy as np
 import pytest
@@ -23,13 +23,6 @@ try:
 except ImportError:  # pragma: no cover
     torch = None  # type: ignore
     _TORCH_AVAILABLE = False
-
-try:
-    from fastapi.testclient import TestClient
-    _FASTAPI_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    TestClient = None  # type: ignore
-    _FASTAPI_AVAILABLE = False
 
 # Suppress SWIG-related deprecation warnings
 warnings.filterwarnings("ignore", message=".*has no __module__ attribute.*")
@@ -145,26 +138,6 @@ def sample_ct(test_config: Dict[str, Any]) -> np.ndarray:  # noqa: F811
         logger.error("Failed to load or synthesize sample CT: %s", e)
         # Final fallback to avoid test crashes
         return (np.random.rand(32, 32) * 1000).astype(np.float32)
-
-
-@pytest.fixture(scope="function")
-def api_client() -> Generator:
-    """Create a test client for the FastAPI application."""
-    # Ensure 'src' and repository root are on sys.path for imports
-    repo_root = Path(__file__).resolve().parents[1]
-    src_dir = repo_root / "src"
-    if str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-    if str(repo_root) not in sys.path:
-        sys.path.insert(0, str(repo_root))
-
-    try:
-        from src.medical_imaging_api import app  # type: ignore
-    except Exception:  # noqa: BLE001
-        # Fallback to top-level module if package import fails
-        from medical_imaging_api import app  # type: ignore
-    with TestClient(app) as client:
-        yield client
 
 
 class TestMetrics:

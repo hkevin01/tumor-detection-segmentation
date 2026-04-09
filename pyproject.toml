@@ -62,8 +62,10 @@ dependencies = [
 
 [project.optional-dependencies]
 clinical = [
+    "monailabel>=0.8.0",
+    "pynetdicom>=2.0.0",
+    "highdicom>=0.22.0",
     "pydicom>=2.4.3",
-    "pynetdicom>=2.0.2",
     "fhir.resources>=7.0.2",
     "reportlab>=4.0.4",
     "python-docx>=0.8.11",
@@ -72,8 +74,11 @@ clinical = [
     "pyjwt>=2.8.0",
     "sqlalchemy>=2.0.21",
 ]
-gui = ["streamlit>=1.28.0", "plotly>=5.15.0", "dash>=2.14.0"]
-api = ["fastapi>=0.103.0", "uvicorn>=0.23.0", "pydantic>=2.4.0"]
+gui = [
+    "PyQt6>=6.6.0",
+    "matplotlib>=3.7.0",
+    "reportlab>=4.0.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -82,8 +87,9 @@ dev = [
     "ruff>=0.0.287",
     "mypy>=1.5.1",
     "pre-commit>=3.3.0",
+    "matplotlib>=3.7.0",
 ]
-all = ["tumor-detection-segmentation[clinical,gui,api,dev]"]
+all = ["tumor-detection-segmentation[clinical,gui,dev]"]
 
 [project.urls]
 Homepage = "https://github.com/hkevin01/tumor-detection-segmentation"
@@ -94,6 +100,7 @@ Issues = "https://github.com/hkevin01/tumor-detection-segmentation/issues"
 [project.scripts]
 tumor-detect-train = "tumor_detection.cli.train:main"
 tumor-detect-infer = "tumor_detection.cli.infer:main"
+tumor-detect-gui   = "gui.main:main"
 
 [tool.hatch.version]
 path = "src/tumor_detection/__init__.py"

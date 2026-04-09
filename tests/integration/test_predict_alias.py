@@ -1,68 +1,70 @@
-"""Integration test for JSON alias prediction endpoint.
+"""Integration tests for ExportWorker CSV and FHIR outputs.
 
-Creates a synthetic study backed by a .npy volume, triggers prediction using
-POST /api/ai/predict with a JSON body, then fetches the overlay PNG.
+Replaces the former FastAPI predict-alias and overlay-PNG tests.
 """
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
+import json
 
 import numpy as np
 import pytest
 
-pytest.importorskip("fastapi")
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from gui.workers import ExportWorker
+
+
+_SAMPLE_RESULT = {
+    "study_id": "integ-study-001",
+    "model_id": "unet",
+    "model": "unet",
+    "prediction": "tumor_detected",
+    "confidence": 0.88,
+    "tumor_volume_voxels": 512.0,
+    "class_volumes_cm3": {
+        "necrotic_core_cm3": 0.30,
+        "enhancing_tumour_cm3": 0.51,
+        "peritumoral_edema_cm3": 1.20,
+        "whole_tumour_cm3": 2.01,
+    },
+    "processing_time_seconds": 3.14,
+    "mask_path": None,
+    "device": "synthetic",
+    "volume_shape": [64, 64, 64],
+}
 
 
 @pytest.mark.integration
-def test_ai_predict_alias_then_overlay(tmp_path: Path):
-    from gui.backend.api.routes import get_router  # type: ignore
-    from gui.backend.models import get_storage  # type: ignore
-
-    app = FastAPI()
-    app.include_router(get_router(), prefix="/api")
-    client = TestClient(app)
-
-    # Prepare a small 3D numpy volume and register a study
-    vol = np.random.rand(16, 16, 16).astype(np.float32)
-    vol_path = tmp_path / "study.npy"
-    np.save(vol_path, vol)
-
-    storage = get_storage()
-    patient_id = storage.add_patient({"name": "Alias Patient"})
-    study_id = storage.add_study({
-        "patient_id": patient_id,
-        "study_date": "2025-01-01",
-        "modality": "MR",
-        "description": "Alias study",
-        "file_path": str(vol_path),
-    })
-
-    # Trigger prediction using alias endpoint
-    resp = client.post(
-        "/api/ai/predict",
-        json={"study_id": study_id, "model_name": "unet_v1"},
+def test_export_csv_contains_headers(tmp_path: Path) -> None:
+    worker = ExportWorker(
+        result=_SAMPLE_RESULT,
+        export_dir=str(tmp_path),
+        export_types=["csv"],
+        patient_name="Alice",
     )
-    assert resp.status_code == 200
+    csv_path = worker._export_csv()
+    assert csv_path.exists()
+    content = csv_path.read_text()
+    assert "Metric" in content
+    assert "Whole Tumour Volume" in content
+    assert "2.01" in content
 
-    # Poll briefly for completion if background used in future
-    t0 = time.time()
-    while time.time() - t0 < 5:
-        status = storage.studies[study_id]["status"]
-        if (
-            str(status) == "completed"
-            or getattr(status, "name", "").lower() == "completed"
-        ):
-            break
-        time.sleep(0.1)
 
-    # Fetch overlay PNG
-    oresp = client.get(
-        f"/api/studies/{study_id}/overlay?alpha=0.5&cmap=plasma"
+@pytest.mark.integration
+def test_export_fhir_valid_bundle(tmp_path: Path) -> None:
+    worker = ExportWorker(
+        result=_SAMPLE_RESULT,
+        export_dir=str(tmp_path),
+        export_types=["fhir"],
+        patient_name="Bob",
+        patient_id="pat-001",
     )
-    assert oresp.status_code == 200
-    assert oresp.headers.get("content-type") == "image/png"
-    assert oresp.content and len(oresp.content) > 100
+    fhir_path = worker._export_fhir()
+    assert fhir_path.exists()
+    bundle = json.loads(fhir_path.read_text())
+    assert bundle["resourceType"] == "Bundle"
+    assert bundle["type"] == "document"
+    entries = bundle["entry"]
+    resource_types = [e["resource"]["resourceType"] for e in entries]
+    assert "Patient" in resource_types
+    assert "DiagnosticReport" in resource_types
