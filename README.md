@@ -35,11 +35,11 @@ Automates brain tumour analysis from raw MRI volumes to clinical-grade 3-class s
 
 The system produces labelled segmentation masks showing **three tumour sub-regions** per BraTS convention:
 
-| Class | Colour | Clinical Meaning |
+| <sub>Class</sub> | <sub>Colour</sub> | <sub>Clinical Meaning</sub> |
 |-------|--------|-----------------|
-| Enhancing Tumour (ET) | Yellow | Active viable tumour — gadolinium-enhancing on T1c |
-| Necrotic Core (NCR) | Dark Red | Dead/necrotic tissue inside tumour mass |
-| Peritumoral Edema (ED) | Blue | Surrounding infiltration zone |
+| <sub>Enhancing Tumour (ET)</sub> | <sub>Yellow</sub> | <sub>Active viable tumour — gadolinium-enhancing on T1c</sub> |
+| <sub>Necrotic Core (NCR)</sub> | <sub>Dark Red</sub> | <sub>Dead/necrotic tissue inside tumour mass</sub> |
+| <sub>Peritumoral Edema (ED)</sub> | <sub>Blue</sub> | <sub>Surrounding infiltration zone</sub> |
 
 ### True Positive — Correct Detection (Dice = 0.91)
 
@@ -87,12 +87,12 @@ All three sub-regions annotated simultaneously in a single forward pass.
 
 ![Multi-Class Segmentation](docs/results/multiclass_segmentation.png)
 
-| Metric | Value |
+| <sub>Metric</sub> | <sub>Value</sub> |
 |--------|-------|
-| Dice — Whole Tumour (WT) | **0.91** |
-| Dice — Tumour Core (TC) | **0.88** |
-| Dice — Enhancing Tumour (ET) | **0.84** |
-| 95th Percentile Hausdorff | 4.2 mm |
+| <sub>Dice — Whole Tumour (WT)</sub> | <sub>**0.91**</sub> |
+| <sub>Dice — Tumour Core (TC)</sub> | <sub>**0.88**</sub> |
+| <sub>Dice — Enhancing Tumour (ET)</sub> | <sub>**0.84**</sub> |
+| <sub>95th Percentile Hausdorff</sub> | <sub>4.2 mm</sub> |
 
 ---
 
@@ -108,11 +108,11 @@ For a standard BraTS volume (240 × 240 × 155 voxels, 4 modalities):
 
 ![Segmentation Time Benchmark](docs/results/segmentation_time.png)
 
-| Hardware | UNet | SwinUNETR | UNETR | MedNext-B | VISTA3D |
+| <sub>Hardware</sub> | <sub>UNet</sub> | <sub>SwinUNETR</sub> | <sub>UNETR</sub> | <sub>MedNext-B</sub> | <sub>VISTA3D</sub> |
 |----------|------|-----------|-------|-----------|---------|
-| **A100 GPU (40 GB)** | 1.1 s | 4.2 s | 5.6 s | 3.8 s | 18.2 s |
-| **RTX 3090 (24 GB)** | 1.8 s | 6.1 s | 8.2 s | 5.4 s | 26.4 s |
-| **CPU (32-core Xeon)** | 28 s | 112 s | 148 s | 96 s | 430 s |
+| <sub>**A100 GPU (40 GB)**</sub> | <sub>1.1 s</sub> | <sub>4.2 s</sub> | <sub>5.6 s</sub> | <sub>3.8 s</sub> | <sub>18.2 s</sub> |
+| <sub>**RTX 3090 (24 GB)**</sub> | <sub>1.8 s</sub> | <sub>6.1 s</sub> | <sub>8.2 s</sub> | <sub>5.4 s</sub> | <sub>26.4 s</sub> |
+| <sub>**CPU (32-core Xeon)**</sub> | <sub>28 s</sub> | <sub>112 s</sub> | <sub>148 s</sub> | <sub>96 s</sub> | <sub>430 s</sub> |
 
 > **Clinical threshold:** < 120 seconds (2 minutes) for same-day radiology reporting workflow. UNet, SwinUNETR, UNETR, and MedNext all meet this threshold on GPU. All models meet it on a 32-core CPU except VISTA3D.
 
@@ -252,26 +252,26 @@ RAM-cost regulariser constrains search to fit clinical GPUs (8 GB VRAM).
 
 ### Why MONAI Instead of Plain PyTorch?
 
-| Need | MONAI provides | Alternative |
+| <sub>Need</sub> | <sub>MONAI provides</sub> | <sub>Alternative</sub> |
 |------|---------------|-------------|
-| 3-D NIfTI/DICOM I/O | `LoadImaged`, `MetaTensor` with affine | nibabel + manual |
-| Spatially-consistent augmentation | `RandAffined`, `RandFlipd` (volume + label) | torchvision (2-D only) |
-| Sliding-window inference | `SlidingWindowInferer` with Gaussian map | Custom tiling (boundary artefacts) |
-| Pre-trained medical weights | VISTA3D, SwinUNETR, UNETR via `monai.bundle` | None in timm/HuggingFace for 3-D |
-| Clinical deployment | PyQt6 desktop app (`gui/`) | Custom FastAPI + browser |
+| <sub>3-D NIfTI/DICOM I/O</sub> | <sub>`LoadImaged`, `MetaTensor` with affine</sub> | <sub>nibabel + manual</sub> |
+| <sub>Spatially-consistent augmentation</sub> | <sub>`RandAffined`, `RandFlipd` (volume + label)</sub> | <sub>torchvision (2-D only)</sub> |
+| <sub>Sliding-window inference</sub> | <sub>`SlidingWindowInferer` with Gaussian map</sub> | <sub>Custom tiling (boundary artefacts)</sub> |
+| <sub>Pre-trained medical weights</sub> | <sub>VISTA3D, SwinUNETR, UNETR via `monai.bundle`</sub> | <sub>None in timm/HuggingFace for 3-D</sub> |
+| <sub>Clinical deployment</sub> | <sub>PyQt6 desktop app (`gui/`)</sub> | <sub>Custom FastAPI + browser</sub> |
 
 ---
 
 ## Models
 
-| Model | Params | BraTS Dice (WT) | Inf. Time (GPU) | Notes |
+| <sub>Model</sub> | <sub>Params</sub> | <sub>BraTS Dice (WT)</sub> | <sub>Inf. Time (GPU)</sub> | <sub>Notes</sub> |
 |-------|--------|-----------------|-----------------|-------|
-| UNet (3D) | 4M | 0.83 | 1.1 s | Baseline, low VRAM |
-| SwinUNETR | 62M | 0.89 | 4.2 s | Transformer-CNN hybrid |
-| UNETR | 93M | 0.88 | 5.6 s | Pure ViT encoder |
-| **MedNext-B** | 35M | **0.91** | 3.8 s | MONAI 1.5, large-kernel CNN |
-| **VISTA3D** | 670M | **0.93** | 18.2 s | Foundation model, fine-tunable |
-| DiNTS (searched) | Varies | Task-optimal | ~4 s | NAS-discovered topology |
+| <sub>UNet (3D)</sub> | <sub>4M</sub> | <sub>0.83</sub> | <sub>1.1 s</sub> | <sub>Baseline, low VRAM</sub> |
+| <sub>SwinUNETR</sub> | <sub>62M</sub> | <sub>0.89</sub> | <sub>4.2 s</sub> | <sub>Transformer-CNN hybrid</sub> |
+| <sub>UNETR</sub> | <sub>93M</sub> | <sub>0.88</sub> | <sub>5.6 s</sub> | <sub>Pure ViT encoder</sub> |
+| <sub>**MedNext-B**</sub> | <sub>35M</sub> | <sub>**0.91**</sub> | <sub>3.8 s</sub> | <sub>MONAI 1.5, large-kernel CNN</sub> |
+| <sub>**VISTA3D**</sub> | <sub>670M</sub> | <sub>**0.93**</sub> | <sub>18.2 s</sub> | <sub>Foundation model, fine-tunable</sub> |
+| <sub>DiNTS (searched)</sub> | <sub>Varies</sub> | <sub>Task-optimal</sub> | <sub>~4 s</sub> | <sub>NAS-discovered topology</sub> |
 
 ---
 
@@ -373,12 +373,12 @@ pytest tests/visualization/test_result_showcase.py -v
 
 ## Performance Benchmarks
 
-| Method | BraTS 2021 Dice (WT) | Training Time | Labels Required |
+| <sub>Method</sub> | <sub>BraTS 2021 Dice (WT)</sub> | <sub>Training Time</sub> | <sub>Labels Required</sub> |
 |--------|---------------------|---------------|----------------|
-| Supervised UNet | 0.83 | 12 h (A100) | 100% |
-| Supervised MedNext-B | 0.91 | 16 h (A100) | 100% |
-| Mean Teacher (20% labels) | 0.87 | 20 h (A100) | 20% |
-| VISTA3D fine-tune | 0.93 | 4 h (A100) | 10% |
+| <sub>Supervised UNet</sub> | <sub>0.83</sub> | <sub>12 h (A100)</sub> | <sub>100%</sub> |
+| <sub>Supervised MedNext-B</sub> | <sub>0.91</sub> | <sub>16 h (A100)</sub> | <sub>100%</sub> |
+| <sub>Mean Teacher (20% labels)</sub> | <sub>0.87</sub> | <sub>20 h (A100)</sub> | <sub>20%</sub> |
+| <sub>VISTA3D fine-tune</sub> | <sub>0.93</sub> | <sub>4 h (A100)</sub> | <sub>10%</sub> |
 
 ---
 
