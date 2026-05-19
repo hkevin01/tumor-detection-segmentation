@@ -153,12 +153,12 @@ This runs fast CPU-only tests to verify package imports and basic functionality.
 
 The platform includes these containerized services:
 
-| Service | URL | Purpose |
+| <sub>Service</sub> | <sub>URL</sub> | <sub>Purpose</sub> |
 |---------|-----|---------|
-| **Web GUI** | <http://localhost:8000/gui> | Interactive dashboard and interface |
-| **Main API** | <http://localhost:8000> | Core backend API and health checks |
-| **MLflow UI** | <http://localhost:5001> | Experiment tracking and model management |
-| **MONAI Label** | <http://localhost:8001> | Interactive annotation server |
+| <sub>**Web GUI**</sub> | <sub><http://localhost:8000/gui></sub> | <sub>Interactive dashboard and interface</sub> |
+| <sub>**Main API**</sub> | <sub><http://localhost:8000></sub> | <sub>Core backend API and health checks</sub> |
+| <sub>**MLflow UI**</sub> | <sub><http://localhost:5001></sub> | <sub>Experiment tracking and model management</sub> |
+| <sub>**MONAI Label**</sub> | <sub><http://localhost:8001></sub> | <sub>Interactive annotation server</sub> |
 
 ### Docker Management
 
